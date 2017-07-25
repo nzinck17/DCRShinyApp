@@ -19,16 +19,18 @@ filename.wach.profile <- "C:/Users/nick/Desktop/Shiny App/Data/AqBioDBWachusett_
 
 # Quabbin Tribs, Res, and Profile
 
-connection.name <- paste("Driver=FreeTDS;TDS_Version=7.0;DBQ=",directory,"/",filename.quab,";Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30", sep = "")
-connection <- odbcConnectAccess(connection.name)
+connection.name <- paste("Driver={Microsoft Access Driver (*.mdb, *.accdb)}",
+                         #"Driver=FreeTDS",  # for use of shinyapp.io
+                         "TDS_Version=8.0",
+                         filename.quab,
+                         "Encrypt=yes",
+                         "TrustServerCertificate=no",
+                         "Connection Timeout=30", 
+                         "ReadOnly=False",
+                         sep = ";")
 
-#TDS_Version=8.0
 
-#';Server=<server>;Port=<port>;Database=<db>;Uid=<uid>;Pwd=<pw>;Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;')
-#odbcDriverConnect('driver=FreeTDS;database=paste(directory,"/", filename.quab, sep = "")')
-#odbcConnectAccess(paste(directory,"/", filename.quab, sep = ""))
-#odbcConnectAccess("Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=C:/Users/nick/Desktop/Shiny App/Data/QuabbinWQdataNZ.mdb")
-
+connection <- odbcDriverConnect(connection.name)
 df.trib.res.quab <- sqlFetch(connection, "tblWQTribRes2")
 df.profile.quab <- sqlFetch(connection, "tblWQProfile") 
 df.quab.wach.site <- sqlFetch(connection, "tblSiteLocation2")
@@ -37,9 +39,17 @@ close(connection)
 
 # Wachusett Tribs and Res
 
-connection.name <- paste("Driver=FreeTDS;TDS_Version=7.0;DBQ=",directory,"/",filename.wach.trib.res,";Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30", sep = "")
-#odbcConnectAccess(paste(directory,"/", filename.wach.trib.res, sep = ""))
-connection <- odbcConnectAccess(connection.name)
+connection.name <- paste("Driver={Microsoft Access Driver (*.mdb, *.accdb)}",
+                         #"Driver=FreeTDS",  # for use of shinyapp.io
+                         "TDS_Version=8.0",
+                         filename.wach.trib.res,
+                         "Encrypt=yes",
+                         "TrustServerCertificate=no",
+                         "Connection Timeout=30", 
+                         "ReadOnly=False",
+                         sep = ";")
+
+connection <- odbcDriverConnect(connection.name)
 df.trib.res.wach <- sqlFetch(connection, "tblWQALLDATA")
 df.wach.site <- sqlFetch(connection, "tblLocations")
 df.trib.res.wach.param <- sqlFetch(connection, "tblParameters")
@@ -47,9 +57,17 @@ close(connection)
 
 # Wachusett Profile
 
-connection.name <- paste("Driver=FreeTDS;TDS_Version=7.0;DBQ=",directory,"/",filename.wach.profile,";Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30", sep = "")
-connection <- odbcConnectAccess(connection.name)
-#odbcConnectAccess(paste(directory,"/", filename.wach.profile, sep = ""))       
+connection.name <- paste("Driver={Microsoft Access Driver (*.mdb, *.accdb)}",
+                         #"Driver=FreeTDS",  # for use of shinyapp.io
+                         "TDS_Version=8.0",
+                         filename.wach.profile,
+                         "Encrypt=yes",
+                         "TrustServerCertificate=no",
+                         "Connection Timeout=30", 
+                         "ReadOnly=False",
+                         sep = ";")
+
+connection <- odbcDriverConnect(connection.name)   
 df.profile.wach <- sqlFetch(connection, "tbl_Profiles")
 df.profile.wach.site <- sqlFetch(connection, "tblLocations")
 close(connection)
