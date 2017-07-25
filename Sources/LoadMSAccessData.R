@@ -28,7 +28,7 @@ connection.name <- paste("Driver={Microsoft Access Driver (*.mdb, *.accdb)}",
                          sep = ";")
 
 
-connection <- odbcDriverConnect(connection.name)
+connection <- odbcConnectAccess(connection.name)
 df.trib.res.quab <- sqlFetch(connection, "tblWQTribRes2")
 df.profile.quab <- sqlFetch(connection, "tblWQProfile") 
 df.quab.wach.site <- sqlFetch(connection, "tblSiteLocation2")
@@ -45,7 +45,7 @@ connection.name <- paste("Driver={Microsoft Access Driver (*.mdb, *.accdb)}",
                          "ReadOnly=False",
                          sep = ";")
 
-connection <- odbcDriverConnect(connection.name)
+connection <- odbcConnectAccess(connection.name)
 df.trib.res.wach <- sqlFetch(connection, "tblWQALLDATA")
 df.wach.site <- sqlFetch(connection, "tblLocations")
 df.trib.res.wach.param <- sqlFetch(connection, "tblParameters")
@@ -61,7 +61,7 @@ connection.name <- paste("Driver={Microsoft Access Driver (*.mdb, *.accdb)}",
                          "ReadOnly=False",
                          sep = ";")
 
-connection <- odbcDriverConnect(connection.name)   
+connection <- odbcConnectAccess(connection.name)   
 df.profile.wach <- sqlFetch(connection, "tbl_Profiles")
 df.profile.wach.site <- sqlFetch(connection, "tblLocations")
 close(connection)
