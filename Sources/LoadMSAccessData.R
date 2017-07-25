@@ -10,9 +10,9 @@ library(RODBC)
 library(dplyr)
 
 # File name path from the Shiny App Folder (***Update if name changed****)
-filename.quab <- "C:/Users/nick/Desktop/Shiny App/Data/QuabbinWQdataNZ.mdb"
-filename.wach.trib.res <- "C:/Users/nick/Desktop/Shiny App/Data/WaterQualityDB_be.mdb"
-filename.wach.profile <- "C:/Users/nick/Desktop/Shiny App/Data/AqBioDBWachusett_be.mdb"
+filename.quab <- "DBQ=C:/Users/nick/Desktop/Shiny App/Data/QuabbinWQdataNZ.mdb"
+filename.wach.trib.res <- "DBQ=C:/Users/nick/Desktop/Shiny App/Data/WaterQualityDB_be.mdb"
+filename.wach.profile <- "DBQ=C:/Users/nick/Desktop/Shiny App/Data/AqBioDBWachusett_be.mdb"
 
 ##############################################################################################################################
 # Get data from Database *(Connect to database, fetch tables, and close connection)
@@ -20,8 +20,6 @@ filename.wach.profile <- "C:/Users/nick/Desktop/Shiny App/Data/AqBioDBWachusett_
 # Quabbin Tribs, Res, and Profile
 
 connection.name <- paste("Driver={Microsoft Access Driver (*.mdb, *.accdb)}",
-                         #"Driver=FreeTDS",  # for use of shinyapp.io
-                         "TDS_Version=8.0",
                          filename.quab,
                          "Encrypt=yes",
                          "TrustServerCertificate=no",
@@ -40,8 +38,6 @@ close(connection)
 # Wachusett Tribs and Res
 
 connection.name <- paste("Driver={Microsoft Access Driver (*.mdb, *.accdb)}",
-                         #"Driver=FreeTDS",  # for use of shinyapp.io
-                         "TDS_Version=8.0",
                          filename.wach.trib.res,
                          "Encrypt=yes",
                          "TrustServerCertificate=no",
@@ -58,8 +54,6 @@ close(connection)
 # Wachusett Profile
 
 connection.name <- paste("Driver={Microsoft Access Driver (*.mdb, *.accdb)}",
-                         #"Driver=FreeTDS",  # for use of shinyapp.io
-                         "TDS_Version=8.0",
                          filename.wach.profile,
                          "Encrypt=yes",
                          "TrustServerCertificate=no",
