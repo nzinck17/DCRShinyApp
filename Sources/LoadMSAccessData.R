@@ -10,9 +10,9 @@ library(RODBC)
 library(dplyr)
 
 # File name path from the Shiny App Folder (***Update if name changed****)
-filename.quab <- "Data/QuabbinWQdataNZ.mdb"
-filename.wach.trib.res <- "Data/WaterQualityDB_be.mdb"
-filename.wach.profile <- "Data/AqBioDBWachusett_be.mdb"
+filename.quab <- "C:/Users/nick/Desktop/Shiny App/Data/QuabbinWQdataNZ.mdb"
+filename.wach.trib.res <- "C:/Users/nick/Desktop/Shiny App/Data/WaterQualityDB_be.mdb"
+filename.wach.profile <- "C:/Users/nick/Desktop/Shiny App/Data/AqBioDBWachusett_be.mdb"
 
 ##############################################################################################################################
 # Get data from Database *(Connect to database, fetch tables, and close connection)
