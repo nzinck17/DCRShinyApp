@@ -136,7 +136,7 @@ df.trib.all <- bind_rows(df.trib.quab, df.trib.ware, df.trib.wach)
 ### Reservoirs
 
 # Quabbin Reservoir
-df.res.quab <- readRDS("Data/df.res.quab.rds")
+df.res.quab <- readRDS("C:/Users/nick/Desktop/Shiny App/Data/df.res.quab.rds")
 df.res.quab <- rename(df.res.quab, Result = Value, Site = SITE)
 #df.res.quab <- filter(df.trib.res.quab, Type == "Reservoir")
 
