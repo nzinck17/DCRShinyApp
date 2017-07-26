@@ -399,35 +399,27 @@ Trib.time <- function(input, output, session, df, df.site) {
              Month = lubridate::month(Date)
       )
     
-    if (input$summary.group.site == TRUE){
-      if (input$summary.group.time == 1){
-        sum.dots = c("Site")
-      } else if (input$summary.group.time == 2) {
-        sum.dots = c("Site", "Year")
-      } else if (input$summary.group.time == 3) {
-        sum.dots = c("Site", "Season")
-      } else if (input$summary.group.time == 4) {
-        sum.dots = c("Site", "Month")
-      } else if (input$summary.group.time == 5) {
-        sum.dots = c("Site", "Year", "Season")
-      } else if (input$summary.group.time == 6) {
-        sum.dots = c("Site", "Year", "Month")
-      }
-    } else {
-      if(input$summary.group.time == 2) {
-        sum.dots = c("Year")
-      } else if (input$summary.group.time == 3) {
-        sum.dots = c("Season")
-      } else if (input$summary.group.time == 4) {
-        sum.dots = c("Month")
-      } else if (input$summary.group.time == 5) {
-        sum.dots = c("Year", "Season")
-      } else if (input$summary.group.time == 6) {
-        sum.dots = c("Year", "Month")
-      }
+    # group by time
+    if (input$summary.group.time == 1){
+      sum.dots = c()
+    } else if (input$summary.group.time == 2) {
+      sum.dots = c("Year")
+    } else if (input$summary.group.time == 3) {
+      sum.dots = c("Season")
+    } else if (input$summary.group.time == 4) {
+      sum.dots = c("Month")
+    } else if (input$summary.group.time == 5) {
+      sum.dots = c("Year", "Season")
+    } else if (input$summary.group.time == 6) {
+      sum.dots = c("Year", "Month")
     }
+
+    # group by site
+    if(input$summary.group.site == TRUE){
+      sum.dots <- c(sum.dots, "Site")
+    }  
     
-    
+    # Applying Grouping if Grouping selected
     if (input$summary.group.site == FALSE & input$summary.group.time == 1){
       sum.2 <- sum.1
     } else {
