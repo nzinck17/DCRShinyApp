@@ -344,70 +344,32 @@ Res.time <- function(input, output, session, df, df.site) {
              Month = lubridate::month(Date)
       )
     
-    if (input$summary.group.loc == TRUE){
-      if (input$summary.group.depth == TRUE){
-        if (input$summary.group.time == 1){
-          sum.dots = c("Loc", "Depth")
-        } else if (input$summary.group.time == 2) {
-          sum.dots = c("Loc", "Depth", "Year")
-        } else if (input$summary.group.time == 3) {
-          sum.dots = c("Loc", "Depth", "Season")
-        } else if (input$summary.group.time == 4) {
-          sum.dots = c("Loc", "Depth", "Month")
-        } else if (input$summary.group.time == 5) {
-          sum.dots = c("Loc", "Depth", "Year", "Season")
-        } else if (input$summary.group.time == 6) {
-          sum.dots = c("Loc", "Depth", "Year", "Month")
-        }
-      }
-      else{
-        if (input$summary.group.time == 1){
-          sum.dots = c("Loc")
-        } else if (input$summary.group.time == 2) {
-          sum.dots = c("Loc", "Year")
-        } else if (input$summary.group.time == 3) {
-          sum.dots = c("Loc", "Season")
-        } else if (input$summary.group.time == 4) {
-          sum.dots = c("Loc", "Month")
-        } else if (input$summary.group.time == 5) {
-          sum.dots = c("Loc", "Year", "Season")
-        } else if (input$summary.group.time == 6) {
-          sum.dots = c("Loc", "Year", "Month")
-        }
-      }
-    } 
-    else {
-      if (input$summary.group.depth == TRUE){
-        if (input$summary.group.time == 1){
-          sum.dots = c("Depth")
-        } else if (input$summary.group.time == 2) {
-          sum.dots = c("Depth", "Year")
-        } else if (input$summary.group.time == 3) {
-          sum.dots = c("Depth", "Season")
-        } else if (input$summary.group.time == 4) {
-          sum.dots = c("Depth", "Month")
-        } else if (input$summary.group.time == 5) {
-          sum.dots = c("Depth", "Year", "Season")
-        } else if (input$summary.group.time == 6) {
-          sum.dots = c("Depth", "Year", "Month")
-        }
-      }
-      else{
-        if (input$summary.group.time == 2){
-          sum.dots = c("Year")
-        } else if (input$summary.group.time == 3) {
-          sum.dots = c("Season")
-        } else if (input$summary.group.time == 4) {
-          sum.dots = c("Month")
-        } else if (input$summary.group.time == 5) {
-          sum.dots = c("Year", "Season")
-        } else if (input$summary.group.time == 6) {
-          sum.dots = c("Year", "Month")
-        }
-      }
+    # group by time
+    if (input$summary.group.time == 1){
+      sum.dots = c()
+    } else if (input$summary.group.time == 2) {
+      sum.dots = c("Year")
+    } else if (input$summary.group.time == 3) {
+      sum.dots = c("Season")
+    } else if (input$summary.group.time == 4) {
+      sum.dots = c("Month")
+    } else if (input$summary.group.time == 5) {
+      sum.dots = c("Year", "Season")
+    } else if (input$summary.group.time == 6) {
+      sum.dots = c("Year", "Month")
     }
     
+    # group by Location
+    if(input$summary.group.loc == TRUE){
+      sum.dots <- c(sum.dots, "Site")
+    }
     
+    # group by Depth
+    if(input$summary.group.depth == TRUE){
+      sum.dots <- c(sum.dots, "Depth")
+    } 
+    
+    # Applying Grouping if Grouping selected
     if (input$summary.group.loc == FALSE & input$summary.group.depth == FALSE & input$summary.group.time == 1){
       sum.2 <- sum.1
     } else {
