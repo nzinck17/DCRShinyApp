@@ -235,22 +235,32 @@ tagList(
                              downloadButton(ns('save.plot'), "Save Plot")
                       ), # end column
                       column(1),
-                      #new column
+                      column(3,
+                             checkboxGroupInput(ns("plot.misc"), "Misc. Plot Options:", 
+                                                choices=c("Linear Regression with 95% conf. int.",
+                                                          "Linear Regression w/o 95% conf. int.",
+                                                          "Curve Regression with 95% conf. int.",
+                                                          "Curve Regression w/o 95% conf. int.",
+                                                          "log Scale X-axis",
+                                                          "log Scale Y-axis"))
+                      ),
                       column(3,
                              radioButtons(ns("plot.color"), label = "Group with Colors:", 
                                           choices = c("None" = 1, 
-                                                      "Site" = "Site",
+                                                      "Location" = "Loc",
+                                                      "Depth" = "Depth",
                                                       "met/hydro filter 1 (select group)" = "met1",
                                                       "met/hydro filter 2 (select group)" = "met2",
                                                       "met/hydro filter 2 (select group)" = "met3",
                                                       "Flagged data" = "FlagCode"),
-                                          selected = "Site")
+                                          selected = "Loc")
                       ), # end column
                       # new column
                       column(3,
                              radioButtons(ns("plot.shape"), label = "Group with Shapes:", 
                                           choices = c("None" = 1, 
-                                                      "Site" = "Site",
+                                                      "Location" = "Loc",
+                                                      "Depth" = "Depth",
                                                       "met/hydro filter 1 (make sure on color)" = "met1",
                                                       "met/hydro filter 2 (make sure on color)" = "met2",
                                                       "met/hydro filter 2 (make sure on color)" = "met3",
@@ -387,15 +397,17 @@ Res.regress <- function(input, output, session, df, df.site) {
     
     df.temp.x <-  df.temp %>% 
       filter(Parameter %in% c(input$x.param)) %>%
-      filter(Parameter %in% c(input$x.range)) %>%
-      rename(x.Result = Result)
+      filter(Result > input$x.range[1], Result < input$x.range[2]) %>%
+      rename(x.Parameter = Parameter, x.Result = Result) %>%
+      select(Site, Loc, Depth, Date, x.Parameter, x.Result)
     
     df.temp.y <-  df.temp %>% 
       filter(Parameter %in% c(input$y.param)) %>%
-      filter(Parameter %in% c(input$y.range)) %>%
-      rename(y.Result = Result)
+      filter(Result > input$y.range[1], Result < input$y.range[2]) %>%
+      rename(y.Parameter = Parameter, y.Result = Result) %>%
+      select(Site, Loc, Depth, Date, y.Parameter, y.Result)
     
-    inner_join(df.temp.x, df.temp.y, by = "Date")
+    inner_join(df.temp.x, df.temp.y, by = c("Site", "Loc", "Depth", "Date"))
     
   })
   
@@ -413,26 +425,33 @@ Res.regress <- function(input, output, session, df, df.site) {
 
     # features in which all plot options have in common
     p <- ggplot(df.react(), aes(x = x.Result, y = y.Result)) +
-      geom_point() +
       labs(x = paste(input$x.param), y = paste(input$y.param)) +  # need to Add unit display for plot
       theme_bw() +
       theme(plot.margin = unit(c(0.2, 0.2, 0.2, 0.5), "in"))
     
-    ## group by color and shape  
-    #if(input$plot.color != 1 & input$plot.shape != 1){
-    #  p <- p + geom_point(aes_string(color = input$plot.color, shape = input$plot.shape))
-    #} else if (input$plot.color != 1){
-    #  p <- p + geom_point(aes_string(color = input$plot.color))
-    #} else if (input$plot.shape != 1){
-    #  p <- p + geom_point(aes_string(shape = input$plot.shape))
-    #} else {
-    #  p <- p + geom_point()
-    #}
+    # group by color and shape  
+    if(input$plot.color != 1 & input$plot.shape != 1){
+      p <- p + geom_point(aes_string(color = input$plot.color, shape = input$plot.shape))
+    } else if (input$plot.color != 1){
+      p <- p + geom_point(aes_string(color = input$plot.color))
+    } else if (input$plot.shape != 1){
+      p <- p + geom_point(aes_string(shape = input$plot.shape))
+    } else {
+      p <- p + geom_point()
+    }
     
-    ## facet for Sites if no grouping for site is selected and number of sites is greater than 1
-    #if(input$plot.color != "Site" & input$plot.shape != "Site" & length(c(input$site)) > 1){
-    #  p <- p + facet_wrap(~Site, ncol = ceiling(length(c(input$site))/4))
-    #} 
+    # facet for Sites if no grouping for site is selected and number of sites is greater than 1
+    if(input$plot.color != "Loc" & input$plot.shape != "Loc" & length(c(input$loc)) > 1){
+      if(input$plot.color != "Depth" & input$plot.shape != "Depth" & length(c(input$depth)) > 1){
+        p <- p + facet_grid(Loc~Depth)
+      } else {
+        p <- p + facet_grid(Loc~.)
+      }
+    } else {
+      if(input$plot.color != "Depth" & input$plot.shape != "Depth" & length(c(input$depth)) > 1){
+        p <- p + facet_grid(.~Depth)
+      }
+    }
     
     p
     

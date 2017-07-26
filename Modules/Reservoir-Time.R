@@ -147,8 +147,7 @@ Res.time.UI <- function(id, df) {
                                                      "Reporting Limit",
                                                      "Performance Standard",
                                                      "Log Scale (Y-axis)",
-                                                     "Show Trendline"),
-                                           selected = "Interactive")
+                                                     "Show Trendline"))
                  ),
                  
                  column(3,
@@ -277,10 +276,12 @@ Res.time <- function(input, output, session, df, df.site) {
   
   df.react <- reactive({
     df %>% 
-      filter(Parameter %in% c(input$param)) %>% 
       filter(Loc %in% c(input$loc)) %>%
       filter(Depth %in% c(input$depth)) %>%
+      filter(Parameter %in% c(input$param)) %>% 
+      filter(Result > input$range[1], Result < input$range[2]) %>%
       filter(Date > input$date[1], Date < input$date[2])
+
   })
   
   # Render Text
