@@ -133,7 +133,6 @@ df.trib.all <- bind_rows(df.trib.quab, df.trib.ware, df.trib.wach)
 
 # Quabbin Reservoir
 df.res.quab <- readRDS("F:/Nick Zinck/Shiny Water Quality/DCRShinyApp/Data/df.res.quab.rds")
-df.res.quab <- rename(df.res.quab, Result = Value, Site = SITE)
 #df.res.quab <- filter(df.trib.res.quab, Type == "Reservoir")
 
 # Wachusett Tributary
