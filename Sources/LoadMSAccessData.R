@@ -6,7 +6,7 @@
 ##############################################################################################################################
 
 # File name path from the Shiny App Folder (***Update if name changed****)
-filename.quab <- "DBQ=F:/Nick Zinck/Shiny Water Quality/DCRShinyApp/Data/QuabbinWQdataNZ.mdb"  #C:/Users/nick/Desktop/Shiny App/
+filename.quab <- "DBQ=F:/Nick Zinck/Shiny Water Quality/DCRShinyApp/Data/QuabbinWQdataNZ.mdb" 
 filename.wach.trib.res <- "DBQ=F:/Nick Zinck/Shiny Water Quality/DCRShinyApp/Data/WaterQualityDB_be.mdb"
 filename.wach.profile <- "DBQ=F:/Nick Zinck/Shiny Water Quality/DCRShinyApp/Data/AqBioDBWachusett_be.mdb"
 
