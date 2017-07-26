@@ -6,8 +6,6 @@
 #     Note: TBD
 ##############################################################################################################################
 
-#change df.active to df.react
-
 # load libraries
 library(shiny)
 library(tidyr)
@@ -17,43 +15,34 @@ library(dplyr)
 library(lubridate)
 library(leaflet)
 library(RColorBrewer)
+library(DT)
+library(RODBC)
 
 # Directory of the Shiny App Folder (***Update if moved****)
-# Umass Comp
-#directory <<- "F:/Nick Zinck/Shiny Water Quality/Shiny App"
-# Personal Laptop
-directory <<- "C:/Users/nick/Desktop/Shiny App"
+#directory <<- "F:/Nick Zinck/Shiny Water Quality/DCRShinyApp"
 
+### Run/Source Scripts that load data
 
-# Load the WQ MS Access Data  - See LoadMSAccessData.R file
-source(paste(directory,"/", "Sources/LoadMSAccessData.R", sep = ""))
-#source(paste(directory,"/", "Sources/GetUSGS.R", sep = ""))
-#source(paste(directory,"/", "Sources/GetMeteorology.R", sep = ""))
+source("Sources/LoadMSAccessData.R")
+#source("Sources/LoadRDS.R")
 
-# Load Modules
+### Load Modules
 
-source(paste(directory,"/", "Modules/Home.R", sep = ""))
-source(paste(directory,"/", "Modules/Tributary-Time.R", sep = ""))
-source(paste(directory,"/", "Modules/Tributary-Regress.R", sep = ""))
-source(paste(directory,"/", "Modules/Reservoir-Time.R", sep = ""))
-source(paste(directory,"/", "Modules/Reservoir-Regress.R", sep = ""))
-source(paste(directory,"/", "Modules/Profile-Heatmap.R", sep = ""))
-source(paste(directory,"/", "Modules/Profile-Line.R", sep = ""))
-source(paste(directory,"/", "Modules/Profile-Summary.R", sep = ""))
-source(paste(directory,"/", "Modules/MapPlot.R", sep = ""))
+source("Modules/Home.R")
+source("Modules/Tributary-Time.R")
+source("Modules/Tributary-Regress.R")
+source("Modules/Reservoir-Time.R")
+source("Modules/Reservoir-Regress.R")
+source("Modules/Profile-Heatmap.R")
+source("Modules/Profile-Line.R")
+source("Modules/Profile-Summary.R")
+source("Modules/MapPlot.R")
 
 # Load Functions
 
-source(paste(directory,"/", "Functions/GetSeasons.R", sep = ""))
-source(paste(directory,"/", "Functions/circleSizeLegend.R", sep = ""))
-#source(paste(directory,"/", "Functions/ProfileGrid.R", sep = ""))
-#source(paste(directory,"/", "Functions/ProfileHeatmapFilledContour.R", sep = ""))
-#source(paste(directory,"/", "Functions/ScatterTributary.R", sep = ""))
-#source(paste(directory,"/", "Functions/SingleDayProfiles.R", sep = ""))
-
-
-
-
+#Relative Paths
+source("Functions/GetSeasons.R")
+source("Functions/circleSizeLegend.R")
 
 ###################################################################################
 ##################################  User Interface  ###############################
@@ -310,12 +299,6 @@ tabPanel("Input Data",
 ########################################################################################
 ################################    Server   ###########################################
 ########################################################################################
-
-# Load Libraries
-library(DT)
-library(dplyr)
-library(ggplot2)
-
 
 server <- function(input, output) {
   
