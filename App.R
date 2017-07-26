@@ -18,9 +18,6 @@ library(RColorBrewer)
 library(DT)
 library(RODBC)
 
-# Directory of the Shiny App Folder (***Update if moved****)
-#directory <<- "F:/Nick Zinck/Shiny Water Quality/DCRShinyApp"
-
 ### Run/Source Scripts that load data
 
 source("Sources/LoadMSAccessData.R")
