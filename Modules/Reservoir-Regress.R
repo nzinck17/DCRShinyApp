@@ -218,7 +218,63 @@ tagList(
              )#fluidrow
       )#col
     )#fluidrow
-  ) # end well panel
+  ), # end well panel
+  
+  # New tabset panel for plots, tables, etc. 
+  tabsetPanel(
+    
+    # the "Plot" tab panel where everything related to the plot goes
+    tabPanel("Plot", 
+             # the actual plot output
+             plotlyOutput(ns("plot"), width = "100%", height = 600),
+             # area where all plot specific inputs go
+             fluidRow(br(), br(),
+                      column(1),
+                      # new column
+                      column(1,
+                             downloadButton(ns('save.plot'), "Save Plot")
+                      ), # end column
+                      column(1),
+                      #new column
+                      column(3,
+                             radioButtons(ns("plot.color"), label = "Group with Colors:", 
+                                          choices = c("None" = 1, 
+                                                      "Site" = "Site",
+                                                      "met/hydro filter 1 (select group)" = "met1",
+                                                      "met/hydro filter 2 (select group)" = "met2",
+                                                      "met/hydro filter 2 (select group)" = "met3",
+                                                      "Flagged data" = "FlagCode"),
+                                          selected = "Site")
+                      ), # end column
+                      # new column
+                      column(3,
+                             radioButtons(ns("plot.shape"), label = "Group with Shapes:", 
+                                          choices = c("None" = 1, 
+                                                      "Site" = "Site",
+                                                      "met/hydro filter 1 (make sure on color)" = "met1",
+                                                      "met/hydro filter 2 (make sure on color)" = "met2",
+                                                      "met/hydro filter 2 (make sure on color)" = "met3",
+                                                      "Flagged data" = "FlagCode"),
+                                          selected = 1)
+                      ) # end column
+             ) # end flluid row
+    ), # end "plot" tabpanel
+    
+    # "table" tabpanel
+    tabPanel("Table",
+             # first row - print button, etc
+             fluidRow(br(),
+                      br(),
+                      actionButton(ns("table.print"), "Print Table")
+             ),
+             # next row
+             fluidRow(
+               dataTableOutput(ns("table"))
+             ) # end fluid row
+    ) # end tabpanel
+
+  )  # end tabsetpanel (plots, stats, etc.)
+  
 ) # end taglist
   
 } # end UI
@@ -233,14 +289,13 @@ Res.regress <- function(input, output, session, df, df.site) {
   
   # Reactive Text - Units of Parameter Selected (for Parameter Range Text)
   
-  y.param.units <- reactive({ 
-    df %>%
-      filter(Parameter %in% input$param) %>%
-      .$Units %>%
-      factor() %>%
-      levels()
-    
-  })
+  #y.param.units <- reactive({ 
+  #  df %>%
+  #    filter(Parameter %in% input$param) %>%
+  #    .$Units %>%
+  #    factor() %>%
+  #    levels()
+  #})
   
   #Parameter Value Range UI
   
@@ -268,14 +323,13 @@ Res.regress <- function(input, output, session, df, df.site) {
   
   # Reactive Text - Units of Parameter Selected (for Parameter Range Text)
   
-  x.param.units <- reactive({ 
-    df %>%
-      filter(Parameter %in% input$param) %>%
-      .$Units %>%
-      factor() %>%
-      levels()
-    
-  })
+  #x.param.units <- reactive({ 
+  #  df %>%
+  #    filter(Parameter %in% input$param) %>%
+  #    .$Units %>%
+  #    factor() %>%
+  #    levels() 
+  #})
   
   #Parameter Value Range UI
   
@@ -322,18 +376,30 @@ Res.regress <- function(input, output, session, df, df.site) {
   })
   
   
-  
 # Reactive Dataframe
   
   df.react <- reactive({
-    df %>% 
-      filter(Parameter %in% c(input$param)) %>% 
+    
+    df.temp <- df %>% 
       filter(Loc %in% c(input$loc)) %>%
       filter(Depth %in% c(input$depth)) %>%
       filter(Date > input$date[1], Date < input$date[2])
+    
+    df.temp.x <-  df.temp %>% 
+      filter(Parameter %in% c(input$x.param)) %>%
+      filter(Parameter %in% c(input$x.range)) %>%
+      rename(x.Result = Result)
+    
+    df.temp.y <-  df.temp %>% 
+      filter(Parameter %in% c(input$y.param)) %>%
+      filter(Parameter %in% c(input$y.range)) %>%
+      rename(y.Result = Result)
+    
+    inner_join(df.temp.x, df.temp.y, by = "Date")
+    
   })
   
-  # Render Text
+  # Render Text - For the Number of Samples Collected Output
   
   output$text.num <- renderText({
     
@@ -341,19 +407,67 @@ Res.regress <- function(input, output, session, df, df.site) {
     
   })
   
+  # Plot Creation
+  
+  p <- reactive({
 
+    # features in which all plot options have in common
+    p <- ggplot(df.react(), aes(x = x.Result, y = y.Result)) +
+      geom_point() +
+      labs(x = paste(input$x.param), y = paste(input$y.param)) +  # need to Add unit display for plot
+      theme_bw() +
+      theme(plot.margin = unit(c(0.2, 0.2, 0.2, 0.5), "in"))
+    
+    ## group by color and shape  
+    #if(input$plot.color != 1 & input$plot.shape != 1){
+    #  p <- p + geom_point(aes_string(color = input$plot.color, shape = input$plot.shape))
+    #} else if (input$plot.color != 1){
+    #  p <- p + geom_point(aes_string(color = input$plot.color))
+    #} else if (input$plot.shape != 1){
+    #  p <- p + geom_point(aes_string(shape = input$plot.shape))
+    #} else {
+    #  p <- p + geom_point()
+    #}
+    
+    ## facet for Sites if no grouping for site is selected and number of sites is greater than 1
+    #if(input$plot.color != "Site" & input$plot.shape != "Site" & length(c(input$site)) > 1){
+    #  p <- p + facet_wrap(~Site, ncol = ceiling(length(c(input$site))/4))
+    #} 
+    
+    p
+    
+  })
+  
+  # Plot Visual
+  
+  output$plot <- renderPlotly({
+    
+    ggplotly(p())
+    
+  })
+  
+  # Plot Print
+  
+  output$save.plot <- downloadHandler(
+    filename = function (){paste(input$param,' Site(s) ', paste(unique(df.react()$Loc)),' from ', input$date[1],' to ', input$date[2], '.png', sep='')},
+    content = function(file) {ggsave(file, plot = p(), device = "png")},   #function(file) {ggsave(file, plot = p(), device = "png")}
+    contentType = 'image/png'
+  )
   
   
+  # Tables
+  
+  output$table <- renderDataTable(df.react())
   
   # Map Color
   
   df.site.react <- reactive({
     
-    df.temp <- df.site %>% filter(!is.na(LocationLat), !is.na(LocationLong))
+    df.site.temp <- df.site %>% filter(!is.na(LocationLat), !is.na(LocationLong))
     
-    df.temp$Selected <- ifelse(df.temp$Site %in% input$site, "yes", "no")
+    df.site.temp$Selected <- ifelse(df.site.temp$Site %in% input$site, "yes", "no")
     
-    df.temp
+    df.site.temp
     
   })
   
