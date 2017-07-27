@@ -1,196 +1,151 @@
 ##############################################################################################################################
 #     Title: Maplot.R
-#     Type: Module for Tributaries
-#     Description: This script is the UI and server for the tributary page. Used for "Quabbin", "Ware River", and "Wachusett Tabs"
+#     Type: Module for DCR Shiny App
+#     Description: Geospatial Plots of Tributary Data and Statistics for a Watershed
 #     Written by: Nick Zinck, Spring 2017
-#     Note: TBD
 ##############################################################################################################################
 
-####################################################################################################
+#     General Notes: 
+#       1. Leaflet and RenderUI do not work well together. If this is needed, an action 
+#          button is a solution but from my experience still causes some problems
+#       2. If one changes the preffered initial map type (Tile), one needs to change it in the UI and also in the Base Leaflet  
+#          Map section of the Server Function. The reason why the input is not directly used in the Base Leaflet Map section  
+#          is becuase the Lat/Long coordinates would be reset, which is likely undesired. See Server Note 3 for more detail on
+#          the Base Leaflet Map Section.
+
+#     To-Do List:
+#       1. Make the CSS more localized
+#       2. Make a more precise sig fig method for statistic (i.e. Number of Samples should not be rounded (maybe keep all 
+#          non-decimal numbers))
+
+##############################################################################################################################
 # User Interface
-#####################################################################################################
-# things to check/do
-### make sure NA does not through off statistics  # add NROW(na.omit(dataset)) (maybe) omit rows with NAs in LAt,Long,site, and Result
-### make sure program doesn't crash when df.active() = 0
-### make the CSS more localized
-# when I go from year back to claendar I get an error
-
-
+##############################################################################################################################
 
 map.plot.UI <- function(id, df) { 
 
 ns <- NS(id)
 
 tagList(
-  
   fluidRow(br(), br(), br(), br()),
-      
     sidebarLayout(
       sidebarPanel(width = 3,
-                   
-
-                   
         tabsetPanel(
+          # Main Panel Options
           tabPanel("Main",
-                   
-                   
-                   br(), br(),
-                   
+                   br(), br(), # Line Breaks
+                   # Parameter Selection
                    selectInput(ns("param"), "Water Quality Parameter:",        
                                choices=c("-Select Parameter-", levels(factor(df$Parameter))),
                                selected = "-Select Parameter-"),
-                   
-                   hr(),
-                   
-                   
-                   # Statistic
+                   hr(), # Horizontal Rule/Line
+                   # Statistic Selection
                    selectInput(ns("stat"), "Value Statistic:",        
                                choices=c("average", "minimum", "maximum", 
                                          "median", "1st quartile", "1st quartile",
                                          "variance", "stand.dev.","number of samples"),
                                selected = "average"),
-                   
                    hr(),
-                   
                    # Date Selection
-                   
-                   strong("Date Range:"),
-                   
+                   strong("Date Range:"), # bold text
                    br(), br(),
-                   
                    wellPanel(
-                   
-
                    # Year
-                   selectInput(ns("year"), "Year:", 
-                               choices = c("All Years", rev(year(seq(as.Date("1990-1-1"), Sys.Date(), "years")))), 
-                               selected = "All Years"), 
-                   
-                   # Month
-                   
-                  selectInput(ns("month"), "Month:", 
-                                                choices = c("All Months",
-                                                            January = 1,
-                                                            February = 2,
-                                                            March = 3,
-                                                            April = 4,
-                                                            May = 5,
-                                                            June = 6,
-                                                            July = 7,
-                                                            August = 8,
-                                                            September = 9,
-                                                            October = 10,
-                                                            November = 11,
-                                                            December = 12), 
-                                                selected = "All Months")
-                   )
-                   
-
-            
+                     selectInput(ns("year"), "Year:", 
+                                 choices = c("All Years", rev(year(seq(as.Date("1990-1-1"), Sys.Date(), "years")))), 
+                                 selected = "All Years"),
+                     # Month
+                     selectInput(ns("month"), "Month:", 
+                                 choices = c("All Months",
+                                             January = 1,
+                                             February = 2,
+                                             March = 3,
+                                             April = 4,
+                                             May = 5,
+                                             June = 6,
+                                             July = 7,
+                                             August = 8,
+                                             September = 9,
+                                             October = 10,
+                                             November = 11,
+                                             December = 12), 
+                                 selected = "All Months")
+                   ) # end Well Panel
           ),
+          # Display Panel Options
           tabPanel("Display Options",
-                   
                    br(), br(),
-                   
+                   # Map Style
                    selectInput(ns("map.type"), "Map Style:",        
                                choices=c(providers$Stamen.TonerLite,
                                          providers$CartoDB.Positron,
                                          providers$Esri.NatGeoWorldMap),
                                selected = providers$Stamen.TonerLite),
-                   
-                   hr(),
-
-                   
+                   hr(), # Horizontal Rule/Line
+                   # Plot Style
                    radioButtons(ns("plot.type"), "Plot Style:",        
                                choices=c("Display by Color", "Display by Size"),
                                selected = "Display by Color"),
-                   
                    br(),
-
                    wellPanel(
-                     
-                     # Note: Conditional panels and shiny modules don't work well due to ns() is an R function
-                     # and conditional panel condition uses javascript
-                   
-                   conditionalPanel(condition = paste0("input['", ns("plot.type"), "'] == 'Display by Color' "),
-                   
-                                    radioButtons(ns("color.dynamic"), "Color Scheme:",        
-                                                 choices=rownames(subset(brewer.pal.info, category %in% c("seq", "div"))),
-                                                 inline = TRUE)
-                   ),
-                   
-                   
-
-                   
-                   conditionalPanel(condition = paste0("input['", ns("plot.type"), "'] == 'Display by Size' "),
-                                    
-                                    radioButtons(ns("color.static"), "Color:",        
-                                                 choices=c("black", "blue", "red"),
-                                                 selected = "blue")
-                   
-                   ),
-                   
-                   br(), 
-                   
-                   sliderInput(ns("radius"), "Circle Size:",
-                               min = 0, max = 1,
-                               value=0.5),
-                   
-                   
-                   sliderInput(ns("opacity"), "Opacity:",
-                               min = 0, max = 1,
-                               value=0.7)
-                   
-                   )
-                  
-          )
-        ),
-                   
-
-   
+                     # Color Scheme (Dependent on the Condition of which Plot Style is Selected, see UI Note 1)
+                     conditionalPanel(condition = paste0("input['", ns("plot.type"), "'] == 'Display by Color' "),
+                                      radioButtons(ns("color.dynamic"), "Color Scheme:",        
+                                                   choices=rownames(subset(brewer.pal.info, category %in% c("seq", "div"))),
+                                                   inline = TRUE)
+                     ),
+                     conditionalPanel(condition = paste0("input['", ns("plot.type"), "'] == 'Display by Size' "),
+                                      radioButtons(ns("color.static"), "Color:",        
+                                                   choices=c("black", "blue", "red"),
+                                                   selected = "blue")
+                     ),
+                     br(),
+                     # Radius Slider Bar
+                     sliderInput(ns("radius"), "Circle Size:",
+                                 min = 0, max = 1,
+                                 value=0.5),
+                     # Opacity Slider Bar
+                     sliderInput(ns("opacity"), "Opacity:",
+                                 min = 0, max = 1,
+                                 value=0.7)
+                   ) # end Well Panel
+          ) # end tab - Display options
+        ), # end tabset
         br(), br(), br(),
-        
+        # Save Button
         downloadButton(ns('save.plot'), "Save Plot")
-        
-        # need to have action button becuase leaflet and renderUI 
-        # do not work well together due to leaflet trying to run 
-        # before renderUI has had time to run yet and thus creates an empty dataframe that leaflet tries to read.
-        # Action Button is a good fix (if a button to press is not too much of a hastle)
-        
-      
-      ),
+      ), # end sidebar Panel
       mainPanel(width = 9,
         leafletOutput(ns("map"), height = 800)
-      )
-        
+      ) # end Main Panel
     ) # end sidebarlayout
   ) # end taglist     
+} # end UI function
 
+##############################################################################################################################
 
-}
-
+# UI Notes
+#   1. Conditional panels and shiny modules don't work well due to ns() is an R function
+#      and conditional panel condition uses javascript
 
 ##############################################################################################################################
 # Server Function
 ##############################################################################################################################
 
-
 map.plot <- function(input, output, session, df, df.site) {
-  
-# Depending on input$date.option, we'll generate a different UI date component 
-  
 
-# Reactive Dataframe for data stats, filtered and grouped by Site
-  df.active <- reactive({
+# Reactive Dataframe for data stats
+  df.react <- reactive({
     
-    # filter by parameter selected
-    df.temp <- df %>% filter(Parameter %in% input$param)
+    # Filter by Parameter and remove NAs
+    df.temp <- df %>% 
+      filter(!is.na(Result), 
+             Parameter %in% input$param)
     
-    #filter by data selected depending on date scheme selected
+    # Filter by Date
     if(input$year != "All Years"){
       df.temp <- df.temp %>% filter(year(Date) == input$year)
     }
-    
     if (input$month != "All Months"){
       df.temp <- df.temp %>% filter(month(Date) == input$month)
     }
@@ -206,6 +161,7 @@ map.plot <- function(input, output, session, df, df.site) {
                 variance = var(Result), 
                 `stand.dev.` = sd(Result),
                 `number of samples` = n()) %>%
+      # Restructuring the Stat Columns into Two new Columns: "Stat" and "Value"
       gather(Stat, Value, -c(Site))
     
     # Create a more condensed Site Location dataframe (with Lat,lomg,site ID)
@@ -214,37 +170,37 @@ map.plot <- function(input, output, session, df, df.site) {
     
     # Join the two tables together mathched by site - now includes lat/long info
     df.temp <- inner_join(df.temp, df.site.temp, "Site") %>%
-      filter(Stat %in% input$stat) %>%
-      filter(!is.na(LocationLat), !is.na(LocationLong))
+      filter(Stat %in% input$stat,
+             !is.na(LocationLat), 
+             !is.na(LocationLong))
     
+    # Setting a 3 digit sig fig for Statistic Values
     df.temp$Value <- signif(df.temp$Value, 3)
     
+    # Assiging df.temp to df.react
     df.temp
     
-  })
+  }) # end df.react
   
-
+  
 # Map - Color Pallete
   
-  # if data selected is empty than do not run. Prevents potential crash
-  
   colorpal <- reactive({
-    
-    if(nrow(df.active()) > 0){
-      colorNumeric(palette = input$color.dynamic, range(df.active()$Value))
-  }
-    
-    })
+    # If statement to prevent potential cras, See Server Note 1
+    if(nrow(df.react()) > 0){
+      colorNumeric(palette = input$color.dynamic, range(df.react()$Value))
+    }
+    }) # end colorpal
 
   
 # Map - Size "Pallete" - For size legend creation.
   
   value.min <- reactive({
-    signif(min(df.active()$Value),3)
+    signif(min(df.react()$Value),3)
   })
   
   value.max <- reactive({
-    signif(max(df.active()$Value),3)
+    signif(max(df.react()$Value),3)
   })
   
   # Create 8 circles for the legend. change 8 if desired number is different
@@ -252,6 +208,7 @@ map.plot <- function(input, output, session, df, df.site) {
     signif(seq(value.min(), value.max(), length.out = 8), 3)
   })
   
+  # Sizing Scheme for the Circles, See Server Note 2
   value.scale <- reactive({
     ((as.numeric(input$radius)*30)+10)/sqrt(value.max())
   })
@@ -260,10 +217,8 @@ map.plot <- function(input, output, session, df, df.site) {
     2*value.scale()*sqrt(value.list())
   })
   
-
   
-  
-# Map - Render Map and Background at General Location (Put the starting Map Type here (i.e Stamen.TonerLite))
+# Base Leaflet Map - See Note 3
   
   output$map <- renderLeaflet({
     
@@ -283,37 +238,32 @@ map.plot <- function(input, output, session, df, df.site) {
     return(addLegend(map, colors = colorAdditions, labels = labelAdditions, opacity = opacity))
   }
   
-# Map - Add the color circles to the map and legend
+# Map Proxy - Add the Circle Markers and Legend to the map. This is Reactive to events, unlike the Base Map.
   
   observe({
     
+    # if Data Selected is empty, do not add markers. See Server Note 1
+    if(nrow(df.react()) > 0){
     
-    # if data selected is empty than do not run. Stops it from crashing
-    if(nrow(df.active()) > 0){
-    
-      # Color Plot 
+      # Color
       if(input$plot.type == "Display by Color"){
+       
+        pal <- colorpal()                                # load colorpal function
         
-        pal <- colorpal()
-        
-        leafletProxy("map", data = df.active()) %>%
-          
+        leafletProxy("map", data = df.react()) %>%
           clearTiles() %>%
-          
           addProviderTiles(input$map.type,  
                            options = providerTileOptions(noWrap = TRUE)) %>%
-          
           clearMarkers() %>%
           addCircleMarkers(lng = ~LocationLong, 
                      lat = ~LocationLat,
-                     radius = input$radius*15+5,               # user selected opacity
+                     radius = input$radius*15+5,          # user selected opacity
                      weight = .5,                         # weight of the outside circle
                      color = "black",                     # color of the outside circle
                      fillColor = ~pal(Value),             # color inside
                      fillOpacity = input$opacity,         # user selected opacity
                      label= ~as.character(Value),         # show Value when hovering
                      popup = ~Site) %>%                   # Show Site name when clicked
-          
           clearControls() %>%
           addLegend(position = "topright",
                     pal = pal, 
@@ -321,19 +271,14 @@ map.plot <- function(input, output, session, df, df.site) {
                     title = input$param,
                     opacity = 1)
       }
-      
       # Size
       if(input$plot.type == "Display by Size"){
         
-        leafletProxy("map", data = df.active()) %>%
-          
+        leafletProxy("map", data = df.react()) %>%
           clearTiles() %>%
-          
           addProviderTiles(input$map.type,  
                            options = providerTileOptions(noWrap = TRUE)) %>%
-        
           clearMarkers() %>%
-          
           addCircleMarkers(lng = ~LocationLong, 
                            lat = ~LocationLat,
                            radius = ~value.scale()*sqrt(Value), # radius function of Value   
@@ -343,29 +288,35 @@ map.plot <- function(input, output, session, df, df.site) {
                            fillOpacity = input$opacity,         # user selected opacity
                            label= ~as.character(Value),         # show Value when hovering
                            popup = ~Site) %>%                   # Show Site name when clicked
-          
           clearControls() %>%
-          
           addLegendCustom(colors = c(input$color.static, input$color.static, input$color.static), 
                           labels = value.list(),
                           sizes = diam.list(),
                           opacity = .7)
-        
       }
-      
-      # if no data clear the existing circleMarkers and legend  
+    # If no data, then clear the existing circleMarkers and legend  
     } else {
-      
-      leafletProxy("map", data = df.active()) %>%
-        
+      leafletProxy("map", data = df.react()) %>%
         clearMarkers() %>%
-        
         clearControls()
-      
     }
-                
   })
   
+} # end Server Funtion
 
-}
+##############################################################################################################################
+
+# Server Notes
+#   1. If Statement makes sure that the dataframe is not empty in order for the colorpal to run. 
+#      The aim is to prevent potential crash. Further investigation could be: Is this neccesary?, 
+#      If so, better alternative? Do we need to assign an else to colorpal (in the case where no colorpal exists (the first click)).
+#      Think it's only neccesary in the latter location
+#   2. Factor Scheme in which is For the sizing Range of the Circles. Max Value in the determination of the Scale.
+#      This allows unity of the largest circle size (corresponding to the max value of the Statistic data selected. 
+#      The formula also has multipliing constant "30" to make the circles a reasonable size, and adds "10" to mainly 
+#      make sure one cannot make the circles too small and disappear
+#   3. The Base Leaflet Map contains the Map Tiles and the Boudary Lat/Long info. This Base Leaflet Map is not dependent
+#      on any reactive objects or inputs (except for the map type input). Therefore the base map should not dissapear
+#      and be regerated during the any change in Selected Data or Display settings except for when map type is changed.
+
 

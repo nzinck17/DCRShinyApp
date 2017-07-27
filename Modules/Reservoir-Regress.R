@@ -229,14 +229,14 @@ tagList(
              plotlyOutput(ns("plot"), width = "100%", height = 600),
              # area where all plot specific inputs go
              fluidRow(br(), br(),
-                      column(1),
-                      # new column
-                      column(1,
-                             downloadButton(ns('save.plot'), "Save Plot")
+                      column(2,
+                             downloadButton(ns('save.plot'), "Save Plot"),
+                             h5('make sure to save with extension ".png" or ".jpg"')
                       ), # end column
                       column(2,
                              radioButtons(ns("plot.regress"), "Regression Lines:", 
-                                          choices=c("Linear",
+                                          choices=c("None",
+                                                    "Linear",
                                                     "Linear w/ 95% C.I.",
                                                     "Curve",
                                                     "Curve w/ 95% C.I."))
@@ -566,7 +566,7 @@ Res.regress <- function(input, output, session, df, df.site) {
   # Plot Print
   
   output$save.plot <- downloadHandler(
-    filename = function (){paste(input$param,' Site(s) ', paste(unique(df.react()$Loc)),' from ', input$date[1],' to ', input$date[2], '.png', sep='')},
+    filename = function (){paste(input$y.param,' Site(s) ', paste(unique(df.react()$Loc)),' from ', input$date[1],' to ', input$date[2], '.png', sep='')},
     content = function(file) {ggsave(file, plot = p(), device = "png")}, 
     contentType = 'image/png'
   )

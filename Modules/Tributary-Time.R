@@ -171,8 +171,8 @@ tagList(
                                     radioButtons(ns("plot.shape"), label = "Group with Shapes:", 
                                                  choices = c("None" = 1, 
                                                              "Site" = "Site",
-                                                             "met/hydro filter 1 (make sure on color)" = "met1",
-                                                             "met/hydro filter 2 (make sure on color)" = "met2",
+                                                             "met/hydro filter 1 (select group)" = "met1",
+                                                             "met/hydro filter 2 (select group)" = "met2",
                                                              "Flagged data" = "FlagCode"),
                                                  selected = 1)
                              ) # end column
@@ -332,12 +332,31 @@ Trib.time <- function(input, output, session, df, df.site) {
     # group by color and shape  
     if(input$plot.color != 1 & input$plot.shape != 1){
       p <- p + geom_point(aes_string(color = input$plot.color, shape = input$plot.shape))
+      
+      if("Show Trendline" %in% input$plot.display){
+        p <- p + geom_smooth(method = "loess", size = 1.5, aes_string(color = input$plot.color, linetype = input$plot.shape))
+      }
+      
     } else if (input$plot.color != 1){
       p <- p + geom_point(aes_string(color = input$plot.color))
+      
+      if("Show Trendline" %in% input$plot.display){
+        p <- p + geom_smooth(method = "loess", size = 1.5, aes_string(color = input$plot.color))
+      }
+      
     } else if (input$plot.shape != 1){
       p <- p + geom_point(aes_string(shape = input$plot.shape))
+      
+      if("Show Trendline" %in% input$plot.display){
+        p <- p + geom_smooth(method = "loess", size = 1.5, aes_string(color = input$plot.color, linetype = input$plot.shape))
+      }
+      
     } else {
       p <- p + geom_point()
+      
+      if("Show Trendline" %in% input$plot.display){
+        p <- p + geom_smooth(method = "loess", size = 1.5, aes_string(color = input$plot.color, linetype = input$plot.shape))
+      }
     }
     
     # facet for Sites if no grouping for site is selected and number of sites is greater than 1
@@ -345,9 +364,7 @@ Trib.time <- function(input, output, session, df, df.site) {
       p <- p + facet_wrap(~Site, ncol = ceiling(length(c(input$site))/4))
     } 
     
-    if("Show Trendline" %in% input$plot.display){
-      p <- p + geom_smooth(method = "loess", size = 1.5)
-    }
+
     
     if("Log Scale (Y-axis)" %in% input$plot.display){
       p <- p + scale_y_log10()
