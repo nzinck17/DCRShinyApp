@@ -13,60 +13,38 @@ Res.regress.UI <- function(id, df) {
   
 ns <- NS(id)
   
-
 tagList(
-  
-  # Well Panel - Upper section of page (everything surrounded by light blue)
-  
   wellPanel(
-    
     fluidRow(
-      
-      # first column
       column(3,
-             
+             # Location and Depth Selection with Map
              wellPanel(
-               
                checkboxGroupInput(ns("loc"), "Site Location:", 
                                   choices=levels(factor(df$Loc)),
                                   selected = factor(df$Loc[1]),
                                   inline = TRUE),
-               
-               
                checkboxGroupInput(ns("depth"), "Depth:", 
                                   choices=levels(factor(df$Depth)),
                                   selected = factor(df$Depth[1]),
                                   inline = TRUE),
-               
                leafletOutput(ns("map"), height = 350 )
-               
-             )#well
-             
-      ),#col
-      
+             ) # end Well Panel
+      ), # end Column
       column(9,
-             
              fluidRow(
-               
                column(4,
-                      
+                      # Y Parameter Selection
                       wellPanel(
-                        
                         selectInput(ns("y.param"), "Water Quality Parameter:",        
                                     choices=levels(factor(df$Parameter)),
                                     selected = factor(df$Parameter[4])),
-                        
                         uiOutput(ns("y.range.ui"))
-                        
-                      )#well
-                      
+                      ) # end Well Panel
                ),
-               
                column(4,
-                      
+                      # X Parameter Selection
                       wellPanel(
-                        
-                        strong("X axis Parameter:"),
+                        strong("X axis Parameter:"), # bold text
                         
                         radioButtons(ns("x.option"), label = NULL, choices = c("Water Quality", "Meteorology or Hydrology"), inline = TRUE),
                         
@@ -481,8 +459,9 @@ Res.regress <- function(input, output, session, df, df.site) {
       if(input$plot.regress == "Curve w/ 95% C.I."){
         p <- p + geom_smooth(method = "loess", size = 1.5, aes_string(color = input$plot.color))
       }
-      
-    } else if (input$plot.shape != 1){
+    } 
+    # Group by only Shape when only shape grouping is selected 
+    else if (input$plot.shape != 1){
       p <- p + geom_point(aes_string(shape = input$plot.shape))
       
       # Linear Regression Line - Grouped appropriately by Color and Linetype (instead of color and shape)
@@ -505,7 +484,9 @@ Res.regress <- function(input, output, session, df, df.site) {
         p <- p + geom_smooth(method = "loess", size = 1.5, aes_string(linetype = input$plot.shape))
       }
       
-    } else {
+    } 
+    # No Grouping Selected
+    else {
       p <- p + geom_point()
       
       # Linear Regression Line - Grouped appropriately by Color and Linetype (instead of color and shape)

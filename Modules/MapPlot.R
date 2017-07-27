@@ -5,18 +5,26 @@
 #     Written by: Nick Zinck, Spring 2017
 ##############################################################################################################################
 
-#     General Notes: 
-#       1. Leaflet and RenderUI do not work well together. If this is needed, an action 
-#          button is a solution but from my experience still causes some problems
-#       2. If one changes the preffered initial map type (Tile), one needs to change it in the UI and also in the Base Leaflet  
-#          Map section of the Server Function. The reason why the input is not directly used in the Base Leaflet Map section  
-#          is becuase the Lat/Long coordinates would be reset, which is likely undesired. See Server Note 3 for more detail on
-#          the Base Leaflet Map Section.
-
-#     To-Do List:
-#       1. Make the CSS more localized
-#       2. Make a more precise sig fig method for statistic (i.e. Number of Samples should not be rounded (maybe keep all 
-#          non-decimal numbers))
+# Notes: 
+#   1. If Statement makes sure that the dataframe is not empty in order for the colorpal to run. 
+#      The aim is to prevent potential crash. Further investigation could be: Is this neccesary?, 
+#      If so, better alternative? Do we need to assign an else to colorpal (in the case where no colorpal exists (the first click)).
+#      Think it's only neccesary in the latter location
+#   2. Factor Scheme in which is For the sizing Range of the Circles. Max Value in the determination of the Scale.
+#      This allows unity of the largest circle size (corresponding to the max value of the Statistic data selected. 
+#      The formula also has multipliing constant "30" to make the circles a reasonable size, and adds "10" to mainly 
+#      make sure one cannot make the circles too small and disappear
+#   3. The Base Leaflet Map contains the Map Tiles and the Boudary Lat/Long info. This Base Leaflet Map is not dependent
+#      on any reactive objects or inputs (except for the map type input). Therefore the base map should not dissapear
+#      and be regerated during the any change in Selected Data or Display settings except for when map type is changed.
+#   4. If one changes the preffered initial map type (Tile), one needs to change it in the UI and also in the Base Leaflet  
+#      Map section of the Server Function. The reason why the input is not directly used in the Base Leaflet Map section  
+#      is becuase the Lat/Long coordinates would be reset, which is likely undesired.
+#
+# To-Do List:
+#   1. Make the CSS more localized
+#   2. Make a more precise sig fig method for statistic (i.e. Number of Samples should not be rounded (maybe keep all 
+#      non-decimal numbers))
 
 ##############################################################################################################################
 # User Interface
@@ -80,7 +88,7 @@ tagList(
                                choices=c(providers$Stamen.TonerLite,
                                          providers$CartoDB.Positron,
                                          providers$Esri.NatGeoWorldMap),
-                               selected = providers$Stamen.TonerLite),
+                               selected = providers$Stamen.TonerLite), # See Note 4
                    hr(), # Horizontal Rule/Line
                    # Plot Style
                    radioButtons(ns("plot.type"), "Plot Style:",        
@@ -88,7 +96,7 @@ tagList(
                                selected = "Display by Color"),
                    br(),
                    wellPanel(
-                     # Color Scheme (Dependent on the Condition of which Plot Style is Selected, see UI Note 1)
+                     # Color Scheme (Dependent on the Condition of which Plot Style is Selected, see General Note 2)
                      conditionalPanel(condition = paste0("input['", ns("plot.type"), "'] == 'Display by Color' "),
                                       radioButtons(ns("color.dynamic"), "Color Scheme:",        
                                                    choices=rownames(subset(brewer.pal.info, category %in% c("seq", "div"))),
@@ -123,18 +131,13 @@ tagList(
 } # end UI function
 
 ##############################################################################################################################
-
-# UI Notes
-#   1. Conditional panels and shiny modules don't work well due to ns() is an R function
-#      and conditional panel condition uses javascript
-
-##############################################################################################################################
 # Server Function
 ##############################################################################################################################
 
 map.plot <- function(input, output, session, df, df.site) {
 
 # Reactive Dataframe for data stats
+  
   df.react <- reactive({
     
     # Filter by Parameter and remove NAs
@@ -186,7 +189,7 @@ map.plot <- function(input, output, session, df, df.site) {
 # Map - Color Pallete
   
   colorpal <- reactive({
-    # If statement to prevent potential cras, See Server Note 1
+    # If statement to prevent potential cras, See Note 1
     if(nrow(df.react()) > 0){
       colorNumeric(palette = input$color.dynamic, range(df.react()$Value))
     }
@@ -208,7 +211,7 @@ map.plot <- function(input, output, session, df, df.site) {
     signif(seq(value.min(), value.max(), length.out = 8), 3)
   })
   
-  # Sizing Scheme for the Circles, See Server Note 2
+  # Sizing Scheme for the Circles, See Note 2
   value.scale <- reactive({
     ((as.numeric(input$radius)*30)+10)/sqrt(value.max())
   })
@@ -221,28 +224,28 @@ map.plot <- function(input, output, session, df, df.site) {
 # Base Leaflet Map - See Note 3
   
   output$map <- renderLeaflet({
-    
     leaflet(data = df.site %>% filter(!is.na(LocationLat), !is.na(LocationLong))) %>%
       addProviderTiles(providers$Stamen.TonerLite,  
                        options = providerTileOptions(noWrap = TRUE)) %>%
       fitBounds(~min((LocationLong)), ~min(LocationLat), ~max(LocationLong), ~max(LocationLat))
-
   })
+  
   
 # Circle Legend function
   
   addLegendCustom <- function(map, colors, labels, sizes, opacity = 0.5){
     colorAdditions <- paste0(colors, "; width:", sizes, "px; height:", sizes, "px")
-    labelAdditions <- paste0("<div style='display: inline-block;height: ", sizes, "px;margin-top: 4px;line-height: ", sizes, "px;'>", labels, "</div>")
-    
+    labelAdditions <- paste0("<div style='display: inline-block;height: ", sizes, 
+                             "px;margin-top: 4px;line-height: ", sizes, "px;'>", labels, "</div>")
     return(addLegend(map, colors = colorAdditions, labels = labelAdditions, opacity = opacity))
   }
+  
   
 # Map Proxy - Add the Circle Markers and Legend to the map. This is Reactive to events, unlike the Base Map.
   
   observe({
     
-    # if Data Selected is empty, do not add markers. See Server Note 1
+    # if Data Selected is empty, do not add markers. See Note 1
     if(nrow(df.react()) > 0){
     
       # Color
@@ -303,20 +306,4 @@ map.plot <- function(input, output, session, df, df.site) {
   })
   
 } # end Server Funtion
-
-##############################################################################################################################
-
-# Server Notes
-#   1. If Statement makes sure that the dataframe is not empty in order for the colorpal to run. 
-#      The aim is to prevent potential crash. Further investigation could be: Is this neccesary?, 
-#      If so, better alternative? Do we need to assign an else to colorpal (in the case where no colorpal exists (the first click)).
-#      Think it's only neccesary in the latter location
-#   2. Factor Scheme in which is For the sizing Range of the Circles. Max Value in the determination of the Scale.
-#      This allows unity of the largest circle size (corresponding to the max value of the Statistic data selected. 
-#      The formula also has multipliing constant "30" to make the circles a reasonable size, and adds "10" to mainly 
-#      make sure one cannot make the circles too small and disappear
-#   3. The Base Leaflet Map contains the Map Tiles and the Boudary Lat/Long info. This Base Leaflet Map is not dependent
-#      on any reactive objects or inputs (except for the map type input). Therefore the base map should not dissapear
-#      and be regerated during the any change in Selected Data or Display settings except for when map type is changed.
-
 
