@@ -141,7 +141,7 @@ tagList(
                         
                         br(), br(),
                         
-                        radioButtons(ns("met.option.1"), label = NULL, choices = c("off", "on"), inline = TRUE),
+                        radioButtons(ns("met.option.1"), label = NULL, choices = c("off", "on", "group"), inline = TRUE),
                         
                         selectInput(ns("met.param.1"), label = NULL, choices = c("Wind Speed", 
                                                                                  "Wind Direction", 
@@ -168,7 +168,7 @@ tagList(
                         
                         br(), br(),
                         
-                        radioButtons(ns("met.option.2"), label = NULL, choices = c("off", "on"), inline = TRUE),
+                        radioButtons(ns("met.option.2"), label = NULL, choices = c("off", "on", "group"), inline = TRUE),
                         
                         selectInput(ns("met.param.2"), label = NULL, choices = c("Wind Speed", 
                                                                                  "Wind Direction", 
@@ -195,7 +195,7 @@ tagList(
                         
                         br(), br(),
                         
-                        radioButtons(ns("met.option.3"), label = NULL, choices = c("off", "on"), inline = TRUE),
+                        radioButtons(ns("met.option.3"), label = NULL, choices = c("off", "on", "group"), inline = TRUE),
                         
                         selectInput(ns("met.param.3"), label = NULL, choices = c("Wind Speed", 
                                                                                  "Wind Direction", 
@@ -234,15 +234,18 @@ tagList(
                       column(1,
                              downloadButton(ns('save.plot'), "Save Plot")
                       ), # end column
-                      column(1),
-                      column(3,
-                             checkboxGroupInput(ns("plot.misc"), "Misc. Plot Options:", 
-                                                choices=c("Linear Regression with 95% conf. int.",
-                                                          "Linear Regression w/o 95% conf. int.",
-                                                          "Curve Regression with 95% conf. int.",
-                                                          "Curve Regression w/o 95% conf. int.",
-                                                          "log Scale X-axis",
-                                                          "log Scale Y-axis"))
+                      column(2,
+                             radioButtons(ns("plot.regress"), "Regression Lines:", 
+                                          choices=c("Linear",
+                                                    "Linear w/ 95% C.I.",
+                                                    "Curve",
+                                                    "Curve w/ 95% C.I."))
+                      ),
+                      column(2,
+                             checkboxGroupInput(ns("plot.display"), "Display Options:", 
+                                          choices=c("Log Scale X-axis",
+                                                    "Log Scale Y-axis",
+                                                    "Param Y Performance Standard"))
                       ),
                       column(3,
                              radioButtons(ns("plot.color"), label = "Group with Colors:", 
@@ -251,7 +254,7 @@ tagList(
                                                       "Depth" = "Depth",
                                                       "met/hydro filter 1 (select group)" = "met1",
                                                       "met/hydro filter 2 (select group)" = "met2",
-                                                      "met/hydro filter 2 (select group)" = "met3",
+                                                      "met/hydro filter 3 (select group)" = "met3",
                                                       "Flagged data" = "FlagCode"),
                                           selected = "Loc")
                       ), # end column
@@ -261,9 +264,9 @@ tagList(
                                           choices = c("None" = 1, 
                                                       "Location" = "Loc",
                                                       "Depth" = "Depth",
-                                                      "met/hydro filter 1 (make sure on color)" = "met1",
-                                                      "met/hydro filter 2 (make sure on color)" = "met2",
-                                                      "met/hydro filter 2 (make sure on color)" = "met3",
+                                                      "met/hydro filter 1 (select group)" = "met1",
+                                                      "met/hydro filter 2 (select group)" = "met2",
+                                                      "met/hydro filter 3 (select group)" = "met3",
                                                       "Flagged data" = "FlagCode"),
                                           selected = 1)
                       ) # end column
@@ -429,15 +432,101 @@ Res.regress <- function(input, output, session, df, df.site) {
       theme_bw() +
       theme(plot.margin = unit(c(0.2, 0.2, 0.2, 0.5), "in"))
     
-    # group by color and shape  
+    # Display Options
+    
+    # Group by both Color and Shape when both selected
     if(input$plot.color != 1 & input$plot.shape != 1){
       p <- p + geom_point(aes_string(color = input$plot.color, shape = input$plot.shape))
+      
+      # Linear Regression Line - Grouped appropriately by Color and Linetype (instead of color and shape)
+      if(input$plot.regress == "Linear"){
+        p <- p + geom_smooth(method = "lm", se = FALSE, size = 1.5, aes_string(color = input$plot.color, linetype = input$plot.shape))
+      }
+      
+      # Linear Regression Line w/ C.I.
+      if(input$plot.regress == "Linear w/ 95% C.I."){
+        p <- p + geom_smooth(method = "lm", size = 1.5, aes_string(color = input$plot.color, linetype = input$plot.shape))
+      }
+      
+      # Curve Regression Line
+      if(input$plot.regress == "Curve"){
+        p <- p + geom_smooth(method = "loess", se = FALSE, size = 1.5, aes_string(color = input$plot.color, linetype = input$plot.shape))
+      }
+      
+      # Curve Regression Line w/ C.I.
+      if(input$plot.regress == "Curve w/ 95% C.I."){
+        p <- p + geom_smooth(method = "loess", size = 1.5, aes_string(color = input$plot.color, linetype = input$plot.shape))
+      }
+    
+    # Group by only Color when only color grouping is selected
     } else if (input$plot.color != 1){
       p <- p + geom_point(aes_string(color = input$plot.color))
+      
+      # Linear Regression Line
+      if(input$plot.regress == "Linear"){
+        p <- p + geom_smooth(method = "lm", se = FALSE, size = 1.5, aes_string(color = input$plot.color))
+      }
+      
+      # Linear Regression Line w/ C.I.
+      if(input$plot.regress == "Linear w/ 95% C.I."){
+        p <- p + geom_smooth(method = "lm", size = 1.5, aes_string(color = input$plot.color))
+      }
+      
+      # Curve Regression Line
+      if(input$plot.regress == "Curve"){
+        p <- p + geom_smooth(method = "loess", se = FALSE, size = 1.5, aes_string(color = input$plot.color))
+      }
+      
+      # Curve Regression Line w/ C.I.
+      if(input$plot.regress == "Curve w/ 95% C.I."){
+        p <- p + geom_smooth(method = "loess", size = 1.5, aes_string(color = input$plot.color))
+      }
+      
     } else if (input$plot.shape != 1){
       p <- p + geom_point(aes_string(shape = input$plot.shape))
+      
+      # Linear Regression Line - Grouped appropriately by Color and Linetype (instead of color and shape)
+      if(input$plot.regress == "Linear"){
+        p <- p + geom_smooth(method = "lm", se = FALSE, size = 1.5, aes_string(linetype = input$plot.shape))
+      }
+      
+      # Linear Regression Line w/ C.I.
+      if(input$plot.regress == "Linear w/ 95% C.I."){
+        p <- p + geom_smooth(method = "lm", size = 1.5, aes_string(linetype = input$plot.shape))
+      }
+      
+      # Curve Regression Line
+      if(input$plot.regress == "Curve"){
+        p <- p + geom_smooth(method = "loess", se = FALSE, size = 1.5, aes_string(linetype = input$plot.shape))
+      }
+      
+      # Curve Regression Line w/ C.I.
+      if(input$plot.regress == "Curve w/ 95% C.I."){
+        p <- p + geom_smooth(method = "loess", size = 1.5, aes_string(linetype = input$plot.shape))
+      }
+      
     } else {
       p <- p + geom_point()
+      
+      # Linear Regression Line - Grouped appropriately by Color and Linetype (instead of color and shape)
+      if(input$plot.regress == "Linear"){
+        p <- p + geom_smooth(method = "lm", se = FALSE, size = 1.5)
+      }
+      
+      # Linear Regression Line w/ C.I.
+      if(input$plot.regress == "Linear w/ 95% C.I."){
+        p <- p + geom_smooth(method = "lm", size = 1.5)
+      }
+      
+      # Curve Regression Line
+      if(input$plot.regress == "Curve"){
+        p <- p + geom_smooth(method = "loess", se = FALSE, size = 1.5)
+      }
+      
+      # Curve Regression Line w/ C.I.
+      if(input$plot.regress == "Curve w/ 95% C.I."){
+        p <- p + geom_smooth(method = "loess", size = 1.5)
+      }
     }
     
     # facet for Sites if no grouping for site is selected and number of sites is greater than 1
@@ -451,6 +540,15 @@ Res.regress <- function(input, output, session, df, df.site) {
       if(input$plot.color != "Depth" & input$plot.shape != "Depth" & length(c(input$depth)) > 1){
         p <- p + facet_grid(.~Depth)
       }
+    }
+    
+    # Log Scale Options
+    if("Log Scale X-axis" %in% input$plot.display){
+      p <- p + scale_x_log10()
+    }
+    
+    if("Log Scale Y-axis" %in% input$plot.display){
+      p <- p + scale_y_log10()
     }
     
     p
@@ -469,7 +567,7 @@ Res.regress <- function(input, output, session, df, df.site) {
   
   output$save.plot <- downloadHandler(
     filename = function (){paste(input$param,' Site(s) ', paste(unique(df.react()$Loc)),' from ', input$date[1],' to ', input$date[2], '.png', sep='')},
-    content = function(file) {ggsave(file, plot = p(), device = "png")},   #function(file) {ggsave(file, plot = p(), device = "png")}
+    content = function(file) {ggsave(file, plot = p(), device = "png")}, 
     contentType = 'image/png'
   )
   
