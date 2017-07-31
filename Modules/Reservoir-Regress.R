@@ -13,9 +13,9 @@
 #      making a seperate column for the parameter and units
 #   2. Plotting Features - Show Limits, Finish and Clean up Coloring options (flagged data, met filters)
 
-####################################################################################################
+##############################################################################################################################
 # User Interface
-#####################################################################################################
+##############################################################################################################################
 
 Res.regress.UI <- function(id, df) {
   
@@ -182,11 +182,10 @@ tagList(
              plotlyOutput(ns("plot"), width = "100%", height = 600),
              # area where all plot specific inputs go
              fluidRow(br(), br(),
-                      column(2,
+                      column(3,
                              downloadButton(ns('save.plot'), "Save Plot"),
-                             h5('make sure to save with extension ".png" or ".jpg"')
-                      ), # end column
-                      column(2,
+                             h5('make sure to save with extension ".png" or ".jpg"'),
+                             br(),
                              radioButtons(ns("plot.regress"), "Regression Lines:", 
                                           choices=c("None",
                                                     "Linear",
@@ -194,11 +193,13 @@ tagList(
                                                     "Curve",
                                                     "Curve w/ 95% C.I."))
                       ),
-                      column(2,
-                             checkboxGroupInput(ns("plot.display"), "Display Options:", 
+                      column(3,
+                             checkboxGroupInput(ns("plot.display"), "Plot Display Options:", 
                                           choices=c("Log Scale X-axis",
                                                     "Log Scale Y-axis",
-                                                    "Param Y Performance Standard"))
+                                                    "Param Y Performance Standard")),
+                             sliderInput(ns("plot.opacity"), "Opacity:", min = 0, max = 1, value = 1, step = 0.1),
+                             sliderInput(ns("plot.jitter"), "Jitter:", min = 0, max = 1, value = 0, step = 0.1)
                       ),
                       column(3,
                              radioButtons(ns("plot.color"), label = "Group with Colors:", 
@@ -231,11 +232,11 @@ tagList(
              # first row - print button, etc
              fluidRow(
                br(),
-               br(),
                actionButton(ns("table.print"), "Print Table")
              ),
              # next row
              fluidRow(
+               br(), br(),
                dataTableOutput(ns("table"))
              ) # end fluid row
     ) # end Tab panel - Table
@@ -377,6 +378,17 @@ Res.regress <- function(input, output, session, df, df.site) {
   })
   
   
+# Jitter Scheme Factor Calculation 
+  
+  jitter.x <- reactive({
+    input$plot.jitter*range(df.react()$x.Result)*0.03
+  })
+  
+  jitter.y <- reactive({
+    input$plot.jitter*range(df.react()$y.Result)*0.03
+  })
+  
+
 # Plot Creation
   
   p <- reactive({
@@ -391,7 +403,9 @@ Res.regress <- function(input, output, session, df, df.site) {
     
     # Group by both Color and Shape when both selected
     if(input$plot.color != 1 & input$plot.shape != 1){
-      p <- p + geom_point(aes_string(color = input$plot.color, shape = input$plot.shape))
+      p <- p + geom_point(aes_string(color = input$plot.color, shape = input$plot.shape),
+                          alpha = input$plot.opacity,
+                          position = position_jitter(width = jitter.x(), height = jitter.y()))
       if(input$plot.regress == "Linear"){
         p <- p + geom_smooth(method = "lm", se = FALSE, size = 1.5, aes_string(color = input$plot.color, linetype = input$plot.shape))
       }
@@ -407,7 +421,9 @@ Res.regress <- function(input, output, session, df, df.site) {
     }
     # Group by only Color when only color grouping is selected
     else if (input$plot.color != 1){
-      p <- p + geom_point(aes_string(color = input$plot.color))
+      p <- p + geom_point(aes_string(color = input$plot.color),
+                          alpha = input$plot.opacity,
+                          position = position_jitter(width = jitter.x(), height = jitter.y()))
       if(input$plot.regress == "Linear"){
         p <- p + geom_smooth(method = "lm", se = FALSE, size = 1.5, aes_string(color = input$plot.color))
       }
@@ -423,7 +439,9 @@ Res.regress <- function(input, output, session, df, df.site) {
     }
     # Group by only Shape when only shape grouping is selected 
     else if (input$plot.shape != 1){
-      p <- p + geom_point(aes_string(shape = input$plot.shape))
+      p <- p + geom_point(aes_string(shape = input$plot.shape),
+                          alpha = input$plot.opacity,
+                          position = position_jitter(width = jitter.x(), height = jitter.y()))
       if(input$plot.regress == "Linear"){
         p <- p + geom_smooth(method = "lm", se = FALSE, size = 1.5, aes_string(linetype = input$plot.shape))
       }
@@ -439,7 +457,8 @@ Res.regress <- function(input, output, session, df, df.site) {
     }
     # No Grouping Selected
     else {
-      p <- p + geom_point()
+      p <- p + geom_point(alpha = input$plot.opacity,
+                          position = position_jitter(width = jitter.x(), height = jitter.y()))
       if(input$plot.regress == "Linear"){
         p <- p + geom_smooth(method = "lm", se = FALSE, size = 1.5)
       }

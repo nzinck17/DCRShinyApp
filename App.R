@@ -1,10 +1,20 @@
 ##############################################################################################################################
-#     Shiny App for DCR Wachusett and Quabbin
+#     Title: App.R
+#     Type: Master file for DCR Shiny App
 #     Description: This Shiny App contains the "master" script for the app. The app contains a ui and server component
-#           and sources R scripts from the R file folder
+#           and sources R scripts from the App folder
 #     Written by: Nick Zinck, Spring 2017
-#     Note: TBD
 ##############################################################################################################################
+
+# Notes: 
+#   1. 
+#
+# To-Do List:
+#   1. 
+
+####################################################################################################
+# Load Libraries and Script (Sources, Modules, and Functions)
+#####################################################################################################
 
 # load libraries
 library(shiny)
@@ -25,8 +35,8 @@ source("Sources/LoadMSAccessData.R")
 
 ### Load Modules
 
-source("Modules/Home.R")
-source("Modules/Tributary-Time.R")
+source("https://raw.githubusercontent.com/nzinck17/DCRShinyApp/master/Modules/Home.R")
+source("https://raw.githubusercontent.com/nzinck17/DCRShinyApp/master/Modules/Home.R/Tributary-Time.R")
 source("Modules/Tributary-Regress.R")
 source("Modules/Reservoir-Time.R")
 source("Modules/Reservoir-Regress.R")

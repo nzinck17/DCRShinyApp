@@ -12,9 +12,9 @@
 #   1. Make the Metero/Hydro Filters work
 #   2. Plotting Features - Show Limits, Finish and Clean up Coloring options (flagged data, met filters)
 
-####################################################################################################
+##############################################################################################################################
 # User Interface
-#####################################################################################################
+##############################################################################################################################
 
 Trib.time.UI <- function(id, df) {
   
@@ -24,30 +24,34 @@ Trib.time.UI <- function(id, df) {
     wellPanel(       
       fluidRow(
         column(4,
+               # Site Selection
                wellPanel(
                  checkboxGroupInput(ns("site"), "Sites: (Choose 1st)", 
-                                    choices= levels(factor(df$Site)),  #df[df$`Core or EQA` == "Core", "Site"]
+                                    choices= levels(factor(df$Site)),
                                     selected = factor(df$Site[1]),
                                     inline=TRUE),
-                 br(), br()
-               ), # end Well Panel
+                 br(), br(),
                leafletOutput(ns("map"), height = 350 )
+               ) # end Well Panel
         ), # end Column
         column(1),
-        column(3,      
+        column(3,
+               # Parameter Selection
                wellPanel(
                  uiOutput(ns("param.ui")),
                  uiOutput(ns("range.ui"))
                ), # end Well Panel
                br(),
+               # Date Selection
                wellPanel(
                  uiOutput(ns("date.ui"))
                ), # end Well Panel
                br(),
+               # Number of Samples
                wellPanel(
                  h4("Number of Samples in Selected Data:", align = "center"),
                  h3(textOutput(ns("text.num")), align = "center")
-               )#well
+               ) # end Well Panel
         ),#col
         column(1),
         column(3,
