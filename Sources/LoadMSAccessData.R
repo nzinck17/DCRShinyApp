@@ -6,9 +6,9 @@
 ##############################################################################################################################
 
 # File name path from the Shiny App Folder (***Update if name changed****)
-filename.quab <- "DBQ=F:/Nick Zinck/Shiny Water Quality/DCRShinyApp/Data/QuabbinWQdataNZ.mdb" 
-filename.wach.trib.res <- "DBQ=F:/Nick Zinck/Shiny Water Quality/DCRShinyApp/Data/WaterQualityDB_be.mdb"
-filename.wach.profile <- "DBQ=F:/Nick Zinck/Shiny Water Quality/DCRShinyApp/Data/AqBioDBWachusett_be.mdb"
+filename.quab <- "DBQ=C:/WQDatabase/QuabbinWQdataNZ.mdb" 
+filename.wach.trib.res <- "DBQ=C:/WQDatabase/WaterQualityDB_be.mdb"
+filename.wach.profile <- "DBQ=C:/WQDatabase/AqBioDBWachusett_be.mdb"
 
 ##############################################################################################################################
 # Get data from Database *(Connect to database, fetch tables, and close connection)
@@ -132,7 +132,7 @@ df.trib.all <- bind_rows(df.trib.quab, df.trib.ware, df.trib.wach)
 ### Reservoirs
 
 # Quabbin Reservoir
-df.res.quab <- readRDS("F:/Nick Zinck/Shiny Water Quality/DCRShinyApp/Data/df.res.quab.rds")
+df.res.quab <- readRDS("C:/WQDatabase/df.res.quab.rds")
 #df.res.quab <- filter(df.trib.res.quab, Type == "Reservoir")
 
 # Wachusett Tributary

@@ -27,6 +27,7 @@ library(leaflet)
 library(RColorBrewer)
 library(DT)
 library(RODBC)
+library(DBI)
 
 ### Run/Source Scripts that load data
 
@@ -34,9 +35,10 @@ source("Sources/LoadMSAccessData.R")
 #source("Sources/LoadRDS.R")
 
 ### Load Modules
+#https://raw.githubusercontent.com/nzinck17/DCRShinyApp/master/
 
-source("https://raw.githubusercontent.com/nzinck17/DCRShinyApp/master/Modules/Home.R")
-source("https://raw.githubusercontent.com/nzinck17/DCRShinyApp/master/Modules/Home.R/Tributary-Time.R")
+source("Modules/Home.R")
+source("Modules/Tributary-Time.R")
 source("Modules/Tributary-Regress.R")
 source("Modules/Reservoir-Time.R")
 source("Modules/Reservoir-Regress.R")
