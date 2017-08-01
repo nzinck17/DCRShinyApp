@@ -7,79 +7,92 @@
 
 # File name path from the Shiny App Folder (***Update if name changed****)
 filename.quab <- "DBQ=C:/WQDatabase/QuabbinWQdataNZ.mdb" 
-filename.wach.trib.res <- "DBQ=C:/WQDatabase/WaterQualityDB_be.mdb"
-filename.wach.profile <- "DBQ=C:/WQDatabase/AqBioDBWachusett_be.mdb"
+filename.wach.wq <- "DBQ=C:/WQDatabase/WaterQualityDB_be.mdb"
+filename.wach.aquabio <- "DBQ=C:/WQDatabase/AqBioDBWachusett_be.mdb"
 
 ##############################################################################################################################
 # Get data from Database *(Connect to database, fetch tables, and close connection)
 
 # Quabbin Tribs, Res, and Profile
 
-connection.name <- paste("Driver={Microsoft Access Driver (*.mdb, *.accdb)}",
-                         filename.quab,
-                         "Encrypt=yes",
-                         "TrustServerCertificate=no",
-                         "Connection Timeout=30", 
-                         "ReadOnly=False",
-                         sep = ";")
+con <- dbConnect(odbc::odbc(),
+                 .connection_string = paste("driver={Microsoft Access Driver (*.mdb, *.accdb)}",
+                                            filename.quab,
+                                            "Uid=Admin",
+                                            "Pwd=",
+                                            sep = ";"), 
+                 timezone = "America/New_York")
 
+df.trib.res.quab <- dbReadTable(con, "tblWQTribRes2")
+df.profile.quab <- dbReadTable(con, "tblWQProfile")
+df.quab.wach.site <- dbReadTable(con, "tblSiteLocation2")
+df.quab.param <- dbReadTable(con, "tblParameters")
+# Disconnect from db and remove connection obj
+dbDisconnect(con)
+rm(con)
 
-connection <- odbcConnectAccess(connection.name)
-df.trib.res.quab <- sqlFetch(connection, "tblWQTribRes2")
-df.profile.quab <- sqlFetch(connection, "tblWQProfile") 
-df.quab.wach.site <- sqlFetch(connection, "tblSiteLocation2")
-df.quab.param <- sqlFetch(connection, "tblParameters")
-close(connection)                                  
 
 # Wachusett Tribs and Res
 
-connection.name <- paste("Driver={Microsoft Access Driver (*.mdb, *.accdb)}",
-                         filename.wach.trib.res,
-                         "Encrypt=yes",
-                         "TrustServerCertificate=no",
-                         "Connection Timeout=30", 
-                         "ReadOnly=False",
-                         sep = ";")
+con <- dbConnect(odbc::odbc(),
+                 .connection_string = paste("driver={Microsoft Access Driver (*.mdb, *.accdb)}",
+                                            filename.wach.wq,
+                                            "Uid=Admin",
+                                            "Pwd=",
+                                            sep = ";"), 
+                 timezone = "America/New_York")
 
-connection <- odbcConnectAccess(connection.name)
-df.trib.res.wach <- sqlFetch(connection, "tblWQALLDATA")
-df.wach.site <- sqlFetch(connection, "tblLocations")
-df.trib.res.wach.param <- sqlFetch(connection, "tblParameters")
-close(connection)
+
+df.trib.res.wach <- dbReadTable(con, "tblWQALLDATA")
+df.wach.site <- dbReadTable(con, "tblLocations")
+df.trib.res.wach.param <- dbReadTable(con, "tblParameters")
+
+# Disconnect from db and remove connection obj
+dbDisconnect(con)
+rm(con)
+
 
 # Wachusett Profile
 
-connection.name <- paste("Driver={Microsoft Access Driver (*.mdb, *.accdb)}",
-                         filename.wach.profile,
-                         "Encrypt=yes",
-                         "TrustServerCertificate=no",
-                         "Connection Timeout=30", 
-                         "ReadOnly=False",
-                         sep = ";")
+con <- dbConnect(odbc::odbc(),
+                 .connection_string = paste("driver={Microsoft Access Driver (*.mdb, *.accdb)}",
+                                            filename.wach.aquabio,
+                                            "Uid=Admin",
+                                            "Pwd=",
+                                            sep = ";"), 
+                 timezone = "America/New_York")
 
-connection <- odbcConnectAccess(connection.name)   
-df.profile.wach <- sqlFetch(connection, "tbl_Profiles")
-df.profile.wach.site <- sqlFetch(connection, "tblLocations")
-close(connection)
+
+df.profile.wach <- dbReadTable(con, "tbl_Profiles")
+df.profile.wach.site <- dbReadTable(con, "tblLocations")
+
+# Disconnect from db and remove connection obj
+dbDisconnect(con)
+rm(con)
+
+               
+
 
 #############################################################################################################################
-# Restructuring data
+# RESTRUCTURING DATA
+
+### WQ data
 
 # rename the columns of the Wachusett Trib and Res to match Quabbin
 df.trib.res.wach <- rename(df.trib.res.wach, Site = Location, `Result Temp` = Result, Result = FinalResult)
 df.profile.wach <- rename(df.profile.wach, Date = Pro_Date, Site = Pro_Station, Time = Pro_TimeFormatted, Depthm = Pro_Depth_m)
 
 # Reformat the Wachusett Profile data to "Tidy" data format
-
 df.profile.wach <- gather(df.profile.wach, Parameter, Result, c(Temp_C, SpCond, LDO_pct, LDO_mgL, pH, Chl_ugL, Chl_volts, Turbidity, TDS_mgL, BGA_PC_ugL))
 
-# make result column numeric class
+# make result column numeric class. Make Character first in the case that the results are imported as factors (could maybe be set within DB)
 df.trib.res.quab$Result <- as.numeric(as.character(df.trib.res.quab$Result))
 df.trib.res.wach$Result <- as.numeric(as.character(df.trib.res.wach$Result))
 df.profile.quab$Result <- as.numeric(as.character(df.profile.quab$Result))
 df.profile.wach$Result <- as.numeric(as.character(df.profile.wach$Result))
 
-# make Date date Class
+# Format Date (make date class). (Could maybe be set withing DB)
+df.trib.res.wach$SampleDateTime <- format(df.trib.res.wach$SampleDateTime, tz ="America/New_York", usetz=TRUE)
 df.trib.res.quab$Date <- as.Date(as.character(df.trib.res.quab$Date),format ='%m/%d/%Y')
 df.trib.res.wach$Date <- as.Date(as.character(df.trib.res.wach$SampleDateTime),format ='%Y-%m-%d %H:%M:%S')
 df.profile.quab$Date <- as.Date(as.character(df.profile.quab$Date), format = '%d-%b-%y')
@@ -89,13 +102,15 @@ df.profile.wach$Date <- as.Date(df.profile.wach$Date)
 df.profile.wach$Time <- format(df.profile.wach$Time,"%H:%M:%S")
 df.profile.wach$DateTime <-as.POSIXct(paste(df.profile.wach$Date, df.profile.wach$Time), format="%Y-%m-%d %H:%M:%S")
 
-#make flag data factor and have "No flag for blank"
+# Change a "NA" or "NAN" value to "No Flag"
 df.trib.res.wach$FlagCode <- as.character(df.trib.res.wach$FlagCode)
 df.trib.res.wach$FlagCode[is.na(df.trib.res.wach$FlagCode)] <- "No Flag"
 df.trib.res.wach$FlagCode[is.nan(df.trib.res.wach$FlagCode)] <- "No Flag"
 df.trib.res.wach$FlagCode <- factor(df.trib.res.wach$FlagCode)
 
+
 #### Edit Site Tables
+
 # rename column of Sites
 df.quab.wach.site <- df.quab.wach.site %>% rename(Site = SiteID)
 df.wach.site <- df.wach.site %>% rename(Site = LocationMWRA)
@@ -104,9 +119,9 @@ df.quab.wach.site <- df.quab.wach.site %>% mutate(LocationLabel = paste(Location
 df.quab.wach.site$LocationElevFt <- NA
 df.quab.wach.site <- df.quab.wach.site %>% rename(LocationDescription = SiteDescription)
 df.quab.wach.site <- df.quab.wach.site %>% select(-Description)
+
+
 ###
-
-
 # make a dplyr combine with the Sites (choose by trib recieving body (quab, ware, wach) and by (Core or EQA)
 df.trib.res.quab <- left_join(df.trib.res.quab, df.quab.wach.site, "Site")
 #df.trib.res.wach <- left_join(df.trib.res.wach, df.sites.wach, "Site")
