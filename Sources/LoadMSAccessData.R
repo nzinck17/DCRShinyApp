@@ -13,62 +13,57 @@ filename.wach.aquabio <- "DBQ=C:/WQDatabase/AqBioDBWachusett_be.mdb"
 ##############################################################################################################################
 # Get data from Database *(Connect to database, fetch tables, and close connection)
 
-# Quabbin Tribs, Res, and Profile
+# Quabbin Tribs and Res
 
-con <- dbConnect(odbc::odbc(),
-                 .connection_string = paste("driver={Microsoft Access Driver (*.mdb, *.accdb)}",
-                                            filename.quab,
-                                            "Uid=Admin",
-                                            "Pwd=",
-                                            sep = ";"), 
-                 timezone = "America/New_York")
-
-df.trib.res.quab <- dbReadTable(con, "tblWQTribRes2")
-df.profile.quab <- dbReadTable(con, "tblWQProfile")
-df.quab.wach.site <- dbReadTable(con, "tblSiteLocation2")
-df.quab.param <- dbReadTable(con, "tblParameters")
-# Disconnect from db and remove connection obj
-dbDisconnect(con)
-rm(con)
+connection.name <- paste("Driver={Microsoft Access Driver (*.mdb, *.accdb)}",
+                         filename.quab,
+                         "Encrypt=yes",
+                         "TrustServerCertificate=no",
+                         "Connection Timeout=30", 
+                         "ReadOnly=False",
+                         sep = ";")
 
 
-# Wachusett Tribs and Res
+connection <- odbcConnectAccess(connection.name)
+df.trib.res.quab <- sqlFetch(connection, "tblWQTribRes2")
+df.profile.quab <- sqlFetch(connection, "tblWQProfile") 
+df.quab.wach.site <- sqlFetch(connection, "tblSiteLocation2")
+df.quab.param <- sqlFetch(connection, "tblParameters")
+close(connection)
+rm(connection)
 
-con <- dbConnect(odbc::odbc(),
-                 .connection_string = paste("driver={Microsoft Access Driver (*.mdb, *.accdb)}",
-                                            filename.wach.wq,
-                                            "Uid=Admin",
-                                            "Pwd=",
-                                            sep = ";"), 
-                 timezone = "America/New_York")
+# Wachusett Tribs
 
+connection.name <- paste("Driver={Microsoft Access Driver (*.mdb, *.accdb)}",
+                         filename.wach.wq,
+                         "Encrypt=yes",
+                         "TrustServerCertificate=no",
+                         "Connection Timeout=30", 
+                         "ReadOnly=False",
+                         sep = ";")
 
-df.trib.res.wach <- dbReadTable(con, "tblWQALLDATA")
-df.wach.site <- dbReadTable(con, "tblLocations")
-df.trib.res.wach.param <- dbReadTable(con, "tblParameters")
-
-# Disconnect from db and remove connection obj
-dbDisconnect(con)
-rm(con)
-
+connection <- odbcConnectAccess(connection.name)
+df.trib.res.wach <- sqlFetch(connection, "tblWQALLDATA")
+df.wach.site <- sqlFetch(connection, "tblLocations")
+df.trib.res.wach.param <- sqlFetch(connection, "tblParameters")
+close(connection)
+rm(connection)
 
 # Wachusett Profile
 
-con <- dbConnect(odbc::odbc(),
-                 .connection_string = paste("driver={Microsoft Access Driver (*.mdb, *.accdb)}",
-                                            filename.wach.aquabio,
-                                            "Uid=Admin",
-                                            "Pwd=",
-                                            sep = ";"), 
-                 timezone = "America/New_York")
+connection.name <- paste("Driver={Microsoft Access Driver (*.mdb, *.accdb)}",
+                         filename.wach.aquabio,
+                         "Encrypt=yes",
+                         "TrustServerCertificate=no",
+                         "Connection Timeout=30", 
+                         "ReadOnly=False",
+                         sep = ";")
 
-
-df.profile.wach <- dbReadTable(con, "tbl_Profiles")
-df.profile.wach.site <- dbReadTable(con, "tblLocations")
-
-# Disconnect from db and remove connection obj
-dbDisconnect(con)
-rm(con)
+connection <- odbcConnectAccess(connection.name)   
+df.profile.wach <- sqlFetch(connection, "tbl_Profiles")
+df.profile.wach.site <- sqlFetch(connection, "tblLocations")
+close(connection)
+rm(connection)
 
                
 
@@ -147,10 +142,9 @@ df.trib.all <- bind_rows(df.trib.quab, df.trib.ware, df.trib.wach)
 ### Reservoirs
 
 # Quabbin Reservoir
-df.res.quab <- readRDS("C:/WQDatabase/df.res.quab.rds")
-#df.res.quab <- filter(df.trib.res.quab, Type == "Reservoir")
+df.res.quab <- filter(df.trib.res.quab, Type == "Reservoir")
 
-# Wachusett Tributary
+# Wachusett Tributary (need to find Reservoir Sites)
 #df.res.wach <- filter(df.trib.res.wach, Type == "Reservoir")
 df.res.wach <- df.trib.res.wach
 
