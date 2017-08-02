@@ -76,8 +76,12 @@ tags$head(
 # PG 1 - Home Page            
 
 tabPanel("Home",
-         
-         Home.UI("Home")
+  
+  # Title       
+  fluidRow(br(), br(), br(), br(), h2("Water Quality Data Management System", align = "center")),
+  fluidRow(br(), h3("Department of Conservation and Recreation", align = "center"), br()),
+  
+    Home.UI("Home")
   
 ),
 ######################################################                   
@@ -88,26 +92,23 @@ tabPanel("Trib - Time",
   # Title
   fluidRow(br(), br(), br(), br(), h2("Tributary Time-Series Analysis", align = "center"), br()),
   
-# Tabset Panels
+  # Tabset Panels
   tabsetPanel("tab.trib.time",
-    
       tabPanel("Quabbin Tribs",
                Trib.time.UI("Quabbin Trib Time", df.trib.quab)
       ),
-      
       tabPanel("Ware River Tribs",
                Trib.time.UI("Ware River Trib Time", df.trib.ware)
       ),
-      
       tabPanel("Wachusett Tribs",
                Trib.time.UI("Wachusett Trib Time", df.trib.wach)
       ),
-      
       tabPanel("All Tribs",
                Trib.time.UI("All Tribs Time", df.trib.all)
       )
-  )   # end Tributary tabset
-),  # end Tributary tabpanel (page)
+  )# end Tributary tabset
+  
+),# end Tributary tabpanel (page)
    
 
 ######################################################                   
@@ -120,24 +121,21 @@ tabPanel("Trib - Regress",
          
          # Tabset Panels
          tabsetPanel("tab.trib.regress",
-                     
                      tabPanel("Quabbin Tribs",
                               Trib.regress.UI("Quabbin Trib Regress", df.trib.quab)
                      ),
-                     
                      tabPanel("Ware River Tribs",
                               Trib.regress.UI("Ware River Trib Regress", df.trib.ware)
                      ),
-                     
                      tabPanel("Wachusett Tribs",
                               Trib.regress.UI("Wachusett Trib Regress", df.trib.wach)
                      ),
-                     
                      tabPanel("All Tribs",
                               Trib.regress.UI("All Tribs Regress", df.trib.all)
                      )
-         )   # end Tributary tabset
-),  # end Tributary tabpanel (page)
+         )# end Tributary tabset
+         
+),# end Tributary tabpanel (page)
 
 #############################################################
 # PG 4 - Reservoir Time Series
@@ -149,16 +147,14 @@ tabPanel("Reservoir - Time",
    
    # Tabset Panels
    tabsetPanel("tab.res",
-               
      tabPanel("Quabbin Res",
               Res.time.UI("Quabbin Res Time", df.res.quab)
      ),
-     
      tabPanel("Wachusett Res",
               Res.time.UI("Wachusett Res Time", df.res.wach)
      )
-   
    ) # end Tabset Panels
+   
  ),  # end Tabpanel (page)
 
 #############################################################
@@ -175,12 +171,11 @@ tabPanel("Reservoir Regress",
        tabPanel("Quabbin Res",
                 Res.regress.UI("Quabbin Res Regress", df.res.quab)
        ),
-       
        tabPanel("Wachusett Res Regress",
                 Res.regress.UI("Wachusett Res Regress", df.res.wach)
-       )
-               
+       )      
    ) # end Tabset Panels
+   
 ),  # end Tabpanel (page)
 
 #######################################################################
@@ -222,9 +217,9 @@ tabPanel("Profile Data",
              fluidRow(column(1),column(8, h4("Wachusett Reservoir Profile Data Summary and Table"))),
              prof.summary.UI("Wachusett Profile Summary", df.profile.wach)
     )
-  ) # end navlist
+  )# end navlist
   
-),  # end tabpanel (page)
+),# end tabpanel (page)
 
 
 ####################################################################
@@ -293,10 +288,10 @@ tabPanel("Reports",
 
 # Give the page a title
 tabPanel("Input Data",
+         
          fluidRow(br(), br(), br(), br(), h3("Input Data (Maybe make seperate)"),
                   br(), h4("button to make sure all sites in list are accounted for in Site Table"),
                   br(), h4("button to make sure all Parameters in list are accounted for in Parameter Table")
-                  
                   )
          
 

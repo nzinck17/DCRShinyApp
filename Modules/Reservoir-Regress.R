@@ -56,13 +56,13 @@ tagList(
                         radioButtons(ns("x.option"), label = NULL, 
                                      choices = c("Water Quality", "Meteorology or Hydrology"), 
                                      inline = TRUE),
-                        # See General Note 2
+                        # SEE GENERAL NOTE 2
                         conditionalPanel(condition = paste0("input['", ns("x.option"), "'] == 'Water Quality' "),
                                          selectInput(ns("x.param"), "Water Quality Parameter:",        
                                                      choices=levels(factor(df$Parameter)),
                                                      selected = factor(df$Parameter[4])),
                                          uiOutput(ns("x.range.ui"))
-                        ),
+                        ),# end Conditional Panel
                         conditionalPanel(condition = paste0("input['", ns("x.option"), "'] == 'Meteorology or Hydrology' "),
                                          selectInput(ns("x.met.param"), label = NULL, 
                                                      choices = c("Wind Speed", 
@@ -97,7 +97,7 @@ tagList(
              br(),
              fluidRow(
                column(4,
-                      # Met/Hydro filter 1
+                      # MET/HYDRO FILTER 1
                       wellPanel(
                         strong("Meteoro/Hydro Filter 1"), # bold text
                         br(), br(),
@@ -121,7 +121,7 @@ tagList(
                       ) # end Well Panel
                ), # end Column
                column(4,
-                      # Met/Hydro filter 2
+                      #  MET/HYDRO FILTER 2
                       wellPanel(
                         strong("Meteoro/Hydro Filter 2"), # bold text
                         br(), br(),
@@ -145,7 +145,7 @@ tagList(
                       ) # end Well Panel
                ), # end Column
                column(4,
-                      # Met/Hydro filter 3
+                      #  MET/HYDRO FILTER 3
                       wellPanel(
                         strong("Meteoro/Hydro Filter 3"),
                         br(), br(),
@@ -206,9 +206,9 @@ tagList(
                                           choices = c("None" = 1, 
                                                       "Location" = "Loc",
                                                       "Depth" = "Depth",
-                                                      "met/hydro filter 1 (select group)" = "met1",
-                                                      "met/hydro filter 2 (select group)" = "met2",
-                                                      "met/hydro filter 3 (select group)" = "met3",
+                                                      "Met/hydro filter 1 (select group)" = "met1",
+                                                      "Met/hydro filter 2 (select group)" = "met2",
+                                                      "Met/hydro filter 3 (select group)" = "met3",
                                                       "Flagged data" = "FlagCode"),
                                           selected = "Loc")
                       ), # end column
@@ -218,9 +218,9 @@ tagList(
                                           choices = c("None" = 1, 
                                                       "Location" = "Loc",
                                                       "Depth" = "Depth",
-                                                      "met/hydro filter 1 (select group)" = "met1",
-                                                      "met/hydro filter 2 (select group)" = "met2",
-                                                      "met/hydro filter 3 (select group)" = "met3",
+                                                      "Met/hydro filter 1 (select group)" = "met1",
+                                                      "Met/hydro filter 2 (select group)" = "met2",
+                                                      "Met/hydro filter 3 (select group)" = "met3",
                                                       "Flagged data" = "FlagCode"),
                                           selected = 1)
                       ) # end column
@@ -328,8 +328,8 @@ Res.regress <- function(input, output, session, df, df.site) {
       filter(Loc %in% c(input$loc)) %>%
       .$Date
     
-    Date.min <- Dates %>% min(na.rm=TRUE)
-    Date.max <- Dates %>% max(na.rm=TRUE)
+    Date.min <- Dates %>% min(na.rm = TRUE)
+    Date.max <- Dates %>% max(na.rm = TRUE)
     
     dateRangeInput(ns("date"), "Date Range:", 
                    start = Date.min, 
@@ -365,7 +365,7 @@ Res.regress <- function(input, output, session, df, df.site) {
       rename(y.Parameter = Parameter, y.Result = Result) %>%
       select(Site, Loc, Depth, Date, y.Parameter, y.Result)
     
-    # Join the two X and Y parameters dataframes
+    # Join the two X and Y parameters dataframes (Is Site redundant?)
     inner_join(df.temp.x, df.temp.y, by = c("Site", "Loc", "Depth", "Date"))
     
   })

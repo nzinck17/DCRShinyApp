@@ -15,33 +15,17 @@ Home.UI <- function(id) {
 ns <- NS(id)
 
 tagList(
-         
-         # Well Panel - Upper section of page (everything surrounded by light blue)
-         
-  # Title
-  fluidRow(br(), br(), br(), br(), h3("Water Quality Data Viewer Application"),
-           h4("Department of Conservation and Recreation ")),
-  
   fluidRow( 
-    
-    leafletOutput(ns("map"), height = 500)
-    
-  ),
-  
-  wellPanel(
-           
-           fluidRow(
-             
-             # first column
-             column(3,
-                    
-                    # Parameter Input
-                    radioButtons(ns("site"), "Choose Sampling Site Type:",        
-                                choices=c("Tributary", "Reservoir", "Tributary - Core", "Tributary - EQA"))
-                    
-             ) # end column
-           )
+    leafletOutput(ns("map"), height = 700)
   )
+  #wellPanel(
+  #         fluidRow(
+  #           column(3,
+  #                  radioButtons(ns("site"), "Choose Sampling Site Type:",        
+  #                              choices=c("Tributary", "Reservoir"))
+  #           ) # end column
+  #         )
+  #)
 )
 
 
