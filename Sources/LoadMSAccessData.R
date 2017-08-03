@@ -130,7 +130,7 @@ df.trib.res.quab <- left_join(df.trib.res.quab, df.quab.wach.site, "Site")
 df.trib.quab <- filter(df.trib.res.quab, Type == "Tributary", Watershed == "Quabbin")
 
 # Ware River Tributary
-df.trib.ware <<- filter(df.trib.res.quab, Type == "Tributary", Watershed == "Ware River")
+df.trib.ware <- filter(df.trib.res.quab, Type == "Tributary", Watershed == "Ware River")
 
 # Wachusett Tributary
 #df.trib.wach <- filter(df.trib.res.wach, Type == "Tributary")
