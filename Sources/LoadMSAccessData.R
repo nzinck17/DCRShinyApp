@@ -6,9 +6,9 @@
 ##############################################################################################################################
 
 # File name path from the Shiny App Folder (***Update if name changed****)
-filename.quab <- "DBQ=C:/WQDatabase/QuabbinWQdataNZ.mdb" 
-filename.wach.wq <- "DBQ=C:/WQDatabase/WaterQualityDB_be.mdb"
-filename.wach.aquabio <- "DBQ=C:/WQDatabase/AqBioDBWachusett_be.mdb"
+filename.quab <- "DBQ=C:/WQDatabase/QuabbinWQdataNZ.mdb"
+filename.wach.wq <- "DBQ=C:/WQDatabase/WaterQualityDB_fe.mdb"
+filename.wach.aquabio <- "DBQ=C:/WQDatabase/AqBioDBWachusett_fe.mdb"
 
 ##############################################################################################################################
 # Get data from Database *(Connect to database, fetch tables, and close connection)
@@ -19,14 +19,14 @@ connection.name <- paste("Driver={Microsoft Access Driver (*.mdb, *.accdb)}",
                          filename.quab,
                          "Encrypt=yes",
                          "TrustServerCertificate=no",
-                         "Connection Timeout=30", 
+                         "Connection Timeout=30",
                          "ReadOnly=False",
                          sep = ";")
 
 
 connection <- odbcConnectAccess(connection.name)
 df.trib.res.quab <- sqlFetch(connection, "tblWQTribRes2")
-df.profile.quab <- sqlFetch(connection, "tblWQProfile") 
+df.profile.quab <- sqlFetch(connection, "tblWQProfile")
 df.quab.wach.site <- sqlFetch(connection, "tblSiteLocation2")
 df.quab.param <- sqlFetch(connection, "tblParameters")
 close(connection)
@@ -38,7 +38,7 @@ connection.name <- paste("Driver={Microsoft Access Driver (*.mdb, *.accdb)}",
                          filename.wach.wq,
                          "Encrypt=yes",
                          "TrustServerCertificate=no",
-                         "Connection Timeout=30", 
+                         "Connection Timeout=30",
                          "ReadOnly=False",
                          sep = ";")
 
@@ -55,17 +55,17 @@ connection.name <- paste("Driver={Microsoft Access Driver (*.mdb, *.accdb)}",
                          filename.wach.aquabio,
                          "Encrypt=yes",
                          "TrustServerCertificate=no",
-                         "Connection Timeout=30", 
+                         "Connection Timeout=30",
                          "ReadOnly=False",
                          sep = ";")
 
-connection <- odbcConnectAccess(connection.name)   
+connection <- odbcConnectAccess(connection.name)
 df.profile.wach <- sqlFetch(connection, "tbl_Profiles")
 df.profile.wach.site <- sqlFetch(connection, "tblLocations")
 close(connection)
 rm(connection)
 
-               
+
 
 
 #############################################################################################################################
