@@ -381,11 +381,11 @@ Res.regress <- function(input, output, session, df, df.site) {
 # Jitter Scheme Factor Calculation 
   
   jitter.x <- reactive({
-    input$plot.jitter*range(df.react()$x.Result)*0.03
+    input$plot.jitter*IQR(df.react()$x.Result)*0.06
   })
   
   jitter.y <- reactive({
-    input$plot.jitter*range(df.react()$y.Result)*0.03
+    input$plot.jitter*IQR(df.react()$y.Result)*0.06
   })
   
 
@@ -525,7 +525,7 @@ Res.regress <- function(input, output, session, df, df.site) {
   
   df.site.react <- reactive({
     df.site.temp <- df.site %>% filter(!is.na(LocationLat), !is.na(LocationLong))
-    df.site.temp$Selected <- ifelse(df.site.temp$Site %in% input$site, "yes", "no")
+    df.site.temp$Selected <- ifelse(df.site.temp$Loc %in% input$loc, "yes", "no")
     df.site.temp
   })
   

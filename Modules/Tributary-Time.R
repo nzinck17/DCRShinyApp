@@ -196,8 +196,22 @@ Trib.time <- function(input, output, session, df, df.site) {
     param.choices <- df %>%
       filter(Site %in% c(input$site)) %>%
       .$Parameter %>%
-      factor() %>% 
+      factor() %>%
       levels()
+    #
+    # reorder for historical parameters
+    #param.choices <- param.choices %>% factor(levels = rev(levels(param.choices)))
+    #
+    # move historical to front (one at a time via for loop). Historical Parameters can be changed in Sources/Settings.R
+    #for (i in length(historical.parameters)){
+    #  if(historical.parameters[i] %in% levels(param.choices)){
+    #    param.choices <- param.choices %>%
+    #      relevel(historical.parameters[i])
+    #  }
+    #}
+    #
+    ## reverse order again (makes alphabetical with historical at end)
+    #param.choices <- param.choices %>% factor(levels = rev(levels(param.choices)))
     
     selectInput(ns("param"), "Parameter: ",
                 choices=c(param.choices))

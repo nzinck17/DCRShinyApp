@@ -33,7 +33,7 @@ library(RODBC)
 ### Run/Source Scripts that load data
 
 source("Sources/LoadMSAccessData.R")
-#source("Sources/LoadRDS.R")
+source("Sources/Settings.R")
 
 ### Load Modules
 #https://raw.githubusercontent.com/nzinck17/DCRShinyApp/master/
@@ -79,7 +79,7 @@ tabPanel("Home",
   
   # Title       
   fluidRow(br(), br(), br(), br(), h2("Water Quality Data Management System", align = "center")),
-  fluidRow(br(), h3("Department of Conservation and Recreation", align = "center"), br()),
+  fluidRow(h3("Department of Conservation and Recreation", align = "center"), br()),
   
     Home.UI("Home")
   
@@ -310,35 +310,35 @@ server <- function(input, output) {
 ######################################################                   
 # PG 1 - Tributary Water Quality Data   
   
-  callModule(Home, "Home", df.site = df.wach.site)
+  callModule(Home, "Home", df.site = df.all.site)
  
 ######################################################                   
 # PG 2 - Tributary Time  
 
-  callModule(Trib.time, "Quabbin Trib Time", df = df.trib.quab, df.site = df.quab.site)
-  callModule(Trib.time, "Ware River Trib Time", df = df.trib.ware, df.site = df.ware.site)
-  callModule(Trib.time, "Wachusett Trib Time", df = df.trib.wach, df.site = df.wach.site)
-  callModule(Trib.time, "All Trib Time", df = df.trib.all, df.site = df.wach.site)
+  callModule(Trib.time, "Quabbin Trib Time", df = df.trib.quab, df.site = df.trib.quab.site)
+  callModule(Trib.time, "Ware River Trib Time", df = df.trib.ware, df.site = df.trib.ware.site)
+  callModule(Trib.time, "Wachusett Trib Time", df = df.trib.wach, df.site = df.trib.wach.site)
+  callModule(Trib.time, "All Trib Time", df = df.trib.all, df.site = df.trib.all.site)
   
 ######################################################                   
 # PG 3 - Tributary Regression  
   
-  callModule(Trib.regress, "Quabbin Trib Regress", df = df.trib.quab, df.site = df.quab.site)
-  callModule(Trib.regress, "Ware River Trib Regress", df = df.trib.ware, df.site = df.ware.site)
-  callModule(Trib.regress, "Wachusett Trib Regress", df = df.trib.wach, df.site = df.wach.site)
-  callModule(Trib.regress, "All Trib Regress", df = df.trib.all, df.site = df.wach.site)
+  callModule(Trib.regress, "Quabbin Trib Regress", df = df.trib.quab, df.site = df.trib.quab.site)
+  callModule(Trib.regress, "Ware River Trib Regress", df = df.trib.ware, df.site = df.trib.ware.site)
+  callModule(Trib.regress, "Wachusett Trib Regress", df = df.trib.wach, df.site = df.trib.wach.site)
+  callModule(Trib.regress, "All Trib Regress", df = df.trib.all, df.site = df.trib.all.site)
   
 #############################################################
 # PG 4 - Reservoir Time
   
-  callModule(Res.time, "Quabbin Res Time", df = df.res.quab, df.site = df.quab.site)
-  callModule(Res.time, "Wachusett Res Time", df = df.res.wach, df.site = df.wach.site)
+  callModule(Res.time, "Quabbin Res Time", df = df.res.quab, df.site = df.res.quab.site)
+  callModule(Res.time, "Wachusett Res Time", df = df.res.wach, df.site = df.res.wach.site)
   
 #############################################################
 # PG 5 - Reservoir Regression
   
-  callModule(Res.regress, "Quabbin Res Regress", df = df.res.quab, df.site = df.quab.site)
-  callModule(Res.regress, "Wachusett Res Regress", df = df.res.wach, df.site = df.wach.site)
+  callModule(Res.regress, "Quabbin Res Regress", df = df.res.quab, df.site = df.res.quab.site)
+  callModule(Res.regress, "Wachusett Res Regress", df = df.res.wach, df.site = df.res.wach.site)
   
 #######################################################################
 # PG 6 - Profile/Bouy Data for Reservoirs
@@ -351,11 +351,11 @@ server <- function(input, output) {
   callModule(prof.summary, "Wachusett Profile Summary", df = df.profile.wach)
 
 ####################################################################
-# PG 8 - Tributary Water Quality Data    
+# PG 8 - Map Plot - Geospatial Plotting
 
-  callModule(map.plot, "Quabbin MapPlot", df = df.trib.quab, df.site = df.quab.site)
-  callModule(map.plot, "Ware River MapPlot", df = df.trib.ware, df.site = df.ware.site)
-  callModule(map.plot, "Wachusett MapPlot", df = df.trib.wach, df.site = df.wach.site)
+  callModule(map.plot, "Quabbin MapPlot", df = df.trib.quab, df.site = df.trib.quab.site)
+  callModule(map.plot, "Ware River MapPlot", df = df.trib.ware, df.site = df.trib.ware.site)
+  callModule(map.plot, "Wachusett MapPlot", df = df.trib.wach, df.site = df.trib.wach.site)
 
   
 ######################################################                   

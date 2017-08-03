@@ -400,11 +400,11 @@ Trib.regress <- function(input, output, session, df, df.site) {
   # Jitter Scheme Factor Calculation 
   
   jitter.x <- reactive({
-    input$plot.jitter*range(df.react()$x.Result)*0.03
+    input$plot.jitter*IQR(df.react()$x.Result)*0.06
   })
   
   jitter.y <- reactive({
-    input$plot.jitter*range(df.react()$y.Result)*0.03
+    input$plot.jitter*IQR(df.react()$y.Result)*0.06
   })
   
   
