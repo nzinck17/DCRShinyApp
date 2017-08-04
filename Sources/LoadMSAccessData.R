@@ -6,7 +6,8 @@
 ##############################################################################################################################
 
 # File name path from the Shiny App Folder (***Update if name changed****)
-filename.quab <- "DBQ=C:/WQDatabase/QuabbinWQdataNZ.mdb"
+
+filename.quab <- "DBQ=C:/WQDatabase/QuabbinWQdataNZ.mdb" 
 filename.wach.wq <- "DBQ=C:/WQDatabase/WaterQualityDB_fe.mdb"
 filename.wach.aquabio <- "DBQ=C:/WQDatabase/AqBioDBWachusett_fe.mdb"
 
@@ -106,20 +107,24 @@ df.trib.res.wach$FlagCode <- factor(df.trib.res.wach$FlagCode)
 
 #### Edit Site Tables
 
-# rename column of Sites
-df.quab.wach.site <- df.quab.wach.site %>% rename(Site = SiteID)
-df.wach.site <- df.wach.site %>% rename(Site = LocationMWRA)
+# Wachusett
+df.wach.site <- df.wach.site %>% rename(Site = LocationMWRA, Type = LocationType)
+df.wach.site$Watershed <- "Wachusett"
+df.wach.site$Loc <- df.wach.site$Site
+df.wach.site$Depth <- "Unknown"
 
-df.quab.wach.site <- df.quab.wach.site %>% mutate(LocationLabel = paste(LocationShortName, Site))
-df.quab.wach.site$LocationElevFt <- NA
-df.quab.wach.site <- df.quab.wach.site %>% rename(LocationDescription = SiteDescription)
-df.quab.wach.site <- df.quab.wach.site %>% select(-Description)
+# Quabbin
+df.quab.ware.site <- df.quab.ware.site %>% rename(Site = SiteID)
+df.quab.ware.site <- df.quab.ware.site %>% mutate(LocationLabel = paste(LocationShortName, Site))
+df.quab.ware.site$LocationElevFt <- NA
+df.quab.ware.site <- df.quab.ware.site %>% rename(LocationDescription = SiteDescription)
+df.quab.ware.site <- df.quab.ware.site %>% select(-Description)
 
 
 ###
 # make a dplyr combine with the Sites (choose by trib recieving body (quab, ware, wach) and by (Core or EQA)
-df.trib.res.quab <- left_join(df.trib.res.quab, df.quab.wach.site, "Site")
-#df.trib.res.wach <- left_join(df.trib.res.wach, df.sites.wach, "Site")
+df.trib.res.quab <- left_join(df.trib.res.quab, df.quab.ware.site, "Site")
+df.trib.res.wach <- left_join(df.trib.res.wach, df.wach.site, "Site")
 
 #############################################################################################################################
 # Create final Dataframes for App
@@ -133,8 +138,7 @@ df.trib.quab <- filter(df.trib.res.quab, Type == "Tributary", Watershed == "Quab
 df.trib.ware <- filter(df.trib.res.quab, Type == "Tributary", Watershed == "Ware River")
 
 # Wachusett Tributary
-#df.trib.wach <- filter(df.trib.res.wach, Type == "Tributary")
-df.trib.wach <- df.trib.res.wach
+df.trib.wach <- filter(df.trib.res.wach, Type == "Tributary")
 
 # All Tributaries
 df.trib.all <- bind_rows(df.trib.quab, df.trib.ware, df.trib.wach)
@@ -145,22 +149,34 @@ df.trib.all <- bind_rows(df.trib.quab, df.trib.ware, df.trib.wach)
 df.res.quab <- filter(df.trib.res.quab, Type == "Reservoir")
 
 # Wachusett Tributary (need to find Reservoir Sites)
-#df.res.wach <- filter(df.trib.res.wach, Type == "Reservoir")
-df.res.wach <- df.trib.res.wach
+df.res.wach <- filter(df.trib.res.wach, Type == "Transect")
 
 ### Profiles (No work needed)
 
-# df.profile.quab
-# df.profile.wach
 
 ### Site Locations
 
-# Split Ware and Quabbin
+# Split Sites into 5 dataframes
 
-df.quab.site <- df.quab.wach.site %>% filter(Watershed == "Quabbin")
-df.ware.site <- df.quab.wach.site %>% filter(Watershed == "Ware River")
+df.trib.quab.site <- df.quab.ware.site %>% filter(Watershed == "Quabbin",
+                                                  Type == "Tributary")
+df.trib.ware.site <- df.quab.ware.site %>% filter(Watershed == "Ware River")
+df.trib.wach.site <- df.wach.site %>% filter(Type == "Tributary")
+df.res.quab.site <- df.quab.ware.site %>% filter(Type == "Reservoir")
+df.res.wach.site <- df.wach.site %>% filter(Type == "Transect")
 
+# Combine All Sites into 1 dataframe
 
+df.all.site <- full_join(df.quab.ware.site, df.wach.site, by = c("Site", 
+                                                                 "Watershed", 
+                                                                 "Type",
+                                                                 "LocationLong", 
+                                                                 "LocationLat", 
+                                                                 "LocationLabel",
+                                                                 "LocationDescription",
+                                                                 "LocationElevFt"))
 
+# All tribs
+df.trib.all.site <- df.all.site %>% filter(Type == "Tributary")
 
 

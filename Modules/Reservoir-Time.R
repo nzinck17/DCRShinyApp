@@ -434,7 +434,7 @@ Res.time <- function(input, output, session, df, df.site) {
   
   df.site.react <- reactive({
     df.temp <- df.site %>% filter(!is.na(LocationLat), !is.na(LocationLong))
-    df.temp$Selected <- ifelse(df.temp$Site %in% input$site, "yes", "no")
+    df.temp$Selected <- ifelse(df.temp$Loc %in% input$loc, "yes", "no")
     df.temp
   })
   
