@@ -28,7 +28,7 @@ connection.name <- paste("Driver={Microsoft Access Driver (*.mdb, *.accdb)}",
 connection <- odbcConnectAccess(connection.name)
 df.trib.res.quab <- sqlFetch(connection, "tblWQTribRes2")
 df.profile.quab <- sqlFetch(connection, "tblWQProfile")
-df.quab.wach.site <- sqlFetch(connection, "tblSiteLocation2")
+df.quab.ware.site <- sqlFetch(connection, "tblSiteLocation2")
 df.quab.param <- sqlFetch(connection, "tblParameters")
 close(connection)
 rm(connection)
