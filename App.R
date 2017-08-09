@@ -1,4 +1,4 @@
-##############################################################################################################################
+ ##############################################################################################################################
 #     Title: App.R
 #     Type: Master file for DCR Shiny App
 #     Description: This Shiny App contains the "master" script for the app. The app contains a ui and server component
@@ -47,6 +47,9 @@ source("Modules/Profile-Heatmap.R")
 source("Modules/Profile-Line.R")
 source("Modules/Profile-Summary.R")
 source("Modules/MapPlot.R")
+source("Modules/Report-AWQ.R")
+source("Modules/Report-MWQ.R")
+source("Modules/Report-Custom.R")
 
 # Load Functions
 
@@ -275,13 +278,61 @@ tabPanel("Met/Hydro",
 #########################################################
 # PG 10 - Reports
 
-tabPanel("Reports",
+tabPanel("Report",
          # Title
-         fluidRow(br(), br(), br(), br(), h3("Annual Water Quality Report")
-                  
-         )
+         fluidRow(column(1),column(8, br(), br(), br(), br(), h3("Report Generation Tool"), br())),
          
-),
+         navlistPanel(widths = c(2, 10),
+                      "Preset Reports",
+                      tabPanel("Annual WQ",
+                               fluidRow(column(1),column(8, h4("Annual Water Quality Reports"))),
+                               tabsetPanel(
+                                 tabPanel("Quabbin", report.awq.UI("Quabbin AWQ Report", df.trib.quab)),
+                                 tabPanel("Wachusett", report.awq.UI("Wachusett AWQ Report", df.trib.wach))
+                               ) # end tabset Panel
+                      ), # end tabpanel
+                      tabPanel("Monthly WQ",
+                               fluidRow(column(1),column(8, h4("Annual Water Quality Reports"))),
+                               tabsetPanel(
+                                 tabPanel("Quabbin", report.mwq.UI("Quabbin MWQ Report", df.trib.quab)),
+                                 tabPanel("Wachusett", report.mwq.UI("Wachusett MWQ Report", df.trib.wach))
+                               ) # end tabset panel
+                      ), # end tabpanel
+                      "Custom Reports",
+                      tabPanel("Tributary",
+                               fluidRow(column(1),column(8, h4("Tributary Custom Tributary Reports"))),
+                               tabsetPanel(
+                                 tabPanel("Quabbin", report.custom.UI("Quabbin Trib Custom Report", df.trib.quab)),
+                                 tabPanel("Ware River", report.custom.UI("Ware River Trib Custom Report", df.trib.ware)),
+                                 tabPanel("Wachusett", report.custom.UI("Wachusett Trib Custom Report", df.trib.wach))
+                               )
+                      ),
+                      tabPanel("Reservoir",
+                               fluidRow(column(1),column(8, h4("Reservoir Custom Tributary Reports"))),
+                               tabsetPanel(
+                                 tabPanel("Quabbin",report.custom.UI("Quabbin Res Custom Report", df.res.quab)),
+                                 tabPanel("Wachusett",report.custom.UI("Wachusett Res Custom Report", df.res.wach))
+                               )
+                      ),
+                      tabPanel("Profile",
+                               fluidRow(column(1),column(8, h4("Profile Custom Tributary Reports"))),
+                               tabsetPanel(
+                                 tabPanel("Quabbin",report.custom.UI("Quabbin Profile Custom Report", df.profile.quab)),
+                                 tabPanel("Wachusett",report.custom.UI("Wachusett Profile Custom Report", df.profile.wach))
+                               )
+                      ),
+                      tabPanel("Phytoplankton",
+                               fluidRow(column(1),column(8, h4("Phytoplankton Custom Tributary Reports"))),
+                               tabsetPanel(
+                                 tabPanel("Quabbin", report.custom.UI("Quabbin Phyto Custom Report", df.profile.quab)),
+                                 tabPanel("Wachusett", report.custom.UI("Wachusett Phyto Custom Report", df.profile.wach))
+                               )
+                      )
+         ) # end navlist
+         
+
+         
+), # end tabpanel (page)
 
 #######################################################
 # PG 8 - Input Data
@@ -362,6 +413,22 @@ server <- function(input, output) {
 
 # PG 5 - Hydrology/Meteorology/Statistics
   
+####################################################################
+# PG 8 - Reports
+
+  callModule(report.awq, "Quabbin AWQ Report", df.trib = df.trib.quab, df.res = df.res.quab, df.profile = df.profile.quab, df.site = df.quab.site)
+  callModule(report.awq, "Wachusett AWQ Report", df.trib = df.trib.wach, df.res = df.res.wach, df.profile = df.profile.wach, df.site = df.wach.site)
+  callModule(report.mwq, "Quabbin MWQ Report", df.trib = df.trib.quab, df.res = df.res.quab, df.profile = df.profile.quab, df.site = df.quab.site)
+  callModule(report.mwq, "Wachusett MWQ Report", df.trib = df.trib.wach, df.res = df.res.wach, df.profile = df.profile.wach, df.site = df.wach.site)
+  callModule(report.custom, "Quabbin Trib Custom Report", df = df.trib.quab, df.site = df.trib.quab.site)
+  callModule(report.custom, "Ware River Trib Custom Report", df = df.trib.ware, df.site = df.trib.ware.site)
+  callModule(report.custom, "Wachusett Trib Custom Report", df = df.trib.quab, df.site = df.trib.quab.site)
+  callModule(report.custom, "Quabbin Res Custom Report", df = df.res.quab, df.site = df.res.quab.site)
+  callModule(report.custom, "Wachusett Res Custom Report", df = df.res.quab, df.site = df.res.quab.site)
+  callModule(report.custom, "Quabbin Profile Custom Report", df = df.profile.quab, df.site = df.res.quab.site)
+  callModule(report.custom, "Wachusett Profile Custom Report", df = df.profile.wach, df.site = df.res.wach.site)
+  callModule(report.custom, "Quabbin Phyto Custom Report", df = df.profile.quab, df.site = df.res.quab.site)
+  callModule(report.custom, "Wachusett Phyto Custom Report", df = df.profile.wach, df.site = df.res.wach.site)
   
 } # end server function
 
