@@ -90,193 +90,156 @@ tabPanel("Home",
 ######################################################                   
 # PG 2 - Tributary Water Quality Data             
                  
-tabPanel("Trib - Time",
+tabPanel("Tributary",
 
   # Title
   fluidRow(br(), br(), br(), br(), h2("Tributary Time-Series Analysis", align = "center"), br()),
   
-  # Tabset Panels
-  tabsetPanel("tab.trib.time",
-      tabPanel("Quabbin Tribs",
-               Trib.time.UI("Quabbin Trib Time", df.trib.quab)
-      ),
-      tabPanel("Ware River Tribs",
-               Trib.time.UI("Ware River Trib Time", df.trib.ware)
-      ),
-      tabPanel("Wachusett Tribs",
-               Trib.time.UI("Wachusett Trib Time", df.trib.wach)
-      ),
-      tabPanel("All Tribs",
-               Trib.time.UI("All Tribs Time", df.trib.all)
-      )
-  )# end Tributary tabset
+  navlistPanel(widths = c(2, 10),
+               tabPanel("Time-Series",
+                        fluidRow(column(1),column(8, h4("Tributary Time-Series Analysis"))),
+                        tabsetPanel(
+                          tabPanel("Quabbin", Trib.time.UI("Quabbin Trib Time", df.trib.quab)),
+                          tabPanel("Ware River", Trib.time.UI("Ware River Trib Time", df.trib.ware)),
+                          tabPanel("Wachusett", Trib.time.UI("Wachusett Trib Time", df.trib.wach)),
+                          tabPanel("All Tribs", Trib.time.UI("All Tribs Time", df.trib.all))
+                        ) # end tabset Panel
+               ), # end tabpanel
+               tabPanel("Regression",
+                        fluidRow(column(1),column(8, h4("Tributary Time-Series Analysis"))),
+                        tabsetPanel(
+                          tabPanel("Quabbin", Trib.regress.UI("Quabbin Trib Regress", df.trib.quab)),
+                          tabPanel("Ware River", Trib.regress.UI("Ware River Trib Regress", df.trib.ware)),
+                          tabPanel("Wachusett", Trib.regress.UI("Wachusett Trib Regress", df.trib.wach)),
+                          tabPanel("All Tribs", Trib.regress.UI("All Tribs Regress", df.trib.all))
+                        ) # end tabset Panel
+               ) # end tabpanel
+  ) # end navlist panel
   
-),# end Tributary tabpanel (page)
+), # end Tributary tabpanel (page)
    
-
-######################################################                   
-# PG 3 - Tributary Regression Alalysis           
-
-tabPanel("Trib - Regress",
-         
-         # Title
-         fluidRow(br(), br(), br(), br(), h2("Tributary Regression Analysis", align = "center"), br()),
-         
-         # Tabset Panels
-         tabsetPanel("tab.trib.regress",
-                     tabPanel("Quabbin Tribs",
-                              Trib.regress.UI("Quabbin Trib Regress", df.trib.quab)
-                     ),
-                     tabPanel("Ware River Tribs",
-                              Trib.regress.UI("Ware River Trib Regress", df.trib.ware)
-                     ),
-                     tabPanel("Wachusett Tribs",
-                              Trib.regress.UI("Wachusett Trib Regress", df.trib.wach)
-                     ),
-                     tabPanel("All Tribs",
-                              Trib.regress.UI("All Tribs Regress", df.trib.all)
-                     )
-         )# end Tributary tabset
-         
-),# end Tributary tabpanel (page)
 
 #############################################################
-# PG 4 - Reservoir Time Series
+# PG 3 - Reservoir 
   
-tabPanel("Reservoir - Time",
-   
+tabPanel("Reservoir",
+
    # Title
    fluidRow(br(), br(), br(), br(), h3("Reservoir Water Quality Data Viewer"), br()),
    
-   # Tabset Panels
-   tabsetPanel("tab.res",
-     tabPanel("Quabbin Res",
-              Res.time.UI("Quabbin Res Time", df.res.quab)
-     ),
-     tabPanel("Wachusett Res",
-              Res.time.UI("Wachusett Res Time", df.res.wach)
-     )
-   ) # end Tabset Panels
+   navlistPanel(widths = c(2, 10),
+                
+                "Transect",
+                tabPanel("Time-Series",
+                         fluidRow(column(1),column(8, h4("Transect Time-Series Analysis"))),
+                         tabsetPanel(
+                           tabPanel("Quabbin", Res.time.UI("Quabbin Restran Time", df.res.quab)),
+                           tabPanel("Wachusett", Res.time.UI("Wachusett Restran Time", df.res.wach))
+                         ) # end tabset Panel
+                ), # end tabpanel
+                tabPanel("Regression",
+                         fluidRow(column(1),column(8, h4("Transect Regression Analysis"))),
+                         tabsetPanel(
+                           tabPanel("Quabbin", Res.regress.UI("Quabbin Restran Regress", df.res.quab)),
+                           tabPanel("Wachusett", Res.regress.UI("Wachusett Restran Regress", df.res.wach))
+                         ) # end tabset panel
+                ), # end tabpanel
+                
+                "Nutrient",
+                tabPanel("Time-Series",
+                         fluidRow(column(1),column(8, h4("Nutrient Time-Series Analysis"))),
+                         tabsetPanel(
+                           tabPanel("Quabbin", Res.time.UI("Quabbin Resnut Time", df.res.quab)),
+                           tabPanel("Wachusett", Res.time.UI("Wachusett Resnut Time", df.res.wach))
+                         )
+                ),
+                tabPanel("Regression",
+                         fluidRow(column(1),column(8, h4("Nutrient Regression Analysis"))),
+                         tabsetPanel(
+                           tabPanel("Quabbin", Res.regress.UI("Quabbin Resnut Regress", df.res.quab)),
+                           tabPanel("Wachusett", Res.regress.UI("Wachusett Resnut Regress", df.res.wach))
+                         )
+                ),
+                
+                "Profile",
+                tabPanel("Heat Map Custom",
+                         fluidRow(column(1),column(8, h4("Heatmeap (Custom) of Profile Data"))),
+                         tabsetPanel(
+                           tabPanel("Quabbin", prof.heatmap.UI("Quabbin Profile Heatmap", df.profile.quab)),
+                           tabPanel("Wachusett", prof.heatmap.UI("Wachusett Profile Heatmap", df.profile.wach))
+                         )
+                ),
+                tabPanel("Heat Map Standard"),
+                
+                tabPanel("Line Plot Custom",
+                         fluidRow(column(1),column(8, h4("Line Plot (Custom) of Profile Data"))),
+                         tabsetPanel(
+                           tabPanel("Quabbin", prof.line.UI("Quabbin Profile Line", df.profile.quab)),
+                           tabPanel("Wachusett", prof.line.UI("Wachusett Profile Line", df.profile.wach))
+                         )
+                ),
+                
+                tabPanel("Line Plot Standard"),
+                
+                tabPanel("Table and Summary",
+                         fluidRow(column(1),column(8, h4("Table and Summary of Profile Data"))),
+                         tabsetPanel(
+                           tabPanel("Quabbin", prof.summary.UI("Quabbin Profile Summary", df.profile.quab)),
+                           tabPanel("Wachusett", prof.summary.UI("Wachusett Profile Summary", df.profile.wach))
+                         )
+                ),
+                
+                "AquaBio",
+                tabPanel("Heatmap"),
+                tabPanel("Line Plot")
+   ) # end navlist
    
  ),  # end Tabpanel (page)
 
-#############################################################
-# PG 5 - Reservoir Water Quality
 
-tabPanel("Reservoir Regress",
-         
-   # Title
-   fluidRow(br(), br(), br(), br(), h3("Reservoir Water Quality Data Viewer"), br()),
-   
-   # Tabset Panels
-   tabsetPanel("tab.res",
-               
-       tabPanel("Quabbin Res",
-                Res.regress.UI("Quabbin Res Regress", df.res.quab)
-       ),
-       tabPanel("Wachusett Res Regress",
-                Res.regress.UI("Wachusett Res Regress", df.res.wach)
-       )      
-   ) # end Tabset Panels
-   
-),  # end Tabpanel (page)
+#######################################################
+#4 -  Map
 
-#######################################################################
-# PG 6 - Profile
-
-tabPanel("Profile Data",
-        
-  # Title
-  fluidRow(column(1),column(8, br(), br(), br(), br(), h3("Reservoir Water Quality Data Viewer"), br())),
-  
-  navlistPanel(widths = c(2, 10),
-    "Quabbin Reservoir",
-    tabPanel("Heatmap Plot custom",
-             fluidRow(column(1),column(8, h4("Quabbin Reservoir Yearly Profile Data Plotted as 'heatmap' style"))),
-             prof.heatmap.UI("Quabbin Profile Heatmap", df.profile.quab)
-    ),
-    tabPanel("Heatmap Plot standard"),
-    tabPanel("Line Plot custom",
-            fluidRow(column(1),column(8, h4("Quabbin Reservoir Profile Data Plotted as line plots"))),
-            prof.line.UI("Quabbin Profile Line", df.profile.quab)
-    ),
-    tabPanel("Line Plot standard"),
-    tabPanel("Summary and Table", br(),
-             fluidRow(column(1),column(8, h4("Quabbin Reservoir Profile Data Summary and Table"))),
-             prof.summary.UI("Quabbin Profile Summary", df.profile.quab)
-             ),
-    "Wachusett Reservoir",
-    tabPanel("Heatmap Plot custom",
-             fluidRow(column(1),column(8, h4("Wachusett Reservoir Yearly Profile Data Plotted as 'heatmap' style"))),
-             prof.heatmap.UI("Wachusett Profile Heatmap", df.profile.wach)
-    ),
-    tabPanel("Heatmap Plot standard"),
-    tabPanel("Line Plot custom",
-            fluidRow(column(1),column(8, h4("Wachusett Reservoir Profile Data Plotted as line plots"))),
-            prof.line.UI("Wachusett Profile Line", df.profile.wach)
-    ),
-    tabPanel("Line Plot standard"),
-    tabPanel("Summary and Table", br(),
-             fluidRow(column(1),column(8, h4("Wachusett Reservoir Profile Data Summary and Table"))),
-             prof.summary.UI("Wachusett Profile Summary", df.profile.wach)
-    )
-  )# end navlist
-  
-),# end tabpanel (page)
-
-
-####################################################################
-# PG 7 - Aquatic Bio
-
-tabPanel("Aquatic Bio",
+tabPanel("Map Plot",
          
          # Title
-         fluidRow(br(), br(), br(), br(), h3("Hydrology and Meteorology Data Viewer")
-                  
-                  
-         )
-),
-
-#######################################################
-# PG 8a - Map Plots
-
-tabPanel("Map Quab",
+         fluidRow(column(1),column(8, br(), br(), br(), br(), h3("Map Viewer"), br())),
          
-         map.plot.UI("Quabbin MapPlot", df = df.trib.quab)
-
-),
-
-#######################################################
-# PG 8b - Map Plots
-
-tabPanel("Map Ware",
+         navlistPanel(widths = c(2, 10),
+                      "Tributaries",
+                      tabPanel("Quabbin", map.plot.UI("Quabbin Trib MapPlot", df = df.trib.quab)),
+                      tabPanel("Ware River", map.plot.UI("Ware River Trib MapPlot", df = df.trib.quab)),
+                      tabPanel("Wachusett", map.plot.UI("Wachusett Trib MapPlot", df = df.trib.quab)),
+                      "Reservoir Transect",
+                      tabPanel("Quabbin", map.plot.UI("Quabbin Restran MapPlot", df = df.res.quab)),
+                      tabPanel("Wachusett", map.plot.UI("Wachusett Restran MapPlot", df = df.res.quab))
+         ) # end navlist
          
-         map.plot.UI("Ware River MapPlot", df = df.trib.ware)
-       
-),
-
-#######################################################
-# PG 8c - Map Plots
-
-tabPanel("Map Wach", 
          
-         map.plot.UI("Wachusett MapPlot", df = df.trib.wach)
-       
-),
+         
+), # end tabpanel (page)
+
 
 ####################################################################
-# PG 9 - Hydrology/Meteorology
+# PG 5 - Hydrology/Meteorology
 
 tabPanel("Met/Hydro",
          
          # Title
-         fluidRow(br(), br(), br(), br(), h3("Hydrology and Meteorology Data Viewer")
-                  
-        )
+         fluidRow(br(), br(), br(), br(), h3("Hydrology and Meteorology Data Viewer"))
 ),  
 
+####################################################################
+# PG 6 - Forestry
+
+tabPanel("Forestry",
+         
+         # Title
+         fluidRow(br(), br(), br(), br(), h3("Forestry"))
+), 
+
 #########################################################
-# PG 10 - Reports
+# PG 6 - Reports
 
 tabPanel("Report",
          # Title
@@ -364,49 +327,54 @@ server <- function(input, output) {
   callModule(Home, "Home", df.site = df.all.site)
  
 ######################################################                   
-# PG 2 - Tributary Time  
-
+# PG 2 - Tributary
+  
+  # Time Series
   callModule(Trib.time, "Quabbin Trib Time", df = df.trib.quab, df.site = df.trib.quab.site)
   callModule(Trib.time, "Ware River Trib Time", df = df.trib.ware, df.site = df.trib.ware.site)
   callModule(Trib.time, "Wachusett Trib Time", df = df.trib.wach, df.site = df.trib.wach.site)
   callModule(Trib.time, "All Trib Time", df = df.trib.all, df.site = df.trib.all.site)
   
-######################################################                   
-# PG 3 - Tributary Regression  
-  
+  # Regression
   callModule(Trib.regress, "Quabbin Trib Regress", df = df.trib.quab, df.site = df.trib.quab.site)
   callModule(Trib.regress, "Ware River Trib Regress", df = df.trib.ware, df.site = df.trib.ware.site)
   callModule(Trib.regress, "Wachusett Trib Regress", df = df.trib.wach, df.site = df.trib.wach.site)
   callModule(Trib.regress, "All Trib Regress", df = df.trib.all, df.site = df.trib.all.site)
   
 #############################################################
-# PG 4 - Reservoir Time
+# PG 3 - Reservoir 
   
-  callModule(Res.time, "Quabbin Res Time", df = df.res.quab, df.site = df.res.quab.site)
-  callModule(Res.time, "Wachusett Res Time", df = df.res.wach, df.site = df.res.wach.site)
+  # Transect
+  callModule(Res.time, "Quabbin Restran Time", df = df.res.quab, df.site = df.res.quab.site)
+  callModule(Res.time, "Wachusett Restran Time", df = df.res.wach, df.site = df.res.wach.site)
+  callModule(Res.regress, "Quabbin Restran Regress", df = df.res.quab, df.site = df.res.quab.site)
+  callModule(Res.regress, "Wachusett Restran Regress", df = df.res.wach, df.site = df.res.wach.site)
   
-#############################################################
-# PG 5 - Reservoir Regression
+  # Nutrient
+  callModule(Res.time, "Quabbin Resnut Time", df = df.res.quab, df.site = df.res.quab.site)
+  callModule(Res.time, "Wachusett Resnut Time", df = df.res.wach, df.site = df.res.wach.site)
+  callModule(Res.regress, "Quabbin Resnut Regress", df = df.res.quab, df.site = df.res.quab.site)
+  callModule(Res.regress, "Wachusett Resnut Regress", df = df.res.wach, df.site = df.res.wach.site)
   
-  callModule(Res.regress, "Quabbin Res Regress", df = df.res.quab, df.site = df.res.quab.site)
-  callModule(Res.regress, "Wachusett Res Regress", df = df.res.wach, df.site = df.res.wach.site)
-  
-#######################################################################
-# PG 6 - Profile/Bouy Data for Reservoirs
-
+  # Profile
   callModule(prof.heatmap, "Quabbin Profile Heatmap", df = df.profile.quab)
   callModule(prof.heatmap, "Wachusett Profile Heatmap", df = df.profile.wach)
   callModule(prof.line, "Quabbin Profile Line", df = df.profile.quab)
   callModule(prof.line, "Wachusett Profile Line", df = df.profile.wach)
   callModule(prof.summary, "Quabbin Profile Summary", df = df.profile.quab)
   callModule(prof.summary, "Wachusett Profile Summary", df = df.profile.wach)
+  
+  # AquaBio
 
+  
 ####################################################################
-# PG 8 - Map Plot - Geospatial Plotting
+# PG 8 - Map Plot
 
-  callModule(map.plot, "Quabbin MapPlot", df = df.trib.quab, df.site = df.trib.quab.site)
-  callModule(map.plot, "Ware River MapPlot", df = df.trib.ware, df.site = df.trib.ware.site)
-  callModule(map.plot, "Wachusett MapPlot", df = df.trib.wach, df.site = df.trib.wach.site)
+  callModule(map.plot, "Quabbin Trib MapPlot", df = df.trib.quab, df.site = df.trib.quab.site)
+  callModule(map.plot, "Ware River Trib MapPlot", df = df.trib.ware, df.site = df.trib.ware.site)
+  callModule(map.plot, "Wachusett Trib MapPlot", df = df.trib.wach, df.site = df.trib.wach.site)
+  callModule(map.plot, "Quabbin Restran MapPlot", df = df.res.quab, df.site = df.res.quab.site)
+  callModule(map.plot, "Wachusett Restran MapPlot", df = df.res.wach, df.site = df.res.wach.site)
 
   
 ######################################################                   

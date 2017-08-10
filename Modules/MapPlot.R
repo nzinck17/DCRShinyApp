@@ -35,7 +35,6 @@ map.plot.UI <- function(id, df) {
 ns <- NS(id)
 
 tagList(
-  fluidRow(br(), br(), br(), br()),
     sidebarLayout(
       sidebarPanel(width = 3,
         tabsetPanel(
