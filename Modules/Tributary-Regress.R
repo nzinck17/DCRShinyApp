@@ -6,7 +6,7 @@
 ##############################################################################################################################
 
 # Notes: 
-#   1. 
+#   1. req() will delay the rendering of a widget or other reactive object until a certain logical expression is TRUE or not NULL
 #
 # To-Do List:
 #   1. Make the Metero/Hydro Filters work
@@ -27,8 +27,7 @@ tagList(
                     # Site Selection with Map
                     wellPanel(
                     checkboxGroupInput(ns("site"), "Sites: (Choose 1st)", 
-                                       choices= levels(factor(df$Site)),  #df[df$`Core or EQA` == "Core", "Site"]
-                                       selected = factor(df$Site)[1],
+                                       choices= levels(factor(df$Site)),
                                        inline=TRUE),
                     leafletOutput(ns("map"), height = 450 )
                     )# end Well Panel
@@ -40,7 +39,8 @@ tagList(
                              wellPanel(
                                uiOutput(ns("y.param.ui")),
                                uiOutput(ns("y.range.ui"))
-                             )#well
+                             ), # well
+                             uiOutput(ns("text.site.null.ui"))
                       ), # end Column
                       column(4,
                              wellPanel(
@@ -75,7 +75,7 @@ tagList(
                                uiOutput(ns("date.ui")) 
                              ),# end Well Panel
                              wellPanel(
-                               h4("Number of Samples in Selected Data:", align = "center"),
+                               h4(textOutput(ns("text.num.text")), align = "center"),
                                h3(textOutput(ns("text.num")), align = "center")
                              )#well
                       )# end Column
@@ -237,6 +237,8 @@ Trib.regress <- function(input, output, session, df, df.site) {
   
   output$y.param.ui <- renderUI({
     
+    req(input$site) # See General Note _
+    
     ns <- session$ns
 
     y.param.choices <- df %>%
@@ -254,6 +256,9 @@ Trib.regress <- function(input, output, session, df, df.site) {
   # Reactive Texts
   
   y.param.units <- reactive({ 
+    
+    req(input$site) # See General Note _
+    
     df %>%
       filter(Parameter %in% input$y.param) %>%
       .$Units %>%
@@ -266,6 +271,8 @@ Trib.regress <- function(input, output, session, df, df.site) {
   #Parameter Value Range UI
   
   output$y.range.ui <- renderUI({
+    
+    req(input$site) # See General Note _
     
     ns <- session$ns
     
@@ -291,6 +298,8 @@ Trib.regress <- function(input, output, session, df, df.site) {
   
   output$x.param.ui <- renderUI({
     
+    req(input$site) # See General Note _
+    
     ns <- session$ns
     
     x.param.choices <- df %>%
@@ -308,6 +317,9 @@ Trib.regress <- function(input, output, session, df, df.site) {
   # Reactive Texts
   
   x.param.units <- reactive({ 
+    
+    req(input$site) # See General Note _
+    
     df %>%
       filter(Parameter %in% input$x.param) %>%
       .$Units %>%
@@ -319,6 +331,8 @@ Trib.regress <- function(input, output, session, df, df.site) {
   
   #Parameter Value Range UI
   output$x.range.ui <- renderUI({
+    
+    req(input$site) # See General Note _
     
     ns <- session$ns
     
@@ -342,6 +356,8 @@ Trib.regress <- function(input, output, session, df, df.site) {
   
   output$date.ui <- renderUI({
     
+    req(input$site) # See General Note _
+    
     ns <- session$ns
     
     Dates <- df %>% 
@@ -364,6 +380,8 @@ Trib.regress <- function(input, output, session, df, df.site) {
 # Reactive Dataframe
   
   df.react <- reactive({
+    
+    req(input$site) # See General Note _
     
     # filter by Site and Date adn save
     df.temp <- df %>% 
@@ -390,9 +408,30 @@ Trib.regress <- function(input, output, session, df, df.site) {
   })
   
   
-  # Number of Selected samples Text
+  # Text - Select Site
+  
+  output$text.site.null.ui <- renderUI({
+    
+    req(is.null(input$site)) # See General Note 1
+    wellPanel(
+      h2("Select a Site", align = "center")
+    )
+    
+  })
+  
+  
+  
+  # Text - Number of Samples
+  
+  output$text.num.text <- renderText({
+    req(input$site) # See General Note 1
+    "Number of Samples in Selected Data"
+  })
+  
+  # Text - Number of Samples
   
   output$text.num <- renderText({
+    req(input$site) # See General Note 1
     df.react() %>% summarise(n()) %>% paste()
   })
   

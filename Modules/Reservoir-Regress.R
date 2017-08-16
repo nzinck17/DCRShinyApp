@@ -29,11 +29,9 @@ tagList(
              wellPanel(
                checkboxGroupInput(ns("loc"), "Site Location:", 
                                   choices=levels(factor(df$Loc)),
-                                  selected = factor(df$Loc[1]),
                                   inline = TRUE),
                checkboxGroupInput(ns("depth"), "Depth:", 
                                   choices=levels(factor(df$Depth)),
-                                  selected = factor(df$Depth[1]),
                                   inline = TRUE),
                leafletOutput(ns("map"), height = 350 )
              ) # end Well Panel
@@ -43,11 +41,10 @@ tagList(
                column(4,
                       # Y Parameter Selection
                       wellPanel(
-                        selectInput(ns("y.param"), "Water Quality Parameter:",        
-                                    choices=levels(factor(df$Parameter)),
-                                    selected = factor(df$Parameter[4])),
+                        uiOutput(ns("y.param.ui")),
                         uiOutput(ns("y.range.ui"))
-                      ) # end Well Panel
+                      ), # end Well Panel
+                      uiOutput(ns("text.site.null.ui"))
                ), # end Column
                column(4,
                       # X Parameter Selection
@@ -58,9 +55,7 @@ tagList(
                                      inline = TRUE),
                         # SEE GENERAL NOTE 2
                         conditionalPanel(condition = paste0("input['", ns("x.option"), "'] == 'Water Quality' "),
-                                         selectInput(ns("x.param"), "Water Quality Parameter:",        
-                                                     choices=levels(factor(df$Parameter)),
-                                                     selected = factor(df$Parameter[4])),
+                                         uiOutput(ns("x.param.ui")),
                                          uiOutput(ns("x.range.ui"))
                         ),# end Conditional Panel
                         conditionalPanel(condition = paste0("input['", ns("x.option"), "'] == 'Meteorology or Hydrology' "),
@@ -88,7 +83,7 @@ tagList(
                       ), # end well Panel
                       # Number of samples Selected
                       wellPanel(
-                        h4("Number of Samples in Selected Data:", align = "center"),
+                        h4(textOutput(ns("text.num.text")), align = "center"),
                         h3(textOutput(ns("text.num")), align = "center")
                       ) # end Well Panel
                ) # end Column
@@ -251,6 +246,27 @@ tagList(
 
 Res.regress <- function(input, output, session, df, df.site) {
   
+# Y axis Parameter
+  
+  #Parameter Selection UI
+  
+  output$y.param.ui <- renderUI({
+    
+    req(input$loc) # See General Note _
+    
+    ns <- session$ns
+    
+    y.param.choices <- df %>%
+      filter(Loc %in% c(input$loc)) %>%
+      .$Parameter %>%
+      factor() %>% 
+      levels()
+    
+    selectInput(ns("y.param"), "Y-axis Parameter:",        
+                choices=c(y.param.choices))
+    
+  })
+  
 # Y Parameter
   
   # Reactive Text - Units of Parameter Selected (for Parameter Range Text)
@@ -266,6 +282,8 @@ Res.regress <- function(input, output, session, df, df.site) {
   #Parameter Value Range UI
   
   output$y.range.ui <- renderUI({
+    
+    req(input$loc) # See General Note 5
     
     ns <- session$ns # see General Note 1
     
@@ -287,6 +305,25 @@ Res.regress <- function(input, output, session, df, df.site) {
   
 # X Parameter
   
+  # Parameter Selection UI
+  
+  output$x.param.ui <- renderUI({
+    
+    req(input$loc) # See General Note _
+    
+    ns <- session$ns
+    
+    x.param.choices <- df %>%
+      filter(Loc %in% c(input$loc)) %>%
+      .$Parameter %>%
+      factor() %>% 
+      levels()
+    
+    selectInput(ns("x.param"),label = NULL,        
+                choices=c(x.param.choices))
+    
+  })
+  
   # Reactive Text - Units of Parameter Selected (for Parameter Range Text)
   
   #x.param.units <- reactive({ 
@@ -300,6 +337,8 @@ Res.regress <- function(input, output, session, df, df.site) {
 # X Parameter Value Range UI
   
   output$x.range.ui <- renderUI({
+    
+    req(input$loc) # See General Note 5
     
     ns <- session$ns # see General Note 1
     
@@ -321,6 +360,8 @@ Res.regress <- function(input, output, session, df, df.site) {
 # Date Selection UI
   
   output$date.ui <- renderUI({
+    
+    req(input$loc) # See General Note 5
     
     ns <- session$ns # see General Note 1
     
@@ -344,6 +385,8 @@ Res.regress <- function(input, output, session, df, df.site) {
 # Reactive Dataframe
   
   df.react <- reactive({
+    
+    req(input$loc) # See General Note 5
     
     # filter by location, depth, and Date adn save
     df.temp <- df %>% 
@@ -371,9 +414,30 @@ Res.regress <- function(input, output, session, df, df.site) {
   })
   
   
-# Number of Selected samples Text
+  # Text - Select Site
+  
+  output$text.site.null.ui <- renderUI({
+    
+    req(is.null(input$loc)) # See General Note 1
+    wellPanel(
+      h2("Select a Site", align = "center")
+    )
+    
+  })
+  
+  
+  
+  # Text - Number of Samples
+  
+  output$text.num.text <- renderText({
+    req(input$loc) # See General Note 1
+    "Number of Samples in Selected Data"
+  })
+  
+  # Text - Number of Samples
   
   output$text.num <- renderText({
+    req(input$loc) # See General Note 1
     df.react() %>% summarise(n()) %>% paste()
   })
   

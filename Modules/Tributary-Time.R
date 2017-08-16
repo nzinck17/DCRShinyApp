@@ -6,7 +6,7 @@
 ##############################################################################################################################
 
 # Notes: 
-#   1. 
+#   1. req() will delay the rendering of a widget or other reactive object until a certain logical expression is TRUE or not NULL
 #
 # To-Do List:
 #   1. Make the Metero/Hydro Filters work
@@ -28,7 +28,6 @@ Trib.time.UI <- function(id, df) {
                wellPanel(
                  checkboxGroupInput(ns("site"), "Sites: (Choose 1st)", 
                                     choices= levels(factor(df$Site)),
-                                    selected = factor(df$Site[1]),
                                     inline=TRUE),
                  br(), br(),
                leafletOutput(ns("map"), height = 350 )
@@ -47,9 +46,10 @@ Trib.time.UI <- function(id, df) {
                  uiOutput(ns("date.ui"))
                ), # end Well Panel
                br(),
-               # Number of Samples
+               # Text - Number of Samples or "Select a site"
                wellPanel(
-                 h4("Number of Samples in Selected Data:", align = "center"),
+                 h2(textOutput(ns("text.num.null")), align = "center"),
+                 h4(textOutput(ns("text.num.text")), align = "center"),
                  h3(textOutput(ns("text.num")), align = "center")
                ) # end Well Panel
         ),#col
@@ -191,6 +191,8 @@ Trib.time <- function(input, output, session, df, df.site) {
   
   output$param.ui <- renderUI({
     
+    req(input$site) # See General Note 5
+    
     ns <- session$ns # see General Note 1
     
     param.choices <- df %>%
@@ -220,18 +222,24 @@ Trib.time <- function(input, output, session, df, df.site) {
   
 # Units Texts for Selected Parameter
   
-  param.units <- reactive({ 
+  param.units <- reactive({
+    
+    req(input$site) # See General Note _
+    
     df %>%
       filter(Parameter %in% input$param) %>%
       .$Units %>%
       factor() %>%
       levels()
+    
   })
   
   
 # Parameter Value Range Bar UI
   
   output$range.ui <- renderUI({
+    
+    req(input$site) # See General Note _
     
     ns <- session$ns # see General Note 1
     
@@ -254,6 +262,8 @@ Trib.time <- function(input, output, session, df, df.site) {
 # Date Selection UI
   
   output$date.ui <- renderUI({
+    
+    req(input$site) # See General Note _
     
     ns <- session$ns # see General Note 1
     
@@ -278,6 +288,9 @@ Trib.time <- function(input, output, session, df, df.site) {
 # Reactive Dataframe - filter for selected site, param, value range, date, and remove rows with NA for Result
   
   df.react <- reactive({
+    
+    req(input$site) # See General Note _
+    
     df %>% 
       filter(Site %in% c(input$site), 
              Parameter %in% input$param, 
@@ -286,11 +299,29 @@ Trib.time <- function(input, output, session, df, df.site) {
              !is.na(Result))
   })
   
-# Number of Selected samples Text
+
+  
+# Text - Select Site - Red
+  
+  output$text.num.null <- renderText({
+    req(is.null(input$site)) # See General Note 1
+    "Select a Site"
+  })
+  
+  # Text - Number of Samples
+  
+  output$text.num.text <- renderText({
+    req(input$site) # See General Note 1
+    "Number of Samples in Selected Data"
+  })
+  
+  # Text - Number of Samples
   
   output$text.num <- renderText({
+    req(input$site) # See General Note 1
     df.react() %>% summarise(n()) %>% paste()
   })
+  
   
 # Plot Creation
   

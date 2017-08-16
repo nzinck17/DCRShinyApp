@@ -31,11 +31,9 @@ tagList(
              wellPanel(
                checkboxGroupInput(ns("loc"), "Site Location:", 
                                   choices=levels(factor(df$Loc)),
-                                  selected = factor(df$Loc[1]),
                                   inline = TRUE),
                checkboxGroupInput(ns("depth"), "Depth:", 
                                   choices=levels(factor(df$Depth)),
-                                  selected = factor(df$Depth[1]),
                                   inline = TRUE),
                br(),
                leafletOutput(ns("map"), height = 350 )
@@ -45,9 +43,7 @@ tagList(
       column(3,
              # Parameter Selection
              wellPanel(
-               selectInput(ns("param"), "Water Quality Parameter:",        
-                           choices=levels(factor(df$Parameter)),
-                           selected = factor(df$Parameter[4])),
+               uiOutput(ns("param.ui")),
                uiOutput(ns("range.ui"))
              ), # end Well Panel
              br(),
@@ -58,7 +54,8 @@ tagList(
              br(), br(), br(),
              # Number of Samples
              wellPanel(
-               h4("Number of Samples in Selected Data:", align = "center"),
+               h2(textOutput(ns("text.num.null")), align = "center"),
+               h4(textOutput(ns("text.num.text")), align = "center"),
                h3(textOutput(ns("text.num")), align = "center")
              ) # end well Panel
       ), # end Column
@@ -201,6 +198,26 @@ tagList(
 
 Res.time <- function(input, output, session, df, df.site) {
   
+  
+  # Parameter Selection UI
+  
+  output$param.ui <- renderUI({
+    
+    req(input$loc) # See General Note 5
+    
+    ns <- session$ns # see General Note 1
+    
+    param.choices <- df %>%
+      filter(Loc %in% c(input$loc)) %>%
+      .$Parameter %>%
+      factor() %>%
+      levels()
+    
+    selectInput(ns("param"), "Parameter: ",
+                choices=c(param.choices))
+    
+  })
+  
 # Reactive Text - Units of Parameter Selected (for Parameter Range Text)
   
  # param.units <- reactive({ 
@@ -215,6 +232,8 @@ Res.time <- function(input, output, session, df, df.site) {
 #Parameter Value Range UI
   
   output$range.ui <- renderUI({
+    
+    req(input$loc) # See General Note 5
     
     ns <- session$ns # see General Note 1
     
@@ -237,6 +256,8 @@ Res.time <- function(input, output, session, df, df.site) {
 # Date Selection UI
   
   output$date.ui <- renderUI({
+    
+    req(input$loc) # See General Note 5
     
     ns <- session$ns # see General Note 1
     
@@ -261,6 +282,8 @@ Res.time <- function(input, output, session, df, df.site) {
   
   df.react <- reactive({
     
+    req(input$loc) # See General Note 5
+    
     df %>% 
       filter(Loc %in% c(input$loc)) %>%
       filter(Depth %in% c(input$depth)) %>%
@@ -271,9 +294,24 @@ Res.time <- function(input, output, session, df, df.site) {
   })
   
   
-# Number of Selected samples Text
+  # Text - Select Site - Red
+  
+  output$text.num.null <- renderText({
+    req(is.null(input$loc)) # See General Note 1
+    "Select a Site"
+  })
+  
+  # Text - Number of Samples
+  
+  output$text.num.text <- renderText({
+    req(input$loc) # See General Note 1
+    "Number of Samples in Selected Data"
+  })
+  
+  # Text - Number of Samples
   
   output$text.num <- renderText({
+    req(input$loc) # See General Note 1
     df.react() %>% summarise(n()) %>% paste()
   })
   
