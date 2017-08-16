@@ -14,6 +14,8 @@
 #   2. Plotting Features - Show Limits, Finish and Clean up Coloring options (flagged data, met filters)
 #   3. Fix Map to show reservoir locations
 #   4. Get data from Database
+#   5. Get the location/site/station terminology straight
+#   6. Split into transect and nutrient
 
 ##############################################################################################################################
 # User Interface
@@ -199,6 +201,15 @@ tagList(
 Res.time <- function(input, output, session, df, df.site) {
   
   
+  # Non Historical Parameters (when a Parameter has not been used in over 5 years). See General Note 6
+  
+  parameters.non.historical <- df %>%
+    filter(Date > Sys.Date()-years(5), Date < Sys.Date()) %>%
+    .$Parameter %>%
+    factor() %>%
+    levels()
+  
+  
   # Parameter Selection UI
   
   output$param.ui <- renderUI({
@@ -207,11 +218,24 @@ Res.time <- function(input, output, session, df, df.site) {
     
     ns <- session$ns # see General Note 1
     
-    param.choices <- df %>%
+    # Parameters which have data at any Site (in the mofule's df) within 5 years.
+    param.choices.new <- df %>%
       filter(Loc %in% c(input$loc)) %>%
+      filter(Parameter %in% parameters.non.historical) %>%
       .$Parameter %>%
       factor() %>%
       levels()
+    
+    # Parameters which do NOT have data at any Site (in the mofule's df) within 5 years.
+    param.choices.old <- df %>%
+      filter(Loc %in% c(input$loc)) %>%
+      filter(!(Parameter %in% parameters.non.historical)) %>%
+      .$Parameter %>%
+      factor() %>%
+      levels()
+    
+    # Recent Parameters first and then old parameters
+    param.choices <- c(param.choices.new, param.choices.old)
     
     selectInput(ns("param"), "Parameter: ",
                 choices=c(param.choices))

@@ -187,7 +187,17 @@ Trib.time.UI <- function(id, df) {
 
 Trib.time <- function(input, output, session, df, df.site) {
   
-# Parameter Selection UI
+# Non Historical Parameters (when a Parameter has not been used in over 5 years). See General Note 6
+  
+  parameters.non.historical <- df %>%
+    filter(Date > Sys.Date()-years(5), Date < Sys.Date()) %>%
+    .$Parameter %>%
+    factor() %>%
+    levels()
+  
+  
+  
+  # Parameter Selection UI
   
   output$param.ui <- renderUI({
     
@@ -195,24 +205,24 @@ Trib.time <- function(input, output, session, df, df.site) {
     
     ns <- session$ns # see General Note 1
     
-    param.choices <- df %>%
+    # Parameters which have data at any Site (in the mofule's df) within 5 years.
+    param.choices.new <- df %>%
       filter(Site %in% c(input$site)) %>%
+      filter(Parameter %in% parameters.non.historical) %>%
       .$Parameter %>%
       factor() %>%
       levels()
-    #
-    # reorder for historical parameters
-    #param.choices <- param.choices %>% factor(levels = rev(param.choices))
-    #
-    # move historical to front (one at a time via for loop). Historical Parameters can be changed in Sources/Settings.R
-    #for (i in length(historical.parameters)){
-    #  if(historical.parameters[i] %in% levels(param.choices)){
-    #    param.choices <- param.choices %>% relevel(historical.parameters[i])
-    #  }
-    #}
-    #
-    ## reverse order again (makes alphabetical with historical at end)
-    #param.choices <- param.choices %>% factor(levels = rev(levels(param.choices)))
+    
+    # Parameters which do NOT have data at any Site (in the mofule's df) within 5 years.
+    param.choices.old <- df %>%
+      filter(Site %in% c(input$site)) %>%
+      filter(!(Parameter %in% parameters.non.historical)) %>%
+      .$Parameter %>%
+      factor() %>%
+      levels()
+    
+    # Recent Parameters first and then old parameters
+    param.choices <- c(param.choices.new, param.choices.old)
     
     selectInput(ns("param"), "Parameter: ",
                 choices=c(param.choices))

@@ -231,6 +231,15 @@ tagList(
 
 Trib.regress <- function(input, output, session, df, df.site) {
 
+# Non Historical Parameters (when a Parameter has not been used in over 5 years). See General Note 6
+  
+  parameters.non.historical <- df %>%
+    filter(Date > Sys.Date()-years(5), Date < Sys.Date()) %>%
+    .$Parameter %>%
+    factor() %>%
+    levels()
+  
+  
 # Y axis Parameter
   
   #Parameter Selection UI
@@ -240,12 +249,25 @@ Trib.regress <- function(input, output, session, df, df.site) {
     req(input$site) # See General Note _
     
     ns <- session$ns
-
-    y.param.choices <- df %>%
+    
+    # Parameters which have data at any Site (in the mofule's df) within 5 years.
+    y.param.choices.new <- df %>%
       filter(Site %in% c(input$site)) %>%
+      filter(Parameter %in% parameters.non.historical) %>%
       .$Parameter %>%
-      factor() %>% 
+      factor() %>%
       levels()
+    
+    # Parameters which do NOT have data at any Site (in the mofule's df) within 5 years.
+    y.param.choices.old <- df %>%
+      filter(Site %in% c(input$site)) %>%
+      filter(!(Parameter %in% parameters.non.historical)) %>%
+      .$Parameter %>%
+      factor() %>%
+      levels()
+    
+    # Recent Parameters first and then old parameters
+    y.param.choices <- c(y.param.choices.new, y.param.choices.old)
     
     selectInput(ns("y.param"), "Y-axis Parameter:",        
                 choices=c(y.param.choices))
@@ -302,13 +324,26 @@ Trib.regress <- function(input, output, session, df, df.site) {
     
     ns <- session$ns
     
-    x.param.choices <- df %>%
+    # Parameters which have data at any Site (in the mofule's df) within 5 years.
+    x.param.choices.new <- df %>%
       filter(Site %in% c(input$site)) %>%
+      filter(Parameter %in% parameters.non.historical) %>%
       .$Parameter %>%
-      factor() %>% 
+      factor() %>%
       levels()
     
-    selectInput(ns("x.param"),label = NULL,        
+    # Parameters which do NOT have data at any Site (in the mofule's df) within 5 years.
+    x.param.choices.old <- df %>%
+      filter(Site %in% c(input$site)) %>%
+      filter(!(Parameter %in% parameters.non.historical)) %>%
+      .$Parameter %>%
+      factor() %>%
+      levels()
+    
+    # Recent Parameters first and then old parameters
+    x.param.choices <- c(y.param.choices.new, y.param.choices.old)
+    
+    selectInput(ns("x.param"), "X-axis Parameter:",        
                 choices=c(x.param.choices))
     
   })
