@@ -26,7 +26,7 @@ tagList(
              column(3,
                     # Site Selection with Map
                     wellPanel(
-                    checkboxGroupInput(ns("site"), "Sites: (Choose 1st)", 
+                    checkboxGroupInput(ns("site"), "Site Location", 
                                        choices= levels(factor(df$Site)),
                                        inline=TRUE),
                     leafletOutput(ns("map"), height = 450 )

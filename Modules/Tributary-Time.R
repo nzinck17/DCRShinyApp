@@ -26,7 +26,7 @@ Trib.time.UI <- function(id, df) {
         column(4,
                # Site Selection
                wellPanel(
-                 checkboxGroupInput(ns("site"), "Sites: (Choose 1st)", 
+                 checkboxGroupInput(ns("site"), "Site Location", 
                                     choices= levels(factor(df$Site)),
                                     inline=TRUE),
                  br(), br(),
