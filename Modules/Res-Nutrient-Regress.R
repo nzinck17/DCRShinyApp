@@ -288,17 +288,17 @@ res.nut.regress <- function(input, output, session, df, df.site) {
     
   })
   
-# Y Parameter
+ # Y Parameter
   
-  # Reactive Text - Units of Parameter Selected (for Parameter Range Text)
+ #  Reactive Text - Units of Parameter Selected (for Parameter Range Text)
   
-  #y.param.units <- reactive({ 
-  #  df %>%
-  #    filter(Parameter %in% input$param) %>%
-  #    .$Units %>%
-  #    factor() %>%
-  #    levels()
-  #})
+  y.param.units <- reactive({ 
+    df %>%
+      filter(Parameter %in% input$param) %>%
+      .$Units %>%
+      factor() %>%
+      levels()
+  })
   
   #Parameter Value Range UI
   
@@ -317,7 +317,7 @@ res.nut.regress <- function(input, output, session, df, df.site) {
     
     y.param.max <- y.result %>% max(na.rm=TRUE)
     
-    sliderInput(ns("y.range"), paste("Range (", ")"), #y.param.units() ,
+    sliderInput(ns("y.range"), paste("Range (", y.param.units() ,")"),
                 min = y.param.min, max = y.param.max,
                 value = c(y.param.min, y.param.max))
     
@@ -351,7 +351,7 @@ res.nut.regress <- function(input, output, session, df, df.site) {
       levels()
     
     # Recent Parameters first and then old parameters
-    x.param.choices <- c(y.param.choices.new, y.param.choices.old)
+    x.param.choices <- c(x.param.choices.new, x.param.choices.old)
     
     selectInput(ns("x.param"), "X-axis Parameter:",        
                 choices=c(x.param.choices))
@@ -360,13 +360,13 @@ res.nut.regress <- function(input, output, session, df, df.site) {
   
   # Reactive Text - Units of Parameter Selected (for Parameter Range Text)
   
-  #x.param.units <- reactive({ 
-  #  df %>%
-  #    filter(Parameter %in% input$param) %>%
-  #    .$Units %>%
-  #    factor() %>%
-  #    levels() 
-  #})
+  x.param.units <- reactive({ 
+    df %>%
+      filter(Parameter %in% input$param) %>%
+      .$Units %>%
+      factor() %>%
+      levels() 
+  })
   
 # X Parameter Value Range UI
   
@@ -385,7 +385,7 @@ res.nut.regress <- function(input, output, session, df, df.site) {
     
     x.param.max <- x.result %>% max(na.rm=TRUE)
     
-    sliderInput(ns("x.range"), paste("Range (", ")"), #x.param.units() ,
+    sliderInput(ns("x.range"), paste("Range (", x.param.units() , ")"),
                 min = x.param.min, max = x.param.max,
                 value = c(x.param.min, x.param.max))
     
@@ -493,7 +493,8 @@ res.nut.regress <- function(input, output, session, df, df.site) {
 
     # Features in which all plot options have in common
     p <- ggplot(df.react(), aes(x = x.Result, y = y.Result)) +
-      labs(x = paste(input$x.param), y = paste(input$y.param)) +  # need to Add unit display for plot
+      labs(x = paste(input$x.param, " (", x.param.units(),")", sep= ""), 
+           y = paste(input$y.param, " (", y.param.units(),")", sep= "")) +
       theme_bw() +
       theme(plot.margin = unit(c(0.2, 0.2, 0.2, 0.5), "in"))
     

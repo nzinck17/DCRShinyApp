@@ -341,7 +341,7 @@ res.tran.regress <- function(input, output, session, df, df.site) {
       levels()
     
     # Recent Parameters first and then old parameters
-    x.param.choices <- c(y.param.choices.new, y.param.choices.old)
+    x.param.choices <- c(x.param.choices.new, x.param.choices.old)
     
     selectInput(ns("x.param"), "X-axis Parameter:",        
                 choices=c(x.param.choices))
@@ -488,7 +488,8 @@ res.tran.regress <- function(input, output, session, df, df.site) {
     
     # Features in which all plot options have in common
     p <- ggplot(df.react(), aes(x = x.Result, y = y.Result)) +
-      labs(x = paste(input$x.param), y = paste(input$y.param)) +  # need to Add unit display for plot
+      labs(x = paste(input$x.param, " (", x.param.units(),")", sep= ""), 
+           y = paste(input$y.param, " (", y.param.units(),")", sep= "")) +
       theme_bw() +
       theme(plot.margin = unit(c(0.2, 0.2, 0.2, 0.5), "in"))
     

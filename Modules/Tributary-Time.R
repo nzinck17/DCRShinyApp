@@ -107,45 +107,8 @@ Trib.time.UI <- function(id, df) {
     tabsetPanel(
       
       # Plot Tab
-      tabPanel("Plot", 
-               # Plot Output
-               plotlyOutput(ns("plot"), width = "100%", height = 600),
-               # Plot Options
-               fluidRow(br(), br(),
-                        column(1),
-                        column(1,
-                               downloadButton(ns('save.plot'), "Save Plot")
-                        ), # end column
-                        column(1),
-                        column(3,
-                               checkboxGroupInput(ns("plot.display"), "Display Options:", 
-                                                  choices= c("Non-Detection Level",
-                                                             "Reporting Limit",
-                                                             "Performance Standard",
-                                                             "Log Scale (Y-axis)",
-                                                             "Show Trendline"))
-                        ), # end column
-                        #new column
-                        column(3,
-                               radioButtons(ns("plot.color"), label = "Group with Colors:", 
-                                            choices = c("None" = 1, 
-                                                        "Site" = "Site",
-                                                        "met/hydro filter 1 (select group)" = "met1",
-                                                        "met/hydro filter 2 (select group)" = "met2",
-                                                        "Flagged data" = "FlagCode"),
-                                            selected = "Site")
-                        ), # end column
-                        # new column
-                        column(3,
-                               radioButtons(ns("plot.shape"), label = "Group with Shapes:", 
-                                            choices = c("None" = 1, 
-                                                        "Site" = "Site",
-                                                        "met/hydro filter 1 (select group)" = "met1",
-                                                        "met/hydro filter 2 (select group)" = "met2",
-                                                        "Flagged data" = "FlagCode"),
-                                            selected = 1)
-                        ) # end column
-               ) # end flluid row
+      tabPanel("Plot",
+               plot.time.UI(ns("Plot Time"))
       ), # end Tab Panel - Plot
       
       # Table Tabpanel
@@ -161,20 +124,7 @@ Trib.time.UI <- function(id, df) {
       
       # Summary Tabpanel
       tabPanel("Summary",
-               column(3,
-                      checkboxInput(ns("summary.group.site"), label = "Group by Site", value = TRUE),
-                      radioButtons(ns("summary.group.time"), "Group by:",
-                                   choices = c("None" = 1,
-                                               "Year" = 2,
-                                               "Season (all years)" = 3,
-                                               "Month (all years)" = 4,
-                                               "Season (each year)" = 5,
-                                               "month (each year)" = 6),
-                                   selected = 1)
-               ),
-               column(9,
-                      tableOutput(ns("summary"))
-               ) # end column
+               summary.UI(ns("Summary"))
       ) # end Tab Panel - Summary
     )  # end tabsetpanel (plots, stats, etc.)
   ) # end taglist
@@ -332,148 +282,17 @@ Trib.time <- function(input, output, session, df, df.site) {
     df.react() %>% summarise(n()) %>% paste()
   })
   
+# Plot
   
-# Plot Creation
-  
-  p <- reactive({
-    
-    # Features in which all plot options have in common
-    p <- ggplot(df.react(), aes(x = Date, y = Result)) +
-      labs(x = 'Date', y = paste(input$param, " (", param.units(),")", sep= "")) +
-      theme_bw() +
-      theme(plot.margin = unit(c(0.2, 0.2, 0.2, 0.5), "in"))
-    
-    # Coloring and Shapes as well as Trendline
-    
-    # Group by both Color and Shape when both selected
-    if(input$plot.color != 1 & input$plot.shape != 1){
-      p <- p + geom_point(aes_string(color = input$plot.color, shape = input$plot.shape))
-      if("Show Trendline" %in% input$plot.display){
-        p <- p + geom_smooth(method = "loess", size = 1.5, aes_string(color = input$plot.color, linetype = input$plot.shape))
-      }
-    }
-    # Group by only Color when only color grouping is selected
-    else if (input$plot.color != 1){
-      p <- p + geom_point(aes_string(color = input$plot.color))
-      if("Show Trendline" %in% input$plot.display){
-        p <- p + geom_smooth(method = "loess", size = 1.5, aes_string(color = input$plot.color))
-      }
-    } 
-    # Group by only Shape when only shape grouping is selected 
-    else if (input$plot.shape != 1){
-      p <- p + geom_point(aes_string(shape = input$plot.shape))
-      if("Show Trendline" %in% input$plot.display){
-        p <- p + geom_smooth(method = "loess", size = 1.5, aes_string(linetype = input$plot.shape))
-      }
-    } 
-    # No Grouping Selected
-    else {
-      p <- p + geom_point()
-      if("Show Trendline" %in% input$plot.display){
-        p <- p + geom_smooth(method = "loess", size = 1.5)
-      }
-    }
-    
-    # Facet for Sites if no grouping for site is selected and number of sites is greater than 1
-    if(input$plot.color != "Site" & input$plot.shape != "Site" & length(c(input$site)) > 1){
-      p <- p + facet_wrap(~Site, ncol = ceiling(length(c(input$site))/4))
-    } 
-    
-    # Log Scale
-    if("Log Scale (Y-axis)" %in% input$plot.display){
-      p <- p + scale_y_log10()
-    }
-    
-    # Show Non-Detect Level
-    if("Non-Detection Level" %in% input$plot.display){
-      p <- p + geom_hline(yintercept = 2, linetype = "dashed")
-    }
-    
-    # Show Reprting Limit
-    if("Reporting Limit" %in% input$plot.display){
-      p <- p + geom_hline(yintercept = 5, linetype = "dashed")
-    }
-    
-    # Performance Standard
-    if("Performance Standard" %in% input$plot.display){
-      p <- p + geom_hline(yintercept = 3)
-    }
-    
-    p
-    
-  })
-  
-  
-# Plot Visualization - convert plot to interactive plot and create an plot output object
-  
-  output$plot <- renderPlotly({
-    ggplotly(p())
-  })
-  
-  
-  # Plot Print
-  
-  output$save.plot <- downloadHandler(
-    filename = function (){paste(input$param,' Site(s) ', input$site,' from ', input$date[1],' to ', input$date[2], '.png', sep='')},
-    content = function(file) {ggsave(file, plot = p(), device = "png")},
-    contentType = 'image/png'
-  )
-  
+  callModule(plot.time, "Plot Time", df = df.react)
   
 # Tables
   
   output$table <- renderDataTable(df.react())
   
-  
 # Summary Statistics
-  
-  output$summary <- renderTable({
-    
-    # Add Year, season, and Month Columns
-    sum.1 <- df.react() %>%
-      mutate(Year = lubridate::year(Date), 
-             Season = getSeason(Date),
-             Month = lubridate::month(Date)
-      )
-    
-    # Group by time (year, season, month)
-    if (input$summary.group.time == 1){
-      sum.dots = c()
-    } else if (input$summary.group.time == 2) {
-      sum.dots = c("Year")
-    } else if (input$summary.group.time == 3) {
-      sum.dots = c("Season")
-    } else if (input$summary.group.time == 4) {
-      sum.dots = c("Month")
-    } else if (input$summary.group.time == 5) {
-      sum.dots = c("Year", "Season")
-    } else if (input$summary.group.time == 6) {
-      sum.dots = c("Year", "Month")
-    }
-    
-    # Group by site
-    if(input$summary.group.site == TRUE){
-      sum.dots <- c(sum.dots, "Site")
-    }  
-    
-    # Applying Grouping (if Grouping selected)
-    if (input$summary.group.site == FALSE & input$summary.group.time == 1){
-      sum.2 <- sum.1
-    } else {
-      sum.2 <- sum.1 %>%
-        group_by_(.dots = sum.dots)
-    }
-    
-    # Making the Sumamry Statistic Columns
-    sum.2 %>% summarise(average = mean(Result), 
-                        min = min(Result, na.rm=TRUE), 
-                        max = max(Result, na.rm=TRUE), 
-                        median = median(Result, na.rm=TRUE), 
-                        variance = var(Result, na.rm=TRUE), 
-                        `stand.dev.` = sd(Result, na.rm=TRUE),
-                        `number of samples` = n())
-  })
-  
+
+  callModule(summary, "Summary", df = df.react)
   
 # Reactive Site Dataframe for Map Coloring, Creating a Selected Column with "Yes" or "No" values
   

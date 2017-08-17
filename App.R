@@ -35,8 +35,7 @@ library(RODBC)
 source("Sources/LoadMSAccessData.R")
 source("Sources/Settings.R")
 
-### Load Modules
-#https://raw.githubusercontent.com/nzinck17/DCRShinyApp/master/
+### Load Primary Modules
 
 source("Modules/Home.R")
 source("Modules/Tributary-Time.R")
@@ -53,9 +52,17 @@ source("Modules/Report-AWQ.R")
 source("Modules/Report-MWQ.R")
 source("Modules/Report-Custom.R")
 
-# Load Functions
+### Load Secondary Modules (Module that goes inside a module)
 
-#Relative Paths
+source("Modules2/Plot-Time.R")
+#source("Modules2/Plot-Time-Depth.R")
+#source("Modules2/Plot-Regress.R")
+#source("Modules2/Plot-Regress-Depth.R")
+source("Modules2/Summary.R")
+#source("Modules2/Summary-Depth.R")
+
+ ### Load Functions
+
 source("Functions/GetSeasons.R")
 source("Functions/circleSizeLegend.R")
 

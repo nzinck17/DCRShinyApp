@@ -242,16 +242,16 @@ res.nut.time <- function(input, output, session, df, df.site) {
     
   })
   
-# Reactive Text - Units of Parameter Selected (for Parameter Range Text)
+ # Reactive Text - Units of Parameter Selected (for Parameter Range Text)
   
- # param.units <- reactive({ 
- #   df %>%
- #     filter(Parameter %in% input$param) %>%
- #     .$Units %>%
- #     factor() %>%
- #     levels()
+  param.units <- reactive({ 
+    df %>%
+      filter(Parameter %in% input$param) %>%
+      .$Units %>%
+      factor() %>%
+      levels()
     
- # })
+  })
   
 #Parameter Value Range UI
   
@@ -270,7 +270,7 @@ res.nut.time <- function(input, output, session, df, df.site) {
     
     param.max <- result %>% max(na.rm=TRUE)
     
-    sliderInput(ns("range"), label = paste("Range (",  ")"), #param.units(),
+    sliderInput(ns("range"), label = paste("Range (", param.units(), ")"), 
                 min = param.min, max = param.max,
                 value = c(param.min, param.max))
     
@@ -346,7 +346,7 @@ res.nut.time <- function(input, output, session, df, df.site) {
     
     # Features in which all plot options have in common
     p <- ggplot(df.react(), aes(x = Date, y = Result)) +
-      labs(x = 'Date', y = paste(input$param)) +    # , " (", param.units(),")", sep= ""
+      labs(x = 'Date', y = paste(input$param, " (", param.units(),")", sep= "")) +  
       theme_bw() +
       theme(plot.margin = unit(c(0.2, 0.2, 0.2, 0.5), "in"))
     
