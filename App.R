@@ -56,10 +56,11 @@ source("Modules/Report-Custom.R")
 
 source("Modules2/Plot-Time.R")
 #source("Modules2/Plot-Time-Depth.R")
-#source("Modules2/Plot-Regress.R")
+source("Modules2/Plot-Regress.R")
 #source("Modules2/Plot-Regress-Depth.R")
 source("Modules2/Summary.R")
 #source("Modules2/Summary-Depth.R")
+#source("Modules2/Summary-Profile.R")
 
  ### Load Functions
 
@@ -71,18 +72,6 @@ source("Functions/circleSizeLegend.R")
 ###################################################################################
 
 ui <- navbarPage("DCR", position = "fixed-top", inverse = TRUE, collapsible = TRUE,
-
-##########################################
-tags$head(
-  tags$style(type = "text/css", "html, body {width:100%;height:100%}",
-             ".leaflet .legend i{
-             border-radius:50%;
-             width: 10px;
-             height: 10px;
-             margin-top: 4px;
-             }
-             ")
-  ),
 
 ######################################################                   
 # PG 1 - Home Page            
@@ -102,11 +91,11 @@ tabPanel("Home",
 tabPanel("Tributary",
 
   # Title
-  fluidRow(br(), br(), br(), br(), h2("Tributary Time-Series Analysis", align = "center"), br()),
+  fluidRow(br(), br(), br(), br(), h2("Tributary Water Quality Data", align = "center"), br()),
   
   navlistPanel(widths = c(2, 10),
                tabPanel("Time-Series",
-                        fluidRow(column(1),column(8, h4("Tributary Time-Series Analysis"))),
+                        fluidRow(column(10, h4("Tributary Time-Series Analysis", align = "center")), column(2)),
                         tabsetPanel(
                           tabPanel("Quabbin", Trib.time.UI("Quabbin Trib Time", df.trib.quab)),
                           tabPanel("Ware River", Trib.time.UI("Ware River Trib Time", df.trib.ware)),
@@ -115,7 +104,7 @@ tabPanel("Tributary",
                         ) # end tabset Panel
                ), # end tabpanel
                tabPanel("Regression",
-                        fluidRow(column(1),column(8, h4("Tributary Time-Series Analysis"))),
+                        fluidRow(column(10, h4("Tributary Regression Analysis", align = "center")), column(2)),
                         tabsetPanel(
                           tabPanel("Quabbin", Trib.regress.UI("Quabbin Trib Regress", df.trib.quab)),
                           tabPanel("Ware River", Trib.regress.UI("Ware River Trib Regress", df.trib.ware)),
@@ -134,20 +123,20 @@ tabPanel("Tributary",
 tabPanel("Reservoir",
 
    # Title
-   fluidRow(br(), br(), br(), br(), h3("Reservoir Water Quality Data Viewer"), br()),
+   fluidRow(br(), br(), br(), br(), h2("Reservoir Water Quality Data", align = "center"), br()),
    
    navlistPanel(widths = c(2, 10),
                 
                 "Transect",
                 tabPanel("Time-Series",
-                         fluidRow(column(1),column(8, h4("Transect Time-Series Analysis"))),
+                         fluidRow(column(10, h4("Transect Time-Series Analysis", align = "center")), column(2)),
                          tabsetPanel(
                            tabPanel("Quabbin", res.tran.time.UI("Quabbin Res Tran Time", df.res.quab)),
                            tabPanel("Wachusett", res.tran.time.UI("Wachusett Res Tran Time", df.res.wach))
                          ) # end tabset Panel
                 ), # end tabpanel
                 tabPanel("Regression",
-                         fluidRow(column(1),column(8, h4("Transect Regression Analysis"))),
+                         fluidRow(column(10, h4("Transect Regression Analysis", align = "center")), column(2)),
                          tabsetPanel(
                            tabPanel("Quabbin", res.tran.regress.UI("Quabbin Res Tran Regress", df.res.quab)),
                            tabPanel("Wachusett", res.tran.regress.UI("Wachusett Res Tran Regress", df.res.wach))
@@ -156,14 +145,14 @@ tabPanel("Reservoir",
                 
                 "Nutrient",
                 tabPanel("Time-Series",
-                         fluidRow(column(1),column(8, h4("Nutrient Time-Series Analysis"))),
+                         fluidRow(column(10, h4("Nutrition Time-Series Analysis", align = "center")), column(2)),
                          tabsetPanel(
                            tabPanel("Quabbin", res.nut.time.UI("Quabbin Res Nut Time", df.res.quab)),
                            tabPanel("Wachusett", res.nut.time.UI("Wachusett Res Nut Time", df.res.wach))
                          )
                 ),
                 tabPanel("Regression",
-                         fluidRow(column(1),column(8, h4("Nutrient Regression Analysis"))),
+                         fluidRow(column(10, h4("Nutrient Regression Analysis", align = "center")), column(2)),
                          tabsetPanel(
                            tabPanel("Quabbin", res.nut.regress.UI("Quabbin Res Nut Regress", df.res.quab)),
                            tabPanel("Wachusett", res.nut.regress.UI("Wachusett Res Nut Regress", df.res.wach))
@@ -172,7 +161,7 @@ tabPanel("Reservoir",
                 
                 "Profile",
                 tabPanel("Heat Map Custom",
-                         fluidRow(column(1),column(8, h4("Heatmeap (Custom) of Profile Data"))),
+                         fluidRow(column(10, h4("Profile Heatmap (Custom)", align = "center")), column(2)),
                          tabsetPanel(
                            tabPanel("Quabbin", prof.heatmap.UI("Quabbin Profile Heatmap", df.profile.quab)),
                            tabPanel("Wachusett", prof.heatmap.UI("Wachusett Profile Heatmap", df.profile.wach))
@@ -181,7 +170,7 @@ tabPanel("Reservoir",
                 tabPanel("Heat Map Standard"),
                 
                 tabPanel("Line Plot Custom",
-                         fluidRow(column(1),column(8, h4("Line Plot (Custom) of Profile Data"))),
+                         fluidRow(column(10, h4("Profile Line Plot (Custom)", align = "center")), column(2)),
                          tabsetPanel(
                            tabPanel("Quabbin", prof.line.UI("Quabbin Profile Line", df.profile.quab)),
                            tabPanel("Wachusett", prof.line.UI("Wachusett Profile Line", df.profile.wach))
@@ -191,7 +180,7 @@ tabPanel("Reservoir",
                 tabPanel("Line Plot Standard"),
                 
                 tabPanel("Table and Summary",
-                         fluidRow(column(1),column(8, h4("Table and Summary of Profile Data"))),
+                         fluidRow(column(10, h4("Profile Summary", align = "center")), column(2)),
                          tabsetPanel(
                            tabPanel("Quabbin", prof.summary.UI("Quabbin Profile Summary", df.profile.quab)),
                            tabPanel("Wachusett", prof.summary.UI("Wachusett Profile Summary", df.profile.wach))
@@ -212,7 +201,7 @@ tabPanel("Reservoir",
 tabPanel("Map Plot",
          
          # Title
-         fluidRow(column(1),column(8, br(), br(), br(), br(), h3("Map Viewer"), br())),
+         fluidRow(br(), br(), br(), br(), h2("Map Plot", align = "center"), br()),
          
          navlistPanel(widths = c(2, 10),
                       "Tributaries",
@@ -223,9 +212,7 @@ tabPanel("Map Plot",
                       tabPanel("Quabbin", map.plot.UI("Quabbin Restran MapPlot", df = df.res.quab)),
                       tabPanel("Wachusett", map.plot.UI("Wachusett Restran MapPlot", df = df.res.quab))
          ) # end navlist
-         
-         
-         
+
 ), # end tabpanel (page)
 
 
@@ -235,7 +222,7 @@ tabPanel("Map Plot",
 tabPanel("Met/Hydro",
          
          # Title
-         fluidRow(br(), br(), br(), br(), h3("Hydrology and Meteorology Data Viewer"))
+         fluidRow(br(), br(), br(), br(), h2("Hydrology and Meteorology Data", align = "center"), br())
 ),  
 
 ####################################################################
@@ -244,7 +231,7 @@ tabPanel("Met/Hydro",
 tabPanel("Forestry",
          
          # Title
-         fluidRow(br(), br(), br(), br(), h3("Forestry"))
+         fluidRow(br(), br(), br(), br(), h2("Forestry Data", align = "center"), br())
 ), 
 
 #########################################################
@@ -252,19 +239,19 @@ tabPanel("Forestry",
 
 tabPanel("Report",
          # Title
-         fluidRow(column(1),column(8, br(), br(), br(), br(), h3("Report Generation Tool"), br())),
+         fluidRow(br(), br(), br(), br(), h2("Report Generation Tool", align = "center"), br()),
          
          navlistPanel(widths = c(2, 10),
                       "Preset Reports",
                       tabPanel("Annual WQ",
-                               fluidRow(column(1),column(8, h4("Annual Water Quality Reports"))),
+                               fluidRow(column(10, h4("Annual Water Quality Reports", align = "center")), column(2)),
                                tabsetPanel(
                                  tabPanel("Quabbin", report.awq.UI("Quabbin AWQ Report", df.trib.quab)),
                                  tabPanel("Wachusett", report.awq.UI("Wachusett AWQ Report", df.trib.wach))
                                ) # end tabset Panel
                       ), # end tabpanel
                       tabPanel("Monthly WQ",
-                               fluidRow(column(1),column(8, h4("Annual Water Quality Reports"))),
+                               fluidRow(column(10, h4("Monthly Water Quality Reports", align = "center")), column(2)),
                                tabsetPanel(
                                  tabPanel("Quabbin", report.mwq.UI("Quabbin MWQ Report", df.trib.quab)),
                                  tabPanel("Wachusett", report.mwq.UI("Wachusett MWQ Report", df.trib.wach))
@@ -272,7 +259,7 @@ tabPanel("Report",
                       ), # end tabpanel
                       "Custom Reports",
                       tabPanel("Tributary",
-                               fluidRow(column(1),column(8, h4("Tributary Custom Tributary Reports"))),
+                               fluidRow(column(10, h4("Tributary Custom Reports", align = "center")), column(2)),
                                tabsetPanel(
                                  tabPanel("Quabbin", report.custom.UI("Quabbin Trib Custom Report", df.trib.quab)),
                                  tabPanel("Ware River", report.custom.UI("Ware River Trib Custom Report", df.trib.ware)),
@@ -280,29 +267,27 @@ tabPanel("Report",
                                )
                       ),
                       tabPanel("Reservoir",
-                               fluidRow(column(1),column(8, h4("Reservoir Custom Tributary Reports"))),
+                               fluidRow(column(10, h4("Reservoir Custom Reports", align = "center")), column(2)),
                                tabsetPanel(
                                  tabPanel("Quabbin",report.custom.UI("Quabbin Res Custom Report", df.res.quab)),
                                  tabPanel("Wachusett",report.custom.UI("Wachusett Res Custom Report", df.res.wach))
                                )
                       ),
                       tabPanel("Profile",
-                               fluidRow(column(1),column(8, h4("Profile Custom Tributary Reports"))),
+                               fluidRow(column(10, h4("Profile Custom Reports", align = "center")), column(2)),
                                tabsetPanel(
                                  tabPanel("Quabbin",report.custom.UI("Quabbin Profile Custom Report", df.profile.quab)),
                                  tabPanel("Wachusett",report.custom.UI("Wachusett Profile Custom Report", df.profile.wach))
                                )
                       ),
                       tabPanel("Phytoplankton",
-                               fluidRow(column(1),column(8, h4("Phytoplankton Custom Tributary Reports"))),
+                               fluidRow(column(10, h4("Phytoplankton Custom Reports", align = "center")), column(2)),
                                tabsetPanel(
                                  tabPanel("Quabbin", report.custom.UI("Quabbin Phyto Custom Report", df.profile.quab)),
                                  tabPanel("Wachusett", report.custom.UI("Wachusett Phyto Custom Report", df.profile.wach))
                                )
                       )
          ) # end navlist
-         
-
          
 ), # end tabpanel (page)
 
@@ -312,7 +297,7 @@ tabPanel("Report",
 # Give the page a title
 tabPanel("Input Data",
          
-         fluidRow(br(), br(), br(), br(), h3("Input Data (Maybe make seperate)"),
+         fluidRow(br(), br(), br(), br(), h2("Input Data", align = "center"), br(),
                   br(), h4("button to make sure all sites in list are accounted for in Site Table"),
                   br(), h4("button to make sure all Parameters in list are accounted for in Parameter Table")
                   )

@@ -20,6 +20,20 @@ Home.UI <- function(id) {
 ns <- NS(id)
 
 tagList(
+  
+  # CSS for map / map legend
+  tags$head(
+    tags$style(type = "text/css", "html, body {width:100%;height:100%}",
+               ".leaflet .legend i{
+               border-radius:50%;
+               width: 10px;
+               height: 10px;
+               margin-top: 4px;
+                }
+          ") # end tags style
+  ), # end tags head
+  # end CSS
+  
   fluidRow( 
     leafletOutput(ns("map"), height = 700)
   ),
