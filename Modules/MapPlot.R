@@ -22,9 +22,9 @@
 #      is becuase the Lat/Long coordinates would be reset, which is likely undesired.
 #
 # To-Do List:
-#   1. Make the CSS more localized
 #   2. Make a more precise sig fig method for statistic (i.e. Number of Samples should not be rounded (maybe keep all 
 #      non-decimal numbers))
+#   3. Crashed with color numeric when selected variance
 
 ##############################################################################################################################
 # User Interface

@@ -38,13 +38,12 @@ source("Sources/Settings.R")
 ### Load Primary Modules
 
 source("Modules/Home.R")
-source("Modules/Tributary-Time.R")
-source("Modules/Tributary-Regress.R")
-source("Modules/Res-Transect-Time.R")
-source("Modules/Res-Transect-Regress.R")
-source("Modules/Res-Nutrient-Time.R")
-source("Modules/Res-Nutrient-Regress.R")
+source("Modules/Time.R")
+source("Modules/Regress.R")
+source("Modules/Time-Depth.R")
+source("Modules/Regress-Depth.R")
 source("Modules/Profile-Heatmap.R")
+source("Modules/Profile-3D.R")
 source("Modules/Profile-Line.R")
 source("Modules/Profile-Summary.R")
 source("Modules/MapPlot.R")
@@ -82,7 +81,7 @@ tabPanel("Home",
   fluidRow(br(), br(), br(), br(), h2("Water Quality Data Management System", align = "center")),
   fluidRow(h3("Department of Conservation and Recreation", align = "center"), br()),
   
-    Home.UI("Home")
+  Home.UI("Home")
   
 ),
 ######################################################                   
@@ -97,19 +96,19 @@ tabPanel("Tributary",
                tabPanel("Time-Series",
                         fluidRow(column(10, h4("Tributary Time-Series Analysis", align = "center")), column(2)),
                         tabsetPanel(
-                          tabPanel("Quabbin", Trib.time.UI("Quabbin Trib Time", df.trib.quab)),
-                          tabPanel("Ware River", Trib.time.UI("Ware River Trib Time", df.trib.ware)),
-                          tabPanel("Wachusett", Trib.time.UI("Wachusett Trib Time", df.trib.wach)),
-                          tabPanel("All Tribs", Trib.time.UI("All Tribs Time", df.trib.all))
+                          tabPanel("Quabbin", time.UI("Quabbin Trib Time", df.trib.quab)),
+                          tabPanel("Ware River", time.UI("Ware River Trib Time", df.trib.ware)),
+                          tabPanel("Wachusett", time.UI("Wachusett Trib Time", df.trib.wach)),
+                          tabPanel("All Tribs", time.UI("All Tribs Time", df.trib.all))
                         ) # end tabset Panel
                ), # end tabpanel
                tabPanel("Regression",
                         fluidRow(column(10, h4("Tributary Regression Analysis", align = "center")), column(2)),
                         tabsetPanel(
-                          tabPanel("Quabbin", Trib.regress.UI("Quabbin Trib Regress", df.trib.quab)),
-                          tabPanel("Ware River", Trib.regress.UI("Ware River Trib Regress", df.trib.ware)),
-                          tabPanel("Wachusett", Trib.regress.UI("Wachusett Trib Regress", df.trib.wach)),
-                          tabPanel("All Tribs", Trib.regress.UI("All Tribs Regress", df.trib.all))
+                          tabPanel("Quabbin", regress.UI("Quabbin Trib Regress", df.trib.quab)),
+                          tabPanel("Ware River", regress.UI("Ware River Trib Regress", df.trib.ware)),
+                          tabPanel("Wachusett", regress.UI("Wachusett Trib Regress", df.trib.wach)),
+                          tabPanel("All Tribs", regress.UI("All Tribs Regress", df.trib.all))
                         ) # end tabset Panel
                ) # end tabpanel
   ) # end navlist panel
@@ -131,15 +130,15 @@ tabPanel("Reservoir",
                 tabPanel("Time-Series",
                          fluidRow(column(10, h4("Transect Time-Series Analysis", align = "center")), column(2)),
                          tabsetPanel(
-                           tabPanel("Quabbin", res.tran.time.UI("Quabbin Res Tran Time", df.res.quab)),
-                           tabPanel("Wachusett", res.tran.time.UI("Wachusett Res Tran Time", df.res.wach))
+                           tabPanel("Quabbin", time.UI("Quabbin Res Tran Time", df.res.quab)),
+                           tabPanel("Wachusett", time.UI("Wachusett Res Tran Time", df.res.wach))
                          ) # end tabset Panel
                 ), # end tabpanel
                 tabPanel("Regression",
                          fluidRow(column(10, h4("Transect Regression Analysis", align = "center")), column(2)),
                          tabsetPanel(
-                           tabPanel("Quabbin", res.tran.regress.UI("Quabbin Res Tran Regress", df.res.quab)),
-                           tabPanel("Wachusett", res.tran.regress.UI("Wachusett Res Tran Regress", df.res.wach))
+                           tabPanel("Quabbin", regress.UI("Quabbin Res Tran Regress", df.res.quab)),
+                           tabPanel("Wachusett", regress.UI("Wachusett Res Tran Regress", df.res.wach))
                          ) # end tabset panel
                 ), # end tabpanel
                 
@@ -147,15 +146,15 @@ tabPanel("Reservoir",
                 tabPanel("Time-Series",
                          fluidRow(column(10, h4("Nutrition Time-Series Analysis", align = "center")), column(2)),
                          tabsetPanel(
-                           tabPanel("Quabbin", res.nut.time.UI("Quabbin Res Nut Time", df.res.quab)),
-                           tabPanel("Wachusett", res.nut.time.UI("Wachusett Res Nut Time", df.res.wach))
+                           tabPanel("Quabbin", time.depth.UI("Quabbin Res Nut Time", df.res.quab)),
+                           tabPanel("Wachusett", time.depth.UI("Wachusett Res Nut Time", df.res.wach))
                          )
                 ),
                 tabPanel("Regression",
                          fluidRow(column(10, h4("Nutrient Regression Analysis", align = "center")), column(2)),
                          tabsetPanel(
-                           tabPanel("Quabbin", res.nut.regress.UI("Quabbin Res Nut Regress", df.res.quab)),
-                           tabPanel("Wachusett", res.nut.regress.UI("Wachusett Res Nut Regress", df.res.wach))
+                           tabPanel("Quabbin", regress.depth.UI("Quabbin Res Nut Regress", df.res.quab)),
+                           tabPanel("Wachusett", regress.depth.UI("Wachusett Res Nut Regress", df.res.wach))
                          )
                 ),
                 
@@ -169,6 +168,13 @@ tabPanel("Reservoir",
                 ),
                 tabPanel("Heat Map Standard"),
                 
+                tabPanel("3D",
+                         fluidRow(column(10, h4("Profile 3D", align = "center")), column(2)),
+                         tabsetPanel(
+                           tabPanel("Quabbin", prof.3D.UI("Quabbin Profile 3D", df.profile.quab)),
+                           tabPanel("Wachusett", prof.3D.UI("Wachusett Profile 3D", df.profile.wach))
+                         )
+                ),
                 tabPanel("Line Plot Custom",
                          fluidRow(column(10, h4("Profile Line Plot (Custom)", align = "center")), column(2)),
                          tabsetPanel(
@@ -324,37 +330,44 @@ server <- function(input, output) {
 # PG 2 - Tributary
   
   # Time Series
-  callModule(Trib.time, "Quabbin Trib Time", df = df.trib.quab, df.site = df.trib.quab.site)
-  callModule(Trib.time, "Ware River Trib Time", df = df.trib.ware, df.site = df.trib.ware.site)
-  callModule(Trib.time, "Wachusett Trib Time", df = df.trib.wach, df.site = df.trib.wach.site)
-  callModule(Trib.time, "All Trib Time", df = df.trib.all, df.site = df.trib.all.site)
+  callModule(time, "Quabbin Trib Time", df = df.trib.quab, df.site = df.trib.quab.site)
+  callModule(time, "Ware River Trib Time", df = df.trib.ware, df.site = df.trib.ware.site)
+  callModule(time, "Wachusett Trib Time", df = df.trib.wach, df.site = df.trib.wach.site)
+  callModule(time, "All Trib Time", df = df.trib.all, df.site = df.trib.all.site)
   
   # Regression
-  callModule(Trib.regress, "Quabbin Trib Regress", df = df.trib.quab, df.site = df.trib.quab.site)
-  callModule(Trib.regress, "Ware River Trib Regress", df = df.trib.ware, df.site = df.trib.ware.site)
-  callModule(Trib.regress, "Wachusett Trib Regress", df = df.trib.wach, df.site = df.trib.wach.site)
-  callModule(Trib.regress, "All Trib Regress", df = df.trib.all, df.site = df.trib.all.site)
+  callModule(regress, "Quabbin Trib Regress", df = df.trib.quab, df.site = df.trib.quab.site)
+  callModule(regress, "Ware River Trib Regress", df = df.trib.ware, df.site = df.trib.ware.site)
+  callModule(regress, "Wachusett Trib Regress", df = df.trib.wach, df.site = df.trib.wach.site)
+  callModule(regress, "All Trib Regress", df = df.trib.all, df.site = df.trib.all.site)
   
 #############################################################
 # PG 3 - Reservoir 
   
   # Transect
-  callModule(res.tran.time, "Quabbin Res Tran Time", df = df.res.quab, df.site = df.res.quab.site)
-  callModule(res.tran.time, "Wachusett Res Tran Time", df = df.res.wach, df.site = df.res.wach.site)
-  callModule(res.tran.regress, "Quabbin Res Tran Regress", df = df.res.quab, df.site = df.res.quab.site)
-  callModule(res.tran.regress, "Wachusett Res Tran Regress", df = df.res.wach, df.site = df.res.wach.site)
+  callModule(time, "Quabbin Res Tran Time", df = df.res.quab, df.site = df.res.quab.site)
+  callModule(time, "Wachusett Res Tran Time", df = df.res.wach, df.site = df.res.wach.site)
+  
+  callModule(regress, "Quabbin Res Tran Regress", df = df.res.quab, df.site = df.res.quab.site)
+  callModule(regress, "Wachusett Res Tran Regress", df = df.res.wach, df.site = df.res.wach.site)
   
   # Nutrient
-  callModule(res.nut.time, "Quabbin Res Nut Time", df = df.res.quab, df.site = df.res.quab.site)
-  callModule(res.nut.time, "Wachusett Res Nut Time", df = df.res.wach, df.site = df.res.wach.site)
-  callModule(res.nut.regress, "Quabbin Res Nut Regress", df = df.res.quab, df.site = df.res.quab.site)
-  callModule(res.nut.regress, "Wachusett Res Nut Regress", df = df.res.wach, df.site = df.res.wach.site)
+  callModule(time.depth, "Quabbin Res Nut Time", df = df.res.quab, df.site = df.res.quab.site)
+  callModule(time.depth, "Wachusett Res Nut Time", df = df.res.wach, df.site = df.res.wach.site)
+  
+  callModule(regress.depth, "Quabbin Res Nut Regress", df = df.res.quab, df.site = df.res.quab.site)
+  callModule(regress.depth, "Wachusett Res Nut Regress", df = df.res.wach, df.site = df.res.wach.site)
   
   # Profile
   callModule(prof.heatmap, "Quabbin Profile Heatmap", df = df.profile.quab)
   callModule(prof.heatmap, "Wachusett Profile Heatmap", df = df.profile.wach)
+  
+  callModule(prof.3D, "Quabbin Profile 3D", df = df.profile.quab)
+  callModule(prof.3D, "Wachusett Profile 3D", df = df.profile.wach)
+  
   callModule(prof.line, "Quabbin Profile Line", df = df.profile.quab)
   callModule(prof.line, "Wachusett Profile Line", df = df.profile.wach)
+  
   callModule(prof.summary, "Quabbin Profile Summary", df = df.profile.quab)
   callModule(prof.summary, "Wachusett Profile Summary", df = df.profile.wach)
   
