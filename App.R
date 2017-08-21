@@ -54,12 +54,13 @@ source("Modules/Report-Custom.R")
 ### Load Secondary Modules (Module that goes inside a module)
 
 source("Modules2/Plot-Time.R")
-#source("Modules2/Plot-Time-Depth.R")
+source("Modules2/Plot-Time-Depth.R")
 source("Modules2/Plot-Regress.R")
 #source("Modules2/Plot-Regress-Depth.R")
 source("Modules2/Summary.R")
 #source("Modules2/Summary-Depth.R")
 #source("Modules2/Summary-Profile.R")
+#source("Modules2/SiteMap.R")
 
  ### Load Functions
 
