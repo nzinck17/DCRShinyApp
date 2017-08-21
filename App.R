@@ -391,8 +391,12 @@ server <- function(input, output) {
   callModule(report.custom, "Wachusett Profile Custom Report", df = df.profile.wach, df.site = df.res.wach.site)
   callModule(report.custom, "Quabbin Phyto Custom Report", df = df.profile.quab, df.site = df.res.quab.site)
   callModule(report.custom, "Wachusett Phyto Custom Report", df = df.profile.wach, df.site = df.res.wach.site)
-
- onStop(stopApp())
+# Code to stop app when browser session window closes
+  shinyServer(function(input, output, session){
+    session$onSessionEnded(function() {
+      stopApp()
+    })
+  })
 } # end server function
 
 #combines the user interface and server (it's a must)
