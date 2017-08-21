@@ -392,6 +392,7 @@ server <- function(input, output) {
   callModule(report.custom, "Quabbin Phyto Custom Report", df = df.profile.quab, df.site = df.res.quab.site)
   callModule(report.custom, "Wachusett Phyto Custom Report", df = df.profile.wach, df.site = df.res.wach.site)
 
+ onStop(stopApp())
 } # end server function
 
 #combines the user interface and server (it's a must)
