@@ -23,17 +23,27 @@ time.UI <- function(id, df) {
   tagList(
     wellPanel(       
       fluidRow(
-        column(4,
+        column(3,
                # Site Selection
                wellPanel(
-                 checkboxGroupInput(ns("site"), "Site Location:", 
-                                    choices= levels(factor(df$Site)),
-                                    inline=TRUE),
-                 br(), br(),
+                 uiOutput(ns("site.primary.ui"))
+               ),
+               wellPanel(
+                 uiOutput(ns("site.nonprim.cat.ui")),
+                 uiOutput(ns("site.nonprim.ui"))
+               ) # end Well Panel
+        ), # end Column
+        column(3,
+               # Text - Number of Samples or "Select a site"
+               wellPanel(
+                 h2(textOutput(ns("text.num.null")), align = "center"),
+                 h4(textOutput(ns("text.num.text")), align = "center"),
+                 h3(textOutput(ns("text.num")), align = "center")
+               ), # end Well Panel
+               wellPanel(
                leafletOutput(ns("map"), height = 350 )
                ) # end Well Panel
         ), # end Column
-        column(1),
         column(3,
                # Parameter Selection
                wellPanel(
@@ -44,16 +54,8 @@ time.UI <- function(id, df) {
                # Date Selection
                wellPanel(
                  uiOutput(ns("date.ui"))
-               ), # end Well Panel
-               br(),
-               # Text - Number of Samples or "Select a site"
-               wellPanel(
-                 h2(textOutput(ns("text.num.null")), align = "center"),
-                 h4(textOutput(ns("text.num.text")), align = "center"),
-                 h3(textOutput(ns("text.num")), align = "center")
                ) # end Well Panel
-        ),#col
-        column(1),
+        ), # end column
         column(3,
                # Meteoro/Hydro Filter 1
                wellPanel(
@@ -145,19 +147,93 @@ time <- function(input, output, session, df, df.site) {
     factor() %>%
     levels()
   
+
+  # Site primary
+  
+  output$site.primary.ui <- renderUI({
+    
+    ns <- session$ns # see General Note 1
+    
+    # Parameters which have data at any Site (in the mofule's df) within 5 years.
+    site.primary <- df %>%
+      filter(LocationCategory == "Primary Active") %>%
+      .$LocationLabel %>%
+      factor() %>%
+      levels()
+    
+    # Check box input
+    checkboxGroupInput(ns("site.primary"), "Primary Active Sites:",
+                       choices = site.primary)
+    
+    
+    
+  })  
+
+# Site Categories UI (RendeUI becuase move Primary Active to front)
+  
+  output$site.nonprim.cat.ui <- renderUI({
+    
+    ns <- session$ns # see General Note 1
+    
+    # Change LocationCateogory NA to "NA" to show up in App
+    df$LocationCategory <- as.character(df$LocationCategory)
+    df$LocationCategory[is.na(df$LocationCategory)] <- "NA"
+    
+    # Parameters which have data at any Site (in the mofule's df) within 5 years.
+    site.categories <- df %>%
+      filter(LocationCategory != "Primary Active") %>%
+      .$LocationCategory %>%
+      factor() %>%
+      levels()
+    
+    # Site Categories
+    checkboxGroupInput(ns("site.nonprim.cat"), "Show Other Categories:",
+                       choices = site.categories)
+    
+  })
   
   
+  
+  # Site Non Primary
+  output$site.nonprim.ui <- renderUI({
+    
+    req(input$site.nonprim.cat) # See General Note 5
+    
+    ns <- session$ns # see General Note 1
+    
+    site.select <- df %>%
+      filter(LocationCategory %in% input$site.nonprim.cat) %>%
+      .$LocationLabel %>%
+      factor() %>%
+      levels()
+    
+    # Sites
+    checkboxGroupInput(ns("site.nonprim"), "Sites:",
+                       choices = site.select)
+    
+  })
+  
+  
+  # Combine Site Input
+  
+  site.list <- reactive({
+    
+    c(input$site.primary, input$site.nonprim)
+    
+  })
+  
+
   # Parameter Selection UI
   
   output$param.ui <- renderUI({
     
-    req(input$site) # See General Note 5
+    req(site.list()) # See General Note 5
     
     ns <- session$ns # see General Note 1
     
     # Parameters which have data at any Site (in the mofule's df) within 5 years.
     param.choices.new <- df %>%
-      filter(Site %in% c(input$site)) %>%
+      filter(LocationLabel %in% site.list()) %>%
       filter(Parameter %in% parameters.non.historical) %>%
       .$Parameter %>%
       factor() %>%
@@ -165,7 +241,7 @@ time <- function(input, output, session, df, df.site) {
     
     # Parameters which do NOT have data at any Site (in the mofule's df) within 5 years.
     param.choices.old <- df %>%
-      filter(Site %in% c(input$site)) %>%
+      filter(LocationLabel %in% site.list()) %>%
       filter(!(Parameter %in% parameters.non.historical)) %>%
       .$Parameter %>%
       factor() %>%
@@ -184,7 +260,7 @@ time <- function(input, output, session, df, df.site) {
   
   param.units <- reactive({
     
-    req(input$site) # See General Note _
+    req(site.list()) # See General Note _
     
     df %>%
       filter(Parameter %in% input$param) %>%
@@ -199,12 +275,12 @@ time <- function(input, output, session, df, df.site) {
   
   output$range.ui <- renderUI({
     
-    req(input$site) # See General Note _
+    req(site.list()) # See General Note _
     
     ns <- session$ns # see General Note 1
     
     result <- df %>%
-      filter(Site %in% c(input$site)) %>%
+      filter(LocationLabel %in% site.list()) %>%
       filter(Parameter %in% input$param) %>%
       .$Result
     
@@ -223,12 +299,12 @@ time <- function(input, output, session, df, df.site) {
   
   output$date.ui <- renderUI({
     
-    req(input$site) # See General Note _
+    req(site.list()) # See General Note _
     
     ns <- session$ns # see General Note 1
     
     Dates <- df %>% 
-      filter(Site %in% c(input$site)) %>%
+      filter(LocationLabel %in% site.list()) %>%
       .$Date
     
     Date.min <- Dates %>% min(na.rm=TRUE)
@@ -249,10 +325,10 @@ time <- function(input, output, session, df, df.site) {
   
   df.react <- reactive({
     
-    req(input$site) # See General Note _
+    req(site.list(), input$param, input$range, input$date) # See General Note _
     
     df %>% 
-      filter(Site %in% c(input$site), 
+      filter(LocationLabel %in% site.list(), 
              Parameter %in% input$param, 
              Result > input$range[1], Result < input$range[2],
              Date > input$date[1], Date < input$date[2],
@@ -264,21 +340,21 @@ time <- function(input, output, session, df, df.site) {
 # Text - Select Site - Red
   
   output$text.num.null <- renderText({
-    req(is.null(input$site)) # See General Note 1
+    req(is.null(site.list())) # See General Note 1
     "Select a Site"
   })
   
   # Text - Number of Samples
   
   output$text.num.text <- renderText({
-    req(input$site) # See General Note 1
+    req(site.list()) # See General Note 1
     "Number of Samples in Selected Data"
   })
   
   # Text - Number of Samples
   
   output$text.num <- renderText({
-    req(input$site) # See General Note 1
+    req(df.react()) # See General Note 1
     df.react() %>% summarise(n()) %>% paste()
   })
   
@@ -298,7 +374,7 @@ time <- function(input, output, session, df, df.site) {
   
   df.site.react <- reactive({
     df.temp <- df.site %>% filter(!is.na(LocationLat), !is.na(LocationLong))
-    df.temp$Selected <- ifelse(df.temp$Site %in% input$site, "yes", "no")
+    df.temp$Selected <- ifelse(df.temp$LocationLabel %in% site.list(), "yes", "no")
     df.temp
   })
   
@@ -318,7 +394,7 @@ time <- function(input, output, session, df, df.site) {
       addProviderTiles(providers$Stamen.TonerLite,
                        options = providerTileOptions(noWrap = TRUE)) %>%
       addCircleMarkers(lng = ~LocationLong, lat = ~LocationLat,
-                       label=~LocationLabel,
+                       label= ~LocationLabel,
                        popup = ~paste("ID =", Site, "<br/>", 
                                       "Description =", LocationDescription, "<br/>",
                                       "Lat = ", LocationLat, "<br/>", 

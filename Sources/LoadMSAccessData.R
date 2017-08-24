@@ -120,9 +120,12 @@ df.quab.ware.site$LocationElevFt <- NA
 df.quab.ware.site <- df.quab.ware.site %>% rename(LocationDescription = SiteDescription)
 df.quab.ware.site <- df.quab.ware.site %>% select(-Description)
 
+df.quab.ware.site$LocationCategory <- as.character(df.quab.ware.site$LocationCategory)
+df.quab.ware.site$LocationCategory[df.quab.ware.site$LocationCategory == "Core"] <- "Primary Active"
+
 
 ###
-# make a dplyr combine with the Sites (choose by trib recieving body (quab, ware, wach) and by (Core or EQA)
+# make a dplyr combine with the Sites (choose by trib recieving body (quab, ware, wach)
 df.trib.res.quab <- left_join(df.trib.res.quab, df.quab.ware.site, "Site")
 df.trib.res.wach <- left_join(df.trib.res.wach, df.wach.site, "Site")
 

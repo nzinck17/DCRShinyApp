@@ -24,25 +24,41 @@ tagList(
          wellPanel(
            fluidRow(
              column(3,
-                    # Site Selection with Map
+                    # SITE
                     wellPanel(
-                    checkboxGroupInput(ns("site"), "Site Location", 
-                                       choices= levels(factor(df$Site)),
-                                       inline=TRUE),
-                    leafletOutput(ns("map"), height = 450 )
-                    )# end Well Panel
+                      uiOutput(ns("site.primary.ui"))
+                    ),
+                    wellPanel(
+                      uiOutput(ns("site.nonprim.cat.ui")),
+                      uiOutput(ns("site.nonprim.ui"))
+                    ) # end Well Panel
+             ), # end column
+             column(3,
+                    # TEXT
+                    wellPanel(
+                      h2(textOutput(ns("text.num.null")), align = "center"),
+                      h4(textOutput(ns("text.num.text")), align = "center"),
+                      h3(textOutput(ns("text.num")), align = "center")
+                    ), # end Well Panel
+                    # DATE SELECTION
+                    wellPanel(
+                      uiOutput(ns("date.ui")) 
+                    ), # end Well Panel
+                    # MAP
+                    wellPanel(
+                    leafletOutput(ns("map"), height = 450)
+                    ) # end Well Panel
              ),# end Column
-             column(9,
+             column(6,
                     fluidRow(
-                      column(4,
+                      column(6,
                              # Y Parameter Selection
                              wellPanel(
                                uiOutput(ns("y.param.ui")),
                                uiOutput(ns("y.range.ui"))
-                             ), # well
-                             uiOutput(ns("text.site.null.ui"))
+                             ) # well
                       ), # end Column
-                      column(4,
+                      column(6,
                              wellPanel(
                                # X Parameter Selection
                                strong("X axis Parameter:"),
@@ -68,17 +84,7 @@ tagList(
                                                 sliderInput(ns("x.met.range"), "Value Range:", min = 0, max = 12, value = c(0,12), step = 0.5)
                                )# end Conditional Panel
                              )# end Well Panel
-                      ),# end Column
-                      column(4,
-                             # DATE SELECTION
-                             wellPanel(
-                               uiOutput(ns("date.ui")) 
-                             ),# end Well Panel
-                             wellPanel(
-                               h4(textOutput(ns("text.num.text")), align = "center"),
-                               h3(textOutput(ns("text.num")), align = "center")
-                             )#well
-                      )# end Column
+                      )
                     ),# end fluid row
                     hr(),
                     br(),
@@ -196,19 +202,92 @@ regress <- function(input, output, session, df, df.site) {
     levels()
   
   
+  # Site primary
+  
+  output$site.primary.ui <- renderUI({
+    
+    ns <- session$ns # see General Note 1
+    
+    # Parameters which have data at any Site (in the mofule's df) within 5 years.
+    site.primary <- df %>%
+      filter(LocationCategory == "Primary Active") %>%
+      .$LocationLabel %>%
+      factor() %>%
+      levels()
+    
+    # Check box input
+    checkboxGroupInput(ns("site.primary"), "Primary Active Sites:",
+                       choices = site.primary)
+    
+    
+    
+  })  
+  
+  # Site Categories UI (RendeUI becuase move Primary Active to front)
+  
+  output$site.nonprim.cat.ui <- renderUI({
+    
+    ns <- session$ns # see General Note 1
+    
+    # Change LocationCateogory NA to "NA" to show up in App
+    df$LocationCategory <- as.character(df$LocationCategory)
+    df$LocationCategory[is.na(df$LocationCategory)] <- "NA"
+    
+    # Parameters which have data at any Site (in the mofule's df) within 5 years.
+    site.categories <- df %>%
+      filter(LocationCategory != "Primary Active") %>%
+      .$LocationCategory %>%
+      factor() %>%
+      levels()
+    
+    # Site Categories
+    checkboxGroupInput(ns("site.nonprim.cat"), "Show Other Categories:",
+                       choices = site.categories)
+    
+  })
+  
+  
+  
+  # Site Non Primary
+  output$site.nonprim.ui <- renderUI({
+    
+    req(input$site.nonprim.cat) # See General Note 5
+    
+    ns <- session$ns # see General Note 1
+    
+    site.select <- df %>%
+      filter(LocationCategory %in% input$site.nonprim.cat) %>%
+      .$LocationLabel %>%
+      factor() %>%
+      levels()
+    
+    # Sites
+    checkboxGroupInput(ns("site.nonprim"), "Sites:",
+                       choices = site.select)
+    
+  })
+  
+  
+  # Combine Site Input
+  
+  site.list <- reactive({
+    c(input$site.primary, input$site.nonprim)
+  })
+  
+  
 # Y axis Parameter
   
   #Parameter Selection UI
   
   output$y.param.ui <- renderUI({
     
-    req(input$site) # See General Note _
+    req(site.list()) # See General Note _
     
     ns <- session$ns
     
     # Parameters which have data at any Site (in the mofule's df) within 5 years.
     y.param.choices.new <- df %>%
-      filter(Site %in% c(input$site)) %>%
+      filter(LocationLabel %in% c(site.list())) %>%
       filter(Parameter %in% parameters.non.historical) %>%
       .$Parameter %>%
       factor() %>%
@@ -216,7 +295,7 @@ regress <- function(input, output, session, df, df.site) {
     
     # Parameters which do NOT have data at any Site (in the mofule's df) within 5 years.
     y.param.choices.old <- df %>%
-      filter(Site %in% c(input$site)) %>%
+      filter(LocationLabel %in% c(site.list())) %>%
       filter(!(Parameter %in% parameters.non.historical)) %>%
       .$Parameter %>%
       factor() %>%
@@ -235,7 +314,7 @@ regress <- function(input, output, session, df, df.site) {
   
   y.param.units <- reactive({ 
     
-    req(input$site) # See General Note _
+    req(site.list()) # See General Note _
     
     df %>%
       filter(Parameter %in% input$y.param) %>%
@@ -250,12 +329,12 @@ regress <- function(input, output, session, df, df.site) {
   
   output$y.range.ui <- renderUI({
     
-    req(input$site) # See General Note _
+    req(site.list()) # See General Note _
     
     ns <- session$ns
     
     y.result <- df %>%
-      filter(Site %in% c(input$site)) %>%
+      filter(LocationLabel %in% c(site.list())) %>%
       filter(Parameter %in% input$y.param) %>%
       .$Result
     
@@ -276,13 +355,13 @@ regress <- function(input, output, session, df, df.site) {
   
   output$x.param.ui <- renderUI({
     
-    req(input$site) # See General Note _
+    req(site.list()) # See General Note _
     
     ns <- session$ns
     
     # Parameters which have data at any Site (in the mofule's df) within 5 years.
     x.param.choices.new <- df %>%
-      filter(Site %in% c(input$site)) %>%
+      filter(LocationLabel %in% c(site.list())) %>%
       filter(Parameter %in% parameters.non.historical) %>%
       .$Parameter %>%
       factor() %>%
@@ -290,7 +369,7 @@ regress <- function(input, output, session, df, df.site) {
     
     # Parameters which do NOT have data at any Site (in the mofule's df) within 5 years.
     x.param.choices.old <- df %>%
-      filter(Site %in% c(input$site)) %>%
+      filter(LocationLabel %in% c(site.list())) %>%
       filter(!(Parameter %in% parameters.non.historical)) %>%
       .$Parameter %>%
       factor() %>%
@@ -309,7 +388,7 @@ regress <- function(input, output, session, df, df.site) {
   
   x.param.units <- reactive({ 
     
-    req(input$site) # See General Note _
+    req(site.list()) # See General Note _
     
     df %>%
       filter(Parameter %in% input$x.param) %>%
@@ -323,12 +402,12 @@ regress <- function(input, output, session, df, df.site) {
   #Parameter Value Range UI
   output$x.range.ui <- renderUI({
     
-    req(input$site) # See General Note _
+    req(site.list()) # See General Note _
     
     ns <- session$ns
     
     x.result <- df %>%
-      filter(Site %in% c(input$site)) %>%
+      filter(LocationLabel %in% c(site.list())) %>%
       filter(Parameter %in% input$x.param) %>%
       .$Result
     
@@ -347,12 +426,12 @@ regress <- function(input, output, session, df, df.site) {
   
   output$date.ui <- renderUI({
     
-    req(input$site) # See General Note _
+    req(site.list()) # See General Note _
     
     ns <- session$ns
     
     Dates <- df %>% 
-      filter(Site %in% c(input$site)) %>%
+      filter(LocationLabel %in% c(site.list())) %>%
       .$Date
     
     Date.min <- Dates %>% min(na.rm = TRUE)
@@ -372,11 +451,11 @@ regress <- function(input, output, session, df, df.site) {
   
   df.react <- reactive({
     
-    req(input$site) # See General Note _
+    req(site.list(), input$y.param, input$y.range, input$x.param, input$x.range, input$date) # See General Note _
     
     # filter by Site and Date adn save
     df.temp <- df %>% 
-      filter(Site %in% c(input$site),
+      filter(LocationLabel %in% c(site.list()),
              Date > input$date[1], Date < input$date[2])
     
     # X Parameter filter and make modifications
@@ -399,30 +478,24 @@ regress <- function(input, output, session, df, df.site) {
   })
   
   
-  # Text - Select Site
+  # Text - Select Site - Red
   
-  output$text.site.null.ui <- renderUI({
-    
-    req(is.null(input$site)) # See General Note 1
-    wellPanel(
-      h2("Select a Site", align = "center")
-    )
-    
+  output$text.num.null <- renderText({
+    req(is.null(site.list())) # See General Note 1
+    "Select a Site"
   })
-  
-  
   
   # Text - Number of Samples
   
   output$text.num.text <- renderText({
-    req(input$site) # See General Note 1
+    req(site.list()) # See General Note 1
     "Number of Samples in Selected Data"
   })
   
   # Text - Number of Samples
   
   output$text.num <- renderText({
-    req(input$site) # See General Note 1
+    req(df.react()) # See General Note 1
     df.react() %>% summarise(n()) %>% paste()
   })
   
@@ -439,7 +512,7 @@ regress <- function(input, output, session, df, df.site) {
   
   df.site.react <- reactive({
     df.site.temp <- df.site %>% filter(!is.na(LocationLat), !is.na(LocationLong))
-    df.site.temp$Selected <- ifelse(df.site.temp$Site %in% input$site, "yes", "no")
+    df.site.temp$Selected <- ifelse(df.site.temp$LocationLabel %in% site.list(), "yes", "no")
     df.site.temp
   })
   
