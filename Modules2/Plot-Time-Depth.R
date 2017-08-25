@@ -16,7 +16,7 @@
 # User Interface
 ##############################################################################################################################
 
-plot.time.UI <- function(id) {
+plot.time.depth.UI <- function(id) {
   
   ns <- NS(id) # see General Note 1
   
@@ -109,6 +109,7 @@ plot.time.UI <- function(id) {
                                radioButtons(ns("plot.color"), label = "Group with Colors:", 
                                             choices = c("None" = 1, 
                                                         "Site" = "Site",
+                                                        "Depth" = "Depthm",
                                                         "met/hydro filter 1 (select group)" = "met1",
                                                         "met/hydro filter 2 (select group)" = "met2",
                                                         "Flagged data" = "FlagCode"),
@@ -119,6 +120,7 @@ plot.time.UI <- function(id) {
                                radioButtons(ns("plot.shape"), label = "Group with Shapes:", 
                                             choices = c("None" = 1, 
                                                         "Site" = "Site",
+                                                        "Depth" = "Depthm",
                                                         "met/hydro filter 1 (select group)" = "met1",
                                                         "met/hydro filter 2 (select group)" = "met2",
                                                         "Flagged data" = "FlagCode"),
@@ -162,7 +164,7 @@ plot.time.UI <- function(id) {
 # Server Function
 ##############################################################################################################################
 
-plot.time <- function(input, output, session, df) {
+plot.time.depth <- function(input, output, session, df) {
   
   
 ### Text For Plot
@@ -170,6 +172,11 @@ plot.time <- function(input, output, session, df) {
   # Site Text
   text.site <- reactive({
     df() %>% .$Site %>% factor() %>% levels() %>% paste()
+  })
+  
+  # Depth Text
+  text.depth <- reactive({
+    df() %>% .$Depthm %>% factor() %>% levels() %>% paste()
   })
   
   # Param Text
@@ -209,7 +216,7 @@ plot.time <- function(input, output, session, df) {
     # Theme based on selection
     if(input$plot.display.theme == "Gray"){
       p <- p + theme_gray()
-    }    
+    }
     if(input$plot.display.theme == "Black and White"){
       p <- p + theme_bw()
     }
@@ -277,9 +284,17 @@ plot.time <- function(input, output, session, df) {
     }
     
     # Facet for Sites if no grouping for site is selected and number of sites is greater than 1
-    if(input$plot.color != "Site" & input$plot.shape != "Site" & length(c(input$site)) > 1){
-      p <- p + facet_wrap(~Site, ncol = ceiling(length(c(input$site))/4))
-    } 
+    if(input$plot.color != "Loc" & input$plot.shape != "Loc" & length(c(input$loc)) > 1){
+      if(input$plot.color != "Depthm" & input$plot.shape != "Depthm" & length(c(input$depth)) > 1){
+        p <- p + facet_grid(Depth~Loc)
+      } else {
+        p <- p + facet_grid(Depth~.)
+      }
+    } else {
+      if(input$plot.color != "Depthm" & input$plot.shape != "Depthm" & length(c(input$depth)) > 1){
+        p <- p + facet_grid(.~Loc)
+      }
+    }
 
 # Add Lines
     
@@ -313,7 +328,7 @@ plot.time <- function(input, output, session, df) {
     }
     if(input$plot.title == "Auto"){
       p <- p + ggtitle(paste(text.param(), "at", 
-                             text.site(), 
+                             text.site(), text.depth(),
                              "from", text.date.start(), "to", text.date.end(), sep= " "))
     }
     if(input$plot.title == "Custom"){
@@ -370,7 +385,7 @@ plot.time <- function(input, output, session, df) {
   # Plot Print
   
   output$save.plot <- downloadHandler(
-    filename = function (){paste(text.param(),' Site ', text.site(),' from ', text.date.start(),' to ', text.date.end(), '.png', sep='')},
+    filename = function (){paste(text.param(),' Site ', text.site(), text.depth(), ' from ', text.date.start(),' to ', text.date.end(), '.png', sep='')},
     content = function(file) {ggsave(file, plot = p(), device = "png")},
     contentType = 'image/png'
   )

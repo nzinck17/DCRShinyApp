@@ -11,6 +11,7 @@
 # To-Do List:
 #   1. Make the Metero/Hydro Filters work
 #   2. Plotting Features - Show Limits, Finish and Clean up Coloring options (flagged data, met filters)
+#   3. 1 to None (in shape and color )
 
 ##############################################################################################################################
 # User Interface

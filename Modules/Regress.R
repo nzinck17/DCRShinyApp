@@ -1,5 +1,5 @@
 ##############################################################################################################################
-#     Title: Res-Transect-Regression.R
+#     Title: Tributary-Regression.R
 #     Type: Module for DCR Shiny App
 #     Description: Regression plots and tables
 #     Written by: Nick Zinck, Spring 2017
@@ -16,7 +16,7 @@
 # User Interface
 ##############################################################################################################################
 
-res.tran.regress.UI <- function(id, df) {
+regress.UI <- function(id, df) {
 
 ns <- NS(id)
 
@@ -24,25 +24,41 @@ tagList(
          wellPanel(
            fluidRow(
              column(3,
-                    # Site Selection with Map
+                    # SITE
                     wellPanel(
-                    checkboxGroupInput(ns("site"), "Site Location:", 
-                                       choices= levels(factor(df$Site)),
-                                       inline=TRUE),
-                    leafletOutput(ns("map"), height = 450 )
-                    )# end Well Panel
+                      uiOutput(ns("site.primary.ui"))
+                    ),
+                    wellPanel(
+                      uiOutput(ns("site.nonprim.cat.ui")),
+                      uiOutput(ns("site.nonprim.ui"))
+                    ) # end Well Panel
+             ), # end column
+             column(3,
+                    # TEXT
+                    wellPanel(
+                      h2(textOutput(ns("text.num.null")), align = "center"),
+                      h4(textOutput(ns("text.num.text")), align = "center"),
+                      h3(textOutput(ns("text.num")), align = "center")
+                    ), # end Well Panel
+                    # DATE SELECTION
+                    wellPanel(
+                      uiOutput(ns("date.ui")) 
+                    ), # end Well Panel
+                    # MAP
+                    wellPanel(
+                      sitemap.UI(ns("Site Map"))
+                    ) # end Well Panel
              ),# end Column
-             column(9,
+             column(6,
                     fluidRow(
-                      column(4,
+                      column(6,
                              # Y Parameter Selection
                              wellPanel(
                                uiOutput(ns("y.param.ui")),
                                uiOutput(ns("y.range.ui"))
-                             ), # well
-                             uiOutput(ns("text.site.null.ui"))
+                             ) # well
                       ), # end Column
-                      column(4,
+                      column(6,
                              wellPanel(
                                # X Parameter Selection
                                strong("X axis Parameter:"),
@@ -68,17 +84,7 @@ tagList(
                                                 sliderInput(ns("x.met.range"), "Value Range:", min = 0, max = 12, value = c(0,12), step = 0.5)
                                )# end Conditional Panel
                              )# end Well Panel
-                      ),# end Column
-                      column(4,
-                             # DATE SELECTION
-                             wellPanel(
-                               uiOutput(ns("date.ui")) 
-                             ),# end Well Panel
-                             wellPanel(
-                               h4(textOutput(ns("text.num.text")), align = "center"),
-                               h3(textOutput(ns("text.num")), align = "center")
-                             )#well
-                      )# end Column
+                      )
                     ),# end fluid row
                     hr(),
                     br(),
@@ -160,51 +166,7 @@ tagList(
            
            # the "Plot" tab panel
            tabPanel("Plot", 
-                    # the actual plot output
-                    plotlyOutput(ns("plot"), width = "100%", height = 600),
-                    # area where all plot specific inputs go
-                    fluidRow(br(), br(),
-                             column(3,
-                                    downloadButton(ns('save.plot'), "Save Plot"),
-                                    h5('make sure to save with extension ".png" or ".jpg"'),
-                                    br(),
-                                    radioButtons(ns("plot.regress"), "Regression Lines:", 
-                                                 choices=c("None",
-                                                           "Linear",
-                                                           "Linear w/ 95% C.I.",
-                                                           "Curve",
-                                                           "Curve w/ 95% C.I."))
-                             ),
-                             column(3,
-                                    checkboxGroupInput(ns("plot.display"), "Plot Display Options:", 
-                                                       choices=c("Log Scale X-axis",
-                                                                 "Log Scale Y-axis",
-                                                                 "Param Y Performance Standard")),
-                                    sliderInput(ns("plot.opacity"), "Opacity:", min = 0, max = 1, value = 1, step = 0.1),
-                                    sliderInput(ns("plot.jitter"), "Jitter:", min = 0, max = 1, value = 0, step = 0.1)
-                             ),
-                             column(3,
-                                    radioButtons(ns("plot.color"), label = "Group with Colors:", 
-                                                 choices = c("None" = 1, 
-                                                             "Site" = "Site",
-                                                             "Met/hydro filter 1 (select group)" = "met1",
-                                                             "Met/hydro filter 2 (select group)" = "met2",
-                                                             "Met/hydro filter 3 (select group)" = "met3",
-                                                             "Flagged data" = "FlagCode"),
-                                                 selected = "Site")
-                             ), # end column
-                             # new column
-                             column(3,
-                                    radioButtons(ns("plot.shape"), label = "Group with Shapes:", 
-                                                 choices = c("None" = 1, 
-                                                             "Site" = "Site",
-                                                             "Met/hydro filter 1 (select group)" = "met1",
-                                                             "Met/hydro filter 2 (select group)" = "met2",
-                                                             "Met/hydro filter 3 (select group)" = "met3",
-                                                             "Flagged data" = "FlagCode"),
-                                                 selected = 1)
-                             ) # end column
-                    ) # end flluid row
+                    plot.regress.UI(ns("Plot"))
            ), # end "plot" tabpanel
            
            # Table tabpanel
@@ -229,7 +191,7 @@ tagList(
 # Server Function
 ##############################################################################################################################
 
-res.tran.regress <- function(input, output, session, df, df.site) {
+regress <- function(input, output, session, df, df.site) {
 
 # Non Historical Parameters (when a Parameter has not been used in over 5 years). See General Note 6
   
@@ -240,19 +202,92 @@ res.tran.regress <- function(input, output, session, df, df.site) {
     levels()
   
   
+  # Site primary
+  
+  output$site.primary.ui <- renderUI({
+    
+    ns <- session$ns # see General Note 1
+    
+    # Parameters which have data at any Site (in the mofule's df) within 5 years.
+    site.primary <- df %>%
+      filter(LocationCategory == "Primary Active") %>%
+      .$LocationLabel %>%
+      factor() %>%
+      levels()
+    
+    # Check box input
+    checkboxGroupInput(ns("site.primary"), "Primary Active Sites:",
+                       choices = site.primary)
+    
+    
+    
+  })  
+  
+  # Site Categories UI (RendeUI becuase move Primary Active to front)
+  
+  output$site.nonprim.cat.ui <- renderUI({
+    
+    ns <- session$ns # see General Note 1
+    
+    # Change LocationCateogory NA to "NA" to show up in App
+    df$LocationCategory <- as.character(df$LocationCategory)
+    df$LocationCategory[is.na(df$LocationCategory)] <- "NA"
+    
+    # Parameters which have data at any Site (in the mofule's df) within 5 years.
+    site.categories <- df %>%
+      filter(LocationCategory != "Primary Active") %>%
+      .$LocationCategory %>%
+      factor() %>%
+      levels()
+    
+    # Site Categories
+    checkboxGroupInput(ns("site.nonprim.cat"), "Show Other Categories:",
+                       choices = site.categories)
+    
+  })
+  
+  
+  
+  # Site Non Primary
+  output$site.nonprim.ui <- renderUI({
+    
+    req(input$site.nonprim.cat) # See General Note 5
+    
+    ns <- session$ns # see General Note 1
+    
+    site.select <- df %>%
+      filter(LocationCategory %in% input$site.nonprim.cat) %>%
+      .$LocationLabel %>%
+      factor() %>%
+      levels()
+    
+    # Sites
+    checkboxGroupInput(ns("site.nonprim"), "Sites:",
+                       choices = site.select)
+    
+  })
+  
+  
+  # Combine Site Input
+  
+  site.list <- reactive({
+    c(input$site.primary, input$site.nonprim)
+  })
+  
+  
 # Y axis Parameter
   
   #Parameter Selection UI
   
   output$y.param.ui <- renderUI({
     
-    req(input$site) # See General Note _
+    req(site.list()) # See General Note _
     
     ns <- session$ns
     
     # Parameters which have data at any Site (in the mofule's df) within 5 years.
     y.param.choices.new <- df %>%
-      filter(Site %in% c(input$site)) %>%
+      filter(LocationLabel %in% c(site.list())) %>%
       filter(Parameter %in% parameters.non.historical) %>%
       .$Parameter %>%
       factor() %>%
@@ -260,7 +295,7 @@ res.tran.regress <- function(input, output, session, df, df.site) {
     
     # Parameters which do NOT have data at any Site (in the mofule's df) within 5 years.
     y.param.choices.old <- df %>%
-      filter(Site %in% c(input$site)) %>%
+      filter(LocationLabel %in% c(site.list())) %>%
       filter(!(Parameter %in% parameters.non.historical)) %>%
       .$Parameter %>%
       factor() %>%
@@ -279,7 +314,7 @@ res.tran.regress <- function(input, output, session, df, df.site) {
   
   y.param.units <- reactive({ 
     
-    req(input$site) # See General Note _
+    req(site.list()) # See General Note _
     
     df %>%
       filter(Parameter %in% input$y.param) %>%
@@ -294,12 +329,12 @@ res.tran.regress <- function(input, output, session, df, df.site) {
   
   output$y.range.ui <- renderUI({
     
-    req(input$site) # See General Note _
+    req(site.list()) # See General Note _
     
     ns <- session$ns
     
     y.result <- df %>%
-      filter(Site %in% c(input$site)) %>%
+      filter(LocationLabel %in% c(site.list())) %>%
       filter(Parameter %in% input$y.param) %>%
       .$Result
     
@@ -320,13 +355,13 @@ res.tran.regress <- function(input, output, session, df, df.site) {
   
   output$x.param.ui <- renderUI({
     
-    req(input$site) # See General Note _
+    req(site.list()) # See General Note _
     
     ns <- session$ns
     
     # Parameters which have data at any Site (in the mofule's df) within 5 years.
     x.param.choices.new <- df %>%
-      filter(Site %in% c(input$site)) %>%
+      filter(LocationLabel %in% c(site.list())) %>%
       filter(Parameter %in% parameters.non.historical) %>%
       .$Parameter %>%
       factor() %>%
@@ -334,7 +369,7 @@ res.tran.regress <- function(input, output, session, df, df.site) {
     
     # Parameters which do NOT have data at any Site (in the mofule's df) within 5 years.
     x.param.choices.old <- df %>%
-      filter(Site %in% c(input$site)) %>%
+      filter(LocationLabel %in% c(site.list())) %>%
       filter(!(Parameter %in% parameters.non.historical)) %>%
       .$Parameter %>%
       factor() %>%
@@ -353,7 +388,7 @@ res.tran.regress <- function(input, output, session, df, df.site) {
   
   x.param.units <- reactive({ 
     
-    req(input$site) # See General Note _
+    req(site.list()) # See General Note _
     
     df %>%
       filter(Parameter %in% input$x.param) %>%
@@ -367,12 +402,12 @@ res.tran.regress <- function(input, output, session, df, df.site) {
   #Parameter Value Range UI
   output$x.range.ui <- renderUI({
     
-    req(input$site) # See General Note _
+    req(site.list()) # See General Note _
     
     ns <- session$ns
     
     x.result <- df %>%
-      filter(Site %in% c(input$site)) %>%
+      filter(LocationLabel %in% c(site.list())) %>%
       filter(Parameter %in% input$x.param) %>%
       .$Result
     
@@ -391,12 +426,12 @@ res.tran.regress <- function(input, output, session, df, df.site) {
   
   output$date.ui <- renderUI({
     
-    req(input$site) # See General Note _
+    req(site.list()) # See General Note _
     
     ns <- session$ns
     
     Dates <- df %>% 
-      filter(Site %in% c(input$site)) %>%
+      filter(LocationLabel %in% c(site.list())) %>%
       .$Date
     
     Date.min <- Dates %>% min(na.rm = TRUE)
@@ -416,11 +451,11 @@ res.tran.regress <- function(input, output, session, df, df.site) {
   
   df.react <- reactive({
     
-    req(input$site) # See General Note _
+    req(site.list(), input$y.param, input$y.range, input$x.param, input$x.range, input$date) # See General Note _
     
     # filter by Site and Date adn save
     df.temp <- df %>% 
-      filter(Site %in% c(input$site),
+      filter(LocationLabel %in% c(site.list()),
              Date > input$date[1], Date < input$date[2])
     
     # X Parameter filter and make modifications
@@ -443,228 +478,37 @@ res.tran.regress <- function(input, output, session, df, df.site) {
   })
   
   
-  # Text - Select Site
+  # Text - Select Site - Red
   
-  output$text.site.null.ui <- renderUI({
-    
-    req(is.null(input$site)) # See General Note 1
-    wellPanel(
-      h2("Select a Site", align = "center")
-    )
-    
+  output$text.num.null <- renderText({
+    req(is.null(site.list())) # See General Note 1
+    "Select a Site"
   })
-  
-  
   
   # Text - Number of Samples
   
   output$text.num.text <- renderText({
-    req(input$site) # See General Note 1
+    req(site.list()) # See General Note 1
     "Number of Samples in Selected Data"
   })
   
   # Text - Number of Samples
   
   output$text.num <- renderText({
-    req(input$site) # See General Note 1
+    req(df.react()) # See General Note 1
     df.react() %>% summarise(n()) %>% paste()
   })
   
+  # Plot
   
-  # Jitter Scheme Factor Calculation 
-  
-  jitter.x <- reactive({
-    input$plot.jitter*IQR(df.react()$x.Result)*0.06
-  })
-  
-  jitter.y <- reactive({
-    input$plot.jitter*IQR(df.react()$y.Result)*0.06
-  })
-  
-  
-  # Plot Creation
-  
-  p <- reactive({
-    
-    # Features in which all plot options have in common
-    p <- ggplot(df.react(), aes(x = x.Result, y = y.Result)) +
-      labs(x = paste(input$x.param, " (", x.param.units(),")", sep= ""), 
-           y = paste(input$y.param, " (", y.param.units(),")", sep= "")) +
-      theme_bw() +
-      theme(plot.margin = unit(c(0.2, 0.2, 0.2, 0.5), "in"))
-    
-    # Coloring and Shapes as well as Trendline
-    
-    # Group by both Color and Shape when both selected
-    if(input$plot.color != 1 & input$plot.shape != 1){
-      p <- p + geom_point(aes_string(color = input$plot.color, shape = input$plot.shape),
-                          alpha = input$plot.opacity,
-                          position = position_jitter(width = jitter.x(), height = jitter.y()))
-      if(input$plot.regress == "Linear"){
-        p <- p + geom_smooth(method = "lm", se = FALSE, size = 1.5, aes_string(color = input$plot.color, linetype = input$plot.shape))
-      }
-      if(input$plot.regress == "Linear w/ 95% C.I."){
-        p <- p + geom_smooth(method = "lm", size = 1.5, aes_string(color = input$plot.color, linetype = input$plot.shape))
-      }
-      if(input$plot.regress == "Curve"){
-        p <- p + geom_smooth(method = "loess", se = FALSE, size = 1.5, aes_string(color = input$plot.color, linetype = input$plot.shape))
-      }
-      if(input$plot.regress == "Curve w/ 95% C.I."){
-        p <- p + geom_smooth(method = "loess", size = 1.5, aes_string(color = input$plot.color, linetype = input$plot.shape))
-      }
-    }
-    # Group by only Color when only color grouping is selected
-    else if (input$plot.color != 1){
-      p <- p + geom_point(aes_string(color = input$plot.color),
-                          alpha = input$plot.opacity,
-                          position = position_jitter(width = jitter.x(), height = jitter.y()))
-      if(input$plot.regress == "Linear"){
-        p <- p + geom_smooth(method = "lm", se = FALSE, size = 1.5, aes_string(color = input$plot.color))
-      }
-      if(input$plot.regress == "Linear w/ 95% C.I."){
-        p <- p + geom_smooth(method = "lm", size = 1.5, aes_string(color = input$plot.color))
-      }
-      if(input$plot.regress == "Curve"){
-        p <- p + geom_smooth(method = "loess", se = FALSE, size = 1.5, aes_string(color = input$plot.color))
-      }
-      if(input$plot.regress == "Curve w/ 95% C.I."){
-        p <- p + geom_smooth(method = "loess", size = 1.5, aes_string(color = input$plot.color))
-      }
-    }
-    # Group by only Shape when only shape grouping is selected 
-    else if (input$plot.shape != 1){
-      p <- p + geom_point(aes_string(shape = input$plot.shape),
-                          alpha = input$plot.opacity,
-                          position = position_jitter(width = jitter.x(), height = jitter.y()))
-      if(input$plot.regress == "Linear"){
-        p <- p + geom_smooth(method = "lm", se = FALSE, size = 1.5, aes_string(linetype = input$plot.shape))
-      }
-      if(input$plot.regress == "Linear w/ 95% C.I."){
-        p <- p + geom_smooth(method = "lm", size = 1.5, aes_string(linetype = input$plot.shape))
-      }
-      if(input$plot.regress == "Curve"){
-        p <- p + geom_smooth(method = "loess", se = FALSE, size = 1.5, aes_string(linetype = input$plot.shape))
-      }
-      if(input$plot.regress == "Curve w/ 95% C.I."){
-        p <- p + geom_smooth(method = "loess", size = 1.5, aes_string(linetype = input$plot.shape))
-      }
-    }
-    # No Grouping Selected
-    else {
-      p <- p + geom_point(alpha = input$plot.opacity,
-                          position = position_jitter(width = jitter.x(), height = jitter.y()))
-      if(input$plot.regress == "Linear"){
-        p <- p + geom_smooth(method = "lm", se = FALSE, size = 1.5)
-      }
-      if(input$plot.regress == "Linear w/ 95% C.I."){
-        p <- p + geom_smooth(method = "lm", size = 1.5)
-      }
-      if(input$plot.regress == "Curve"){
-        p <- p + geom_smooth(method = "loess", se = FALSE, size = 1.5)
-      }
-      if(input$plot.regress == "Curve w/ 95% C.I."){
-        p <- p + geom_smooth(method = "loess", size = 1.5)
-      }
-    }
-    
-    # Facet for Sites if no grouping for site is selected and number of sites is greater than 1
-    if(input$plot.color != "Site" & input$plot.shape != "Site" & length(c(input$site)) > 1){
-      p <- p + facet_wrap(~Site, ncol = ceiling(length(c(input$site))/4))
-    } 
-    
-    # Log Scale Options
-    if("Log Scale X-axis" %in% input$plot.display){
-      p <- p + scale_x_log10()
-    }
-    
-    if("Log Scale Y-axis" %in% input$plot.display){
-      p <- p + scale_y_log10()
-    }
-    
-    p
-    
-  })
-  
-  
-  # Plot Visual
-  
-  output$plot <- renderPlotly({
-    ggplotly(p())
-  })
-  
-  
-  # Plot Print
-  
-  output$save.plot <- downloadHandler(
-    filename = function (){paste(input$y.param,' Site(s) ', paste(unique(df.react()$Loc)),' from ', input$date[1],' to ', input$date[2], '.png', sep='')},
-    content = function(file) {ggsave(file, plot = p(), device = "png")}, 
-    contentType = 'image/png'
-  )
-  
+  callModule(plot.regress, "Plot", df = df.react)
   
   # Tables
   
   output$table <- renderDataTable(df.react())
   
+  # Site Map
   
-  # Reactive Site Dataframe for Map Coloring, Creating a Selected Column with "Yes" or "No" values
-  
-  df.site.react <- reactive({
-    df.site.temp <- df.site %>% filter(!is.na(LocationLat), !is.na(LocationLong))
-    df.site.temp$Selected <- ifelse(df.site.temp$Site %in% input$site, "yes", "no")
-    df.site.temp
-  })
-  
-  
-  # Map Color Scheme - Coloring the Selected Site Markers a different color than the unselected 
-  
-  colorpal <- reactive({
-    colorFactor(c("navy", "red"), domain = c("yes", "no"))
-  })
-  
-  
-  # Base Leaflet Map - See General Note 3
-  
-  output$map <- renderLeaflet({
-    
-    leaflet(data = df.site %>% filter(!is.na(LocationLat), !is.na(LocationLong))) %>%
-      addProviderTiles(providers$Stamen.TonerLite,
-                       options = providerTileOptions(noWrap = TRUE)) %>%
-      addCircleMarkers(lng = ~LocationLong, lat = ~LocationLat,
-                       label=~LocationLabel,
-                       popup = ~paste("ID =", Site, "<br/>", 
-                                      "Description =", LocationDescription, "<br/>",
-                                      "Lat = ", LocationLat, "<br/>", 
-                                      "Long = ", LocationLong, "<br/>",
-                                      "Elev = ", LocationElevFt, "ft"),
-                       radius = 5,
-                       weight = 3,
-                       opacity = 1,
-                       fillOpacity = 0,
-                       color = "navy")
-  })
-  
-  
-  # Map Proxy - UPdate Color of Circle Markers as Site selection changes
-  
-  observe({
-    
-    pal <- colorpal()
-    
-    leafletProxy("map", data = df.site.react()) %>%
-      clearMarkers() %>%
-      addCircleMarkers(lng = ~LocationLong, lat = ~LocationLat,
-                       label=~LocationLabel,
-                       popup = ~paste("ID =", Site, "<br/>", 
-                                      "Description =", LocationDescription, "<br/>",
-                                      "Lat = ", LocationLat, "<br/>", 
-                                      "Long = ", LocationLong, "<br/>",
-                                      "Elev = ", LocationElevFt, "ft"),
-                       radius = 5,
-                       weight = 3,
-                       opacity = 1,
-                       fillOpacity = 0,
-                       color = ~pal(Selected))
-  })
+  callModule(sitemap, "Site Map", df.site = df.site, site.list = site.list)
   
 } # end Server Function

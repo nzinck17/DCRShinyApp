@@ -17,7 +17,7 @@
 # User Interface
 ##############################################################################################################################
 
-res.nut.regress.UI <- function(id, df) {
+regress.depth.UI <- function(id, df) {
   
 ns <- NS(id) # see General Note 1
   
@@ -33,7 +33,7 @@ tagList(
                checkboxGroupInput(ns("depth"), "Depth:", 
                                   choices=levels(factor(df$Depth)),
                                   inline = TRUE),
-               leafletOutput(ns("map"), height = 350 )
+               sitemap.UI(ns("Site Map"))
              ) # end Well Panel
       ), # end Column
       column(9,
@@ -244,7 +244,7 @@ tagList(
 # Server Function
 ##############################################################################################################################
 
-res.nut.regress <- function(input, output, session, df, df.site) {
+regress.depth <- function(input, output, session, df, df.site) {
   
   # Non Historical Parameters (when a Parameter has not been used in over 5 years). See General Note 6
   
@@ -620,64 +620,14 @@ res.nut.regress <- function(input, output, session, df, df.site) {
   output$table <- renderDataTable(df.react())
   
   
-  # Reactive Site Dataframe for Map Coloring, Creating a Selected Column with "Yes" or "No" values
+  # Site Map
+  # Combine Site Input
   
-  df.site.react <- reactive({
-    df.site.temp <- df.site %>% filter(!is.na(LocationLat), !is.na(LocationLong))
-    df.site.temp$Selected <- ifelse(df.site.temp$Loc %in% input$loc, "yes", "no")
-    df.site.temp
+  site.list <- reactive({
+    input$site
   })
   
-  
-  # Map Color Scheme - Coloring the Selected Site Markers a different color than the unselected 
-  
-  colorpal <- reactive({
-    colorFactor(c("navy", "red"), domain = c("yes", "no"))
-  })
-  
-  
-  # Base Leaflet Map - See General Note 3
-  
-  output$map <- renderLeaflet({
-    
-    leaflet(data = df.site %>% filter(!is.na(LocationLat), !is.na(LocationLong))) %>%
-      addProviderTiles(providers$Stamen.TonerLite,
-                       options = providerTileOptions(noWrap = TRUE)) %>%
-      addCircleMarkers(lng = ~LocationLong, lat = ~LocationLat,
-                       label=~LocationLabel,
-                       popup = ~paste("ID =", Site, "<br/>", 
-                                      "Description =", LocationDescription, "<br/>",
-                                      "Lat = ", LocationLat, "<br/>", 
-                                      "Long = ", LocationLong, "<br/>",
-                                      "Elev = ", LocationElevFt, "ft"),
-                       radius = 5,
-                       weight = 3,
-                       opacity = 1,
-                       fillOpacity = 0,
-                       color = "navy")
-  })
-  
-  
-  # Map Proxy - UPdate Color of Circle Markers as Site selection changes
-  
-  observe({
-    
-    pal <- colorpal()
-    
-    leafletProxy("map", data = df.site.react()) %>%
-      clearMarkers() %>%
-      addCircleMarkers(lng = ~LocationLong, lat = ~LocationLat,
-                       label=~LocationLabel,
-                       popup = ~paste("ID =", Site, "<br/>", 
-                                      "Description =", LocationDescription, "<br/>",
-                                      "Lat = ", LocationLat, "<br/>", 
-                                      "Long = ", LocationLong, "<br/>",
-                                      "Elev = ", LocationElevFt, "ft"),
-                       radius = 5,
-                       weight = 3,
-                       opacity = 1,
-                       fillOpacity = 0,
-                       color = ~pal(Selected))
-  })
+  callModule(sitemap, "Site Map", df.site = df.site, site.list = site.list)
+
   
 } # end Server Function

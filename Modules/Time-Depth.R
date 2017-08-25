@@ -21,7 +21,7 @@
 # User Interface
 ##############################################################################################################################
 
-res.nut.time.UI <- function(id, df) {
+time.depth.UI <- function(id, df) {
   
 ns <- NS(id)
 
@@ -38,7 +38,7 @@ tagList(
                                   choices=levels(factor(df$Depth)),
                                   inline = TRUE),
                br(),
-               leafletOutput(ns("map"), height = 350 )
+               sitemap.UI(ns("Site Map"))
              ) # end Well Panel
       ),
       column(1),
@@ -116,45 +116,7 @@ tagList(
     
     # Plot tab
     tabPanel("Plot", 
-             plotlyOutput(ns("plot"), width = "100%", height = 600),
-             fluidRow(
-               column(2,
-                      downloadButton(ns('save.plot'), "Save Plot"),
-                      br(), br(),
-                      radioButtons(ns("plot.nplots"), "Plot Style:", choices = c("One Plot", "Multiple Plots"))
-               ),
-               column(3,
-                      checkboxGroupInput(ns("plot.misc"), "Misc. Plot Options:", 
-                                         choices=c("Non-Detection Level",
-                                                   "Reporting Limit",
-                                                   "Performance Standard",
-                                                   "Log Scale (Y-axis)",
-                                                   "Show Trendline"))
-               ),
-               column(3,
-                      #make a condition to select multiple plots if other than none is selected
-                      radioButtons(ns("plot.color"), "Group By:", 
-                                   choices = c("None" = 1, 
-                                               "Location" = "Loc",
-                                               "Depth" = "Depth",
-                                               "met/hydro filter 1 (select group)" = "met1",
-                                               "met/hydro filter 2 (select group)" = "met2",
-                                               "met/hydro filter 3 (select group)" = "met3",
-                                               "Flagged data" = "FlagCode"),
-                                   selected = "Loc")
-               ),
-               column(3,
-                      radioButtons(ns("plot.shape"), "Flagged Data Display:", 
-                                   choices = c("None" = 1, 
-                                               "Location" = "Loc",
-                                               "Depth" = "Depth",
-                                               "met/hydro filter 1 (select group)" = "met1",
-                                               "met/hydro filter 2 (select group)" = "met2",
-                                               "met/hydro filter 3 (select group)" = "met3",
-                                               "Flagged data" = "FlagCode"),
-                                   selected = 1)
-               ) # end Column
-             ) # end Fluid Row
+             plot.time.depth.UI(ns("Plot"))
     ),
     
     # Table Tab
@@ -198,7 +160,7 @@ tagList(
 # Server Function
 ##############################################################################################################################
 
-res.nut.time <- function(input, output, session, df, df.site) {
+time.depth <- function(input, output, session, df, df.site) {
   
   
   # Non Historical Parameters (when a Parameter has not been used in over 5 years). See General Note 6
@@ -339,100 +301,9 @@ res.nut.time <- function(input, output, session, df, df.site) {
     df.react() %>% summarise(n()) %>% paste()
   })
   
-  
-# Plot Creation
-  
-  p <- reactive({
-    
-    # Features in which all plot options have in common
-    p <- ggplot(df.react(), aes(x = Date, y = Result)) +
-      labs(x = 'Date', y = paste(input$param, " (", param.units(),")", sep= "")) +  
-      theme_bw() +
-      theme(plot.margin = unit(c(0.2, 0.2, 0.2, 0.5), "in"))
-    
-    # Coloring and Shapes as well as Trendline
-    
-    # Group by both Color and Shape when both selected
-    if(input$plot.color != 1 & input$plot.shape != 1){
-      p <- p + geom_point(aes_string(color = input$plot.color, shape = input$plot.shape))
-      if("Show Trendline" %in% input$plot.display){
-        p <- p + geom_smooth(method = "loess", size = 1.5, aes_string(color = input$plot.color, linetype = input$plot.shape))
-      }
-    }
-    # Group by only Color when only color grouping is selected
-    else if (input$plot.color != 1){
-      p <- p + geom_point(aes_string(color = input$plot.color))
-      if("Show Trendline" %in% input$plot.display){
-        p <- p + geom_smooth(method = "loess", size = 1.5, aes_string(color = input$plot.color))
-      }
-    } 
-    # Group by only Shape when only shape grouping is selected 
-    else if (input$plot.shape != 1){
-      p <- p + geom_point(aes_string(shape = input$plot.shape))
-      if("Show Trendline" %in% input$plot.display){
-        p <- p + geom_smooth(method = "loess", size = 1.5, aes_string(linetype = input$plot.shape))
-      }
-    } 
-    # No Grouping Selected
-    else {
-      p <- p + geom_point()
-      if("Show Trendline" %in% input$plot.display){
-        p <- p + geom_smooth(method = "loess", size = 1.5)
-      }
-    }
-    
-    # Facet for Sites if no grouping for site is selected and number of sites is greater than 1
-    if(input$plot.color != "Loc" & input$plot.shape != "Loc" & length(c(input$loc)) > 1){
-      if(input$plot.color != "Depth" & input$plot.shape != "Depth" & length(c(input$depth)) > 1){
-        p <- p + facet_grid(Loc~Depth)
-      } else {
-        p <- p + facet_grid(Loc~.)
-      }
-    } else {
-      if(input$plot.color != "Depth" & input$plot.shape != "Depth" & length(c(input$depth)) > 1){
-        p <- p + facet_grid(.~Depth)
-      }
-    }
-    
-    # Log Scale
-    if("Log Scale (Y-axis)" %in% input$plot.display){
-      p <- p + scale_y_log10()
-    }
-    
-    # Show Non-Detect Level
-    if("Non-Detection Level" %in% input$plot.display){
-      p <- p + geom_hline(yintercept = 2, linetype = "dashed")
-    }
-    
-    # Show Reprting Limit
-    if("Reporting Limit" %in% input$plot.display){
-      p <- p + geom_hline(yintercept = 5, linetype = "dashed")
-    }
-    
-    # Performance Standard
-    if("Performance Standard" %in% input$plot.display){
-      p <- p + geom_hline(yintercept = 3)
-    }
-    
-    p
-    
-  })
-  
-# Plot Visual
-  
-  output$plot <- renderPlotly({
+# Plot
 
-    ggplotly(p())
-
-  })
-  
-# Plot Print
-  
-  output$save.plot <- downloadHandler(
-    filename = function (){paste(input$param,' Site(s) ', paste(unique(df.react()$Site)),' from ', input$date[1],' to ', input$date[2], '.png', sep='')},
-    content = function(file) {ggsave(file, plot = p(), device = "png")},   #function(file) {ggsave(file, plot = p(), device = "png")}
-    contentType = 'image/png'
-  )
+callModule(plot.time.depth, "Plot", df = df.react)
   
 # Create Table
   
@@ -492,61 +363,13 @@ res.nut.time <- function(input, output, session, df, df.site) {
   })
   
   
-  # Map Color
+  # Site Map
+  # Combine Site Input
   
-  df.site.react <- reactive({
-    df.temp <- df.site %>% filter(!is.na(LocationLat), !is.na(LocationLong))
-    df.temp$Selected <- ifelse(df.temp$Loc %in% input$loc, "yes", "no")
-    df.temp
+  site.list <- reactive({
+    input$site
   })
   
-  colorpal <- reactive({
-    colorFactor(c("navy", "red"), domain = c("yes", "no"))
-  })
-  
-  
-  # Base Leaflet Map - See General Note 3
-  
-  output$map <- renderLeaflet({
-    
-    leaflet(data = df.site %>% filter(!is.na(LocationLat), !is.na(LocationLong))) %>%
-      addProviderTiles(providers$Stamen.TonerLite,
-                       options = providerTileOptions(noWrap = TRUE)) %>%
-      addCircleMarkers(lng = ~LocationLong, lat = ~LocationLat,
-                       label=~LocationLabel,
-                       popup = ~paste("ID =", Site, "<br/>", 
-                                      "Description =", LocationDescription, "<br/>",
-                                      "Lat = ", LocationLat, "<br/>", 
-                                      "Long = ", LocationLong, "<br/>",
-                                      "Elev = ", LocationElevFt, "ft"),
-                       radius = 5,
-                       weight = 3,
-                       opacity = 1,
-                       fillOpacity = 0,
-                       color = "navy")
-  })
-  
-  
-  # Map Proxy - UPdate Color of Circle Markers as Site selection changes
-  
-  observe({
-    
-    pal <- colorpal()
-    
-    leafletProxy("map", data = df.site.react()) %>%
-      clearMarkers() %>%
-      addCircleMarkers(lng = ~LocationLong, lat = ~LocationLat,
-                       label=~LocationLabel,
-                       popup = ~paste("ID =", Site, "<br/>", 
-                                      "Description =", LocationDescription, "<br/>",
-                                      "Lat = ", LocationLat, "<br/>", 
-                                      "Long = ", LocationLong, "<br/>",
-                                      "Elev = ", LocationElevFt, "ft"),
-                       radius = 5,
-                       weight = 3,
-                       opacity = 1,
-                       fillOpacity = 0,
-                       color = ~pal(Selected))
-  })
+  callModule(sitemap, "Site Map", df.site = df.site, site.list = site.list)
   
 } # end server
