@@ -60,7 +60,7 @@ source("Modules2/Plot-Regress.R")
 source("Modules2/Summary.R")
 #source("Modules2/Summary-Depth.R")
 #source("Modules2/Summary-Profile.R")
-#source("Modules2/SiteMap.R")
+source("Modules2/SiteMap.R")
 
  ### Load Functions
 
