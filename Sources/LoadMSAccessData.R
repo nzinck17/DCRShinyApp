@@ -7,7 +7,7 @@
 
 # File name path from the Shiny App Folder (***Update if name changed****)
 
-filename.quab <- "DBQ=C:/WQDatabase/QuabbinWQdataNZ.mdb" 
+filename.quab <- "DBQ=C:/WQDatabase/QuabbinWQdataNZ.mdb"
 filename.wach.wq <- "DBQ=C:/WQDatabase/WaterQualityDB_fe.mdb"
 filename.wach.aquabio <- "DBQ=C:/WQDatabase/AqBioDBWachusett_fe.mdb"
 
@@ -16,58 +16,87 @@ filename.wach.aquabio <- "DBQ=C:/WQDatabase/AqBioDBWachusett_fe.mdb"
 
 # Quabbin Tribs and Res
 
-connection.name <- paste("Driver={Microsoft Access Driver (*.mdb, *.accdb)}",
-                         filename.quab,
-                         "Encrypt=yes",
-                         "TrustServerCertificate=no",
-                         "Connection Timeout=30",
-                         "ReadOnly=False",
-                         sep = ";")
+con <- dbConnect(odbc::odbc(),
+                 .connection_string = paste("driver={Microsoft Access Driver (*.mdb, *.accdb)}", filename.quab, "Uid=Admin;Pwd=;", sep = ";"),
+                 timezone = "America/New_York")
 
 
-connection <- odbcConnectAccess(connection.name)
-df.trib.res.quab <- sqlFetch(connection, "tblWQTribRes2")
-df.profile.quab <- sqlFetch(connection, "tblWQProfile")
-df.quab.ware.site <- sqlFetch(connection, "tblSiteLocation2")
-df.quab.param <- sqlFetch(connection, "tblParameters")
-close(connection)
-rm(connection)
+# connection.name <- paste("Driver={Microsoft Access Driver (*.mdb, *.accdb)}",
+#                          filename.quab,
+#                          "Encrypt=yes",
+#                          "TrustServerCertificate=no",
+#                          "Connection Timeout=30",
+#                          "ReadOnly=False",
+#                          sep = ";")
+
+
+df.trib.res.quab <- dbReadTable(con, "tblWQTribRes2")
+df.profile.quab <- dbReadTable(con, "tblWQProfile")
+df.quab.ware.site <- dbReadTable(con, "tblSiteLocation2")
+df.quab.param <- dbReadTable(con, "tblParameters")
+# Disconnect from db and remove connection obj
+dbDisconnect(con)
+rm(con)
+
+## RODBC METHOD
+# df.trib.res.quab <- sqlFetch(connection, "tblWQTribRes2")
+# df.profile.quab <- sqlFetch(connection, "tblWQProfile")
+# df.quab.ware.site <- sqlFetch(connection, "tblSiteLocation2")
+# df.quab.param <- sqlFetch(connection, "tblParameters")
+# close(connection)
+# rm(connection)
 
 # Wachusett Tribs
+con <- dbConnect(odbc::odbc(),
+                             .connection_string = paste("driver={Microsoft Access Driver (*.mdb, *.accdb)}",
+                              filename.wach.wq, "Uid=Admin;Pwd=;", sep = ";"),
+                             timezone = "America/New_York")
+# connection.name <- paste("Driver={Microsoft Access Driver (*.mdb, *.accdb)}",
+#                          filename.wach.wq,
+#                          "Encrypt=yes",
+#                          "TrustServerCertificate=no",
+#                          "Connection Timeout=30",
+#                          "ReadOnly=False",
+#                          sep = ";")
 
-connection.name <- paste("Driver={Microsoft Access Driver (*.mdb, *.accdb)}",
-                         filename.wach.wq,
-                         "Encrypt=yes",
-                         "TrustServerCertificate=no",
-                         "Connection Timeout=30",
-                         "ReadOnly=False",
-                         sep = ";")
 
-connection <- odbcConnectAccess(connection.name)
-df.trib.res.wach <- sqlFetch(connection, "tblWQALLDATA")
-df.wach.site <- sqlFetch(connection, "tblLocations")
-df.trib.res.wach.param <- sqlFetch(connection, "tblParameters")
-close(connection)
-rm(connection)
+df.trib.res.wach <- dbReadTable(con, "tblWQALLDATA")
+df.wach.site <- dbReadTable(con, "tblLocations")
+df.trib.res.wach.param <- dbReadTable(con, "tblParameters")
+# Disconnect from db and remove connection obj
+dbDisconnect(con)
+rm(con)
+
+## RODBC METHOD
+# df.trib.res.wach <- sqlFetch(connection, "tblWQALLDATA")
+# df.wach.site <- sqlFetch(connection, "tblLocations")
+# df.trib.res.wach.param <- sqlFetch(connection, "tblParameters")
+# close(connection)
+# rm(connection)
 
 # Wachusett Profile
+con<- dbConnect(odbc::odbc(),
+                             .connection_string = paste("driver={Microsoft Access Driver (*.mdb, *.accdb)}",
+                              filename.wach.aquabio, "Uid=Admin;Pwd=;", sep = ";"),
+                              timezone = "America/New_York")
 
-connection.name <- paste("Driver={Microsoft Access Driver (*.mdb, *.accdb)}",
-                         filename.wach.aquabio,
-                         "Encrypt=yes",
-                         "TrustServerCertificate=no",
-                         "Connection Timeout=30",
-                         "ReadOnly=False",
-                         sep = ";")
+# connection.name <- paste("Driver={Microsoft Access Driver (*.mdb, *.accdb)}",
+#                          filename.wach.aquabio,
+#                          "Encrypt=yes",
+#                          "TrustServerCertificate=no",
+#                          "Connection Timeout=30",
+#                          "ReadOnly=False",
+#                          sep = ";")
 
-connection <- odbcConnectAccess(connection.name)
-df.profile.wach <- sqlFetch(connection, "tbl_Profiles")
-df.profile.wach.site <- sqlFetch(connection, "tblLocations")
-close(connection)
-rm(connection)
-
-
-
+df.profile.wach <- dbReadTable(con, "tbl_Profiles")
+df.profile.wach.site <- dbReadTable(con, "tblLocations")
+# Disconnect from db and remove connection obj
+dbDisconnect(con)
+rm(con)
+# df.profile.wach <- sqlFetch(connection, "tbl_Profiles")
+# df.profile.wach.site <- sqlFetch(connection, "tblLocations")
+# close(connection)
+# rm(connection)
 
 #############################################################################################################################
 # RESTRUCTURING DATA
@@ -170,11 +199,11 @@ df.res.wach.site <- df.wach.site %>% filter(Type == "Transect")
 
 # Combine All Sites into 1 dataframe
 
-df.all.site <- full_join(df.quab.ware.site, df.wach.site, by = c("Site", 
-                                                                 "Watershed", 
+df.all.site <- full_join(df.quab.ware.site, df.wach.site, by = c("Site",
+                                                                 "Watershed",
                                                                  "Type",
-                                                                 "LocationLong", 
-                                                                 "LocationLat", 
+                                                                 "LocationLong",
+                                                                 "LocationLat",
                                                                  "LocationLabel",
                                                                  "LocationDescription",
                                                                  "LocationElevFt"))

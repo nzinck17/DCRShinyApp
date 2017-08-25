@@ -6,11 +6,11 @@
 #     Written by: Nick Zinck, Spring 2017
 ##############################################################################################################################
 
-# Notes: 
-#   1. 
+# Notes:
+#   1.
 #
 # To-Do List:
-#   1. 
+#   1.
 
 ####################################################################################################
 # Load Libraries and Script (Sources, Modules, and Functions)
@@ -26,9 +26,9 @@ library(lubridate)
 library(leaflet)
 library(RColorBrewer)
 library(DT)
-library(RODBC)
-#library(DBI)
-#library(odbc)
+#library(RODBC)
+library(DBI)
+library(odbc)
 
 ### Run/Source Scripts that load data
 
@@ -73,26 +73,27 @@ source("Functions/circleSizeLegend.R")
 
 ui <- navbarPage("DCR", position = "fixed-top", inverse = TRUE, collapsible = TRUE,
 
-######################################################                   
-# PG 1 - Home Page            
+######################################################
+# PG 1 - Home Page
 
 tabPanel("Home",
-  
-  # Title       
+
+  # Title
   fluidRow(br(), br(), br(), br(), h2("Water Quality Data Management System", align = "center")),
   fluidRow(h3("Department of Conservation and Recreation", align = "center"), br()),
-  
   Home.UI("Home")
   
 ),
-######################################################                   
-# PG 2 - Tributary Water Quality Data             
                  
+                 
+######################################################
+# PG 2 - Tributary Water Quality Data
+
 tabPanel("Tributary",
 
   # Title
   fluidRow(br(), br(), br(), br(), h2("Tributary Water Quality Data", align = "center"), br()),
-  
+
   navlistPanel(widths = c(2, 10),
                tabPanel("Time-Series",
                         fluidRow(column(10, h4("Tributary Time-Series Analysis", align = "center")), column(2)),
@@ -113,20 +114,20 @@ tabPanel("Tributary",
                         ) # end tabset Panel
                ) # end tabpanel
   ) # end navlist panel
-  
-), # end Tributary tabpanel (page)
-   
 
+), # end Tributary tabpanel (page)
+
+                 
 #############################################################
-# PG 3 - Reservoir 
-  
+# PG 3 - Reservoir
+
 tabPanel("Reservoir",
 
    # Title
    fluidRow(br(), br(), br(), br(), h2("Reservoir Water Quality Data", align = "center"), br()),
-   
+
    navlistPanel(widths = c(2, 10),
-                
+
                 "Transect",
                 tabPanel("Time-Series",
                          fluidRow(column(10, h4("Transect Time-Series Analysis", align = "center")), column(2)),
@@ -142,7 +143,7 @@ tabPanel("Reservoir",
                            tabPanel("Wachusett", regress.UI("Wachusett Res Tran Regress", df.res.wach))
                          ) # end tabset panel
                 ), # end tabpanel
-                
+
                 "Nutrient",
                 tabPanel("Time-Series",
                          fluidRow(column(10, h4("Nutrition Time-Series Analysis", align = "center")), column(2)),
@@ -158,7 +159,7 @@ tabPanel("Reservoir",
                            tabPanel("Wachusett", regress.depth.UI("Wachusett Res Nut Regress", df.res.wach))
                          )
                 ),
-                
+
                 "Profile",
                 tabPanel("Heat Map Custom",
                          fluidRow(column(10, h4("Profile Heatmap (Custom)", align = "center")), column(2)),
@@ -168,7 +169,6 @@ tabPanel("Reservoir",
                          )
                 ),
                 tabPanel("Heat Map Standard"),
-                
                 tabPanel("3D",
                          fluidRow(column(10, h4("Profile 3D", align = "center")), column(2)),
                          tabsetPanel(
@@ -183,9 +183,9 @@ tabPanel("Reservoir",
                            tabPanel("Wachusett", prof.line.UI("Wachusett Profile Line", df.profile.wach))
                          )
                 ),
-                
+
                 tabPanel("Line Plot Standard"),
-                
+
                 tabPanel("Table and Summary",
                          fluidRow(column(10, h4("Profile Summary", align = "center")), column(2)),
                          tabsetPanel(
@@ -193,12 +193,12 @@ tabPanel("Reservoir",
                            tabPanel("Wachusett", prof.summary.UI("Wachusett Profile Summary", df.profile.wach))
                          )
                 ),
-                
+
                 "AquaBio",
                 tabPanel("Heatmap"),
                 tabPanel("Line Plot")
    ) # end navlist
-   
+
  ),  # end Tabpanel (page)
 
 
@@ -206,10 +206,10 @@ tabPanel("Reservoir",
 #4 -  Map
 
 tabPanel("Map Plot",
-         
+
          # Title
          fluidRow(br(), br(), br(), br(), h2("Map Plot", align = "center"), br()),
-         
+
          navlistPanel(widths = c(2, 10),
                       "Tributaries",
                       tabPanel("Quabbin", map.plot.UI("Quabbin Trib MapPlot", df = df.trib.quab)),
@@ -227,19 +227,19 @@ tabPanel("Map Plot",
 # PG 5 - Hydrology/Meteorology
 
 tabPanel("Met/Hydro",
-         
+
          # Title
          fluidRow(br(), br(), br(), br(), h2("Hydrology and Meteorology Data", align = "center"), br())
-),  
+),
 
 ####################################################################
 # PG 6 - Forestry
 
 tabPanel("Forestry",
-         
+
          # Title
          fluidRow(br(), br(), br(), br(), h2("Forestry Data", align = "center"), br())
-), 
+),
 
 #########################################################
 # PG 6 - Reports
@@ -247,7 +247,7 @@ tabPanel("Forestry",
 tabPanel("Report",
          # Title
          fluidRow(br(), br(), br(), br(), h2("Report Generation Tool", align = "center"), br()),
-         
+
          navlistPanel(widths = c(2, 10),
                       "Preset Reports",
                       tabPanel("Annual WQ",
@@ -295,7 +295,7 @@ tabPanel("Report",
                                )
                       )
          ) # end navlist
-         
+
 ), # end tabpanel (page)
 
 #######################################################
@@ -303,33 +303,33 @@ tabPanel("Report",
 
 # Give the page a title
 tabPanel("Input Data",
-         
+
          fluidRow(br(), br(), br(), br(), h2("Input Data", align = "center"), br(),
                   br(), h4("button to make sure all sites in list are accounted for in Site Table"),
                   br(), h4("button to make sure all Parameters in list are accounted for in Parameter Table")
                   )
-         
+
 
 )
 
 #######################################################
 
 ) # end UI
-           
+
 ########################################################################################
 ################################    Server   ###########################################
 ########################################################################################
 
-server <- function(input, output) {
-  
-######################################################                   
-# PG 1 - Tributary Water Quality Data   
-  
+server <- function(input, output, session) {
+
+######################################################
+# PG 1 - Tributary Water Quality Data
+
   callModule(Home, "Home", df.site = df.all.site)
- 
-######################################################                   
+
+######################################################
 # PG 2 - Tributary
-  
+
   # Time Series
   callModule(time, "Quabbin Trib Time", df = df.trib.quab, df.site = df.trib.quab.site)
   callModule(time, "Ware River Trib Time", df = df.trib.ware, df.site = df.trib.ware.site)
@@ -343,8 +343,8 @@ server <- function(input, output) {
   callModule(regress, "All Trib Regress", df = df.trib.all, df.site = df.trib.all.site)
   
 #############################################################
-# PG 3 - Reservoir 
-  
+# PG 3 - Reservoir
+
   # Transect
   callModule(time, "Quabbin Res Tran Time", df = df.res.quab, df.site = df.res.quab.site)
   callModule(time, "Wachusett Res Tran Time", df = df.res.wach, df.site = df.res.wach.site)
@@ -371,10 +371,10 @@ server <- function(input, output) {
   
   callModule(prof.summary, "Quabbin Profile Summary", df = df.profile.quab)
   callModule(prof.summary, "Wachusett Profile Summary", df = df.profile.wach)
-  
+
   # AquaBio
 
-  
+
 ####################################################################
 # PG 8 - Map Plot
 
@@ -384,11 +384,11 @@ server <- function(input, output) {
   callModule(map.plot, "Quabbin Restran MapPlot", df = df.res.quab, df.site = df.res.quab.site)
   callModule(map.plot, "Wachusett Restran MapPlot", df = df.res.wach, df.site = df.res.wach.site)
 
-  
-######################################################                   
+
+######################################################
 
 # PG 5 - Hydrology/Meteorology/Statistics
-  
+
 ####################################################################
 # PG 8 - Reports
 
@@ -405,7 +405,11 @@ server <- function(input, output) {
   callModule(report.custom, "Wachusett Profile Custom Report", df = df.profile.wach, df.site = df.res.wach.site)
   callModule(report.custom, "Quabbin Phyto Custom Report", df = df.profile.quab, df.site = df.res.quab.site)
   callModule(report.custom, "Wachusett Phyto Custom Report", df = df.profile.wach, df.site = df.res.wach.site)
-  
+# Code to stop app when browser session window closes
+session$onSessionEnded(function() {
+      stopApp()
+    })
+
 } # end server function
 
 #combines the user interface and server (it's a must)
