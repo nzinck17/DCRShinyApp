@@ -27,11 +27,11 @@ tagList(
       column(3,
              # Location and Depth Selection with Map
              wellPanel(
-               checkboxGroupInput(ns("loc"), "Station:", 
-                                  choices=levels(factor(df$Loc)),
+               checkboxGroupInput(ns("station"), "Station:", 
+                                  choices=levels(factor(df$Station)),
                                   inline = TRUE),
-               checkboxGroupInput(ns("depth"), "Depth:", 
-                                  choices=levels(factor(df$Depth)),
+               checkboxGroupInput(ns("level"), "Sampling Level:", 
+                                  choices=levels(factor(df$Sampling_Level)),
                                   inline = TRUE),
                sitemap.UI(ns("Site Map"))
              ) # end Well Panel
@@ -199,8 +199,8 @@ tagList(
                       column(3,
                              radioButtons(ns("plot.color"), label = "Group with Colors:", 
                                           choices = c("None" = 1, 
-                                                      "Location" = "Loc",
-                                                      "Depth" = "Depth",
+                                                      "Station" = "Station",
+                                                      "Sampling Level" = "Sampling_Level",
                                                       "Met/hydro filter 1 (select group)" = "met1",
                                                       "Met/hydro filter 2 (select group)" = "met2",
                                                       "Met/hydro filter 3 (select group)" = "met3",
@@ -211,8 +211,8 @@ tagList(
                       column(3,
                              radioButtons(ns("plot.shape"), label = "Group with Shapes:", 
                                           choices = c("None" = 1, 
-                                                      "Location" = "Loc",
-                                                      "Depth" = "Depth",
+                                                      "Station" = "Station",
+                                                      "Sampling Level" = "Sampling_Level",
                                                       "Met/hydro filter 1 (select group)" = "met1",
                                                       "Met/hydro filter 2 (select group)" = "met2",
                                                       "Met/hydro filter 3 (select group)" = "met3",
@@ -260,13 +260,13 @@ regress.depth <- function(input, output, session, df, df.site) {
   
   output$y.param.ui <- renderUI({
     
-    req(input$loc) # See General Note _
+    req(input$station) # See General Note _
     
     ns <- session$ns
     
     # Parameters which have data at any Site (in the mofule's df) within 5 years.
     y.param.choices.new <- df %>%
-      filter(Loc %in% c(input$loc)) %>%
+      filter(Station %in% c(input$station)) %>%
       filter(Parameter %in% parameters.non.historical) %>%
       .$Parameter %>%
       factor() %>%
@@ -274,7 +274,7 @@ regress.depth <- function(input, output, session, df, df.site) {
     
     # Parameters which do NOT have data at any Site (in the mofule's df) within 5 years.
     y.param.choices.old <- df %>%
-      filter(Loc %in% c(input$loc)) %>%
+      filter(Station %in% c(input$station)) %>%
       filter(!(Parameter %in% parameters.non.historical)) %>%
       .$Parameter %>%
       factor() %>%
@@ -304,12 +304,12 @@ regress.depth <- function(input, output, session, df, df.site) {
   
   output$y.range.ui <- renderUI({
     
-    req(input$loc) # See General Note 5
+    req(input$station) # See General Note 5
     
     ns <- session$ns # see General Note 1
     
     y.result <- df %>%
-      filter(Loc %in% c(input$loc)) %>%
+      filter(Station %in% c(input$station)) %>%
       filter(Parameter %in% input$y.param) %>%
       .$Result
     
@@ -330,13 +330,13 @@ regress.depth <- function(input, output, session, df, df.site) {
   
   output$x.param.ui <- renderUI({
     
-    req(input$loc) # See General Note _
+    req(input$station) # See General Note _
     
     ns <- session$ns
     
     # Parameters which have data at any Site (in the mofule's df) within 5 years.
     x.param.choices.new <- df %>%
-      filter(Loc %in% c(input$loc)) %>%
+      filter(Station %in% c(input$station)) %>%
       filter(Parameter %in% parameters.non.historical) %>%
       .$Parameter %>%
       factor() %>%
@@ -344,7 +344,7 @@ regress.depth <- function(input, output, session, df, df.site) {
     
     # Parameters which do NOT have data at any Site (in the mofule's df) within 5 years.
     x.param.choices.old <- df %>%
-      filter(Loc %in% c(input$loc)) %>%
+      filter(Station %in% c(input$station)) %>%
       filter(!(Parameter %in% parameters.non.historical)) %>%
       .$Parameter %>%
       factor() %>%
@@ -372,12 +372,12 @@ regress.depth <- function(input, output, session, df, df.site) {
   
   output$x.range.ui <- renderUI({
     
-    req(input$loc) # See General Note 5
+    req(input$station) # See General Note 5
     
     ns <- session$ns # see General Note 1
     
     x.result <- df %>%
-      filter(Loc %in% c(input$loc)) %>%
+      filter(Station %in% c(input$station)) %>%
       filter(Parameter %in% input$x.param) %>%
       .$Result
     
@@ -395,12 +395,12 @@ regress.depth <- function(input, output, session, df, df.site) {
   
   output$date.ui <- renderUI({
     
-    req(input$loc) # See General Note 5
+    req(input$station) # See General Note 5
     
     ns <- session$ns # see General Note 1
     
     Dates <- df %>% 
-      filter(Loc %in% c(input$loc)) %>%
+      filter(Station %in% c(input$station)) %>%
       .$Date
     
     Date.min <- Dates %>% min(na.rm = TRUE)
@@ -420,12 +420,12 @@ regress.depth <- function(input, output, session, df, df.site) {
   
   df.react <- reactive({
     
-    req(input$loc) # See General Note 5
+    req(input$station) # See General Note 5
     
     # filter by location, depth, and Date adn save
     df.temp <- df %>% 
-      filter(Loc %in% c(input$loc),
-             Depth %in% c(input$depth),
+      filter(Station %in% c(input$station),
+             Sampling_Level %in% c(input$level),
              Date > input$date[1], Date < input$date[2])
     
     # X Parameter filter and make modifications
@@ -452,7 +452,7 @@ regress.depth <- function(input, output, session, df, df.site) {
   
   output$text.site.null.ui <- renderUI({
     
-    req(is.null(input$loc)) # See General Note 1
+    req(is.null(input$station)) # See General Note 1
     wellPanel(
       h2("Select a Site", align = "center")
     )
@@ -464,14 +464,14 @@ regress.depth <- function(input, output, session, df, df.site) {
   # Text - Number of Samples
   
   output$text.num.text <- renderText({
-    req(input$loc) # See General Note 1
+    req(input$station) # See General Note 1
     "Number of Samples in Selected Data"
   })
   
   # Text - Number of Samples
   
   output$text.num <- renderText({
-    req(input$loc) # See General Note 1
+    req(input$station) # See General Note 1
     df.react() %>% summarise(n()) %>% paste()
   })
   
@@ -573,14 +573,14 @@ regress.depth <- function(input, output, session, df, df.site) {
     }
     
     # Facet for Sites if no grouping for site is selected and number of sites is greater than 1
-    if(input$plot.color != "Loc" & input$plot.shape != "Loc" & length(c(input$loc)) > 1){
-      if(input$plot.color != "Depth" & input$plot.shape != "Depth" & length(c(input$depth)) > 1){
+    if(input$plot.color != "Station" & input$plot.shape != "Station" & length(c(input$station)) > 1){
+      if(input$plot.color != "Sampling_Level" & input$plot.shape != "Sampling_Level" & length(c(input$level)) > 1){
         p <- p + facet_grid(Loc~Depth)
       } else {
         p <- p + facet_grid(Loc~.)
       }
     } else {
-      if(input$plot.color != "Depth" & input$plot.shape != "Depth" & length(c(input$depth)) > 1){
+      if(input$plot.color != "Sampling_Level" & input$plot.shape != "Sampling_Level" & length(c(input$level)) > 1){
         p <- p + facet_grid(.~Depth)
       }
     }

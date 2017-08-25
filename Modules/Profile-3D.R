@@ -147,8 +147,10 @@ prof.3D <- function(input, output, session, df) {
   
   output$plot <- renderPlotly({
     
-    plot_ly(df.active(), x = ~Year, y = ~get(input$date.style), z = ~Depthm, color = ~Result,
+    plot_ly(df.active(), x = ~Result, y = ~get(input$date.style), z = ~Depthm, color = ~Result,
             marker = list(symbol = 'circle', sizemode = 'diameter'), sizes = c(15, 15))
+    # Reverse Depth
+    # Title Axis
     
   })
   
