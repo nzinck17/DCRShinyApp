@@ -1,75 +1,56 @@
 ##############################################################################################################################
-#     Title: ProfileHeatmapFilledContour - Shiny Module
-#     Description: This script will plot an annual timeseries profile for one parameter for one calendar year
-#                 using the filled contour method
-#     Written by: Dan Crocker and Nick Zinck, Spring 2017
-#     Note: TBD
+#     Title: Profile-Heatmap.R
+#     Type: Module for DCR Shiny App
+#     Description: Heatmap and Heatmap 3D Plots for Profile Data
+#     Written by: Nick Zinck, Spring 2017
 ##############################################################################################################################
 
-# load libraries
-library(shiny)
-library(ggplot2)
-library(plotly)
-library(dplyr)
-library(lubridate)
-library(akima)
+# Notes: 
+#   1. req() will delay the rendering of a widget or other reactive object until a certain logical expression is TRUE or not NULL
+#
+# To-Do List:
+#   1. Make Loading Bar for Plot
+#   2. Make option for COloring Scale (whether based on Site, Year; Site; or None)
+#   3. Change Decimal Date to DOY
 
-#=========================================================================
-# UI side
-
-
-####IIIMMMMPOORTANT 
-# change the df.profile to df
-
+##############################################################################################################################
+# User Interface
+##############################################################################################################################
 
 prof.heatmap.UI <- function(id, df) {
   
 ns <- NS(id)
   
 tagList(
-    
   wellPanel(
-    
     fluidRow(
-      
       # first column
       column(3,
-             
              # Parameter Input
              selectInput(ns("param"), "Parameter:",        
                          choices=levels(factor(df$Parameter)),
                          selected = factor(df$Parameter[1]))
       ),
-      
-      
       column(2,
-             
              # Date Input
              selectInput(ns("date"), "Year:", 
                         choices = year(seq(as.Date("1990/1/1"), Sys.Date(), "years")), 
                         selected = year(Sys.Date() - years(5)))
       ),
-      
-      
       column(2,
-             
              # Site Input
              selectInput(ns("site"), "Site:", 
                          choices = levels(factor(df$Site)), 
                          selected = factor(df$Site)[1])
       ),
-      
       column(2,
-             
              #Interpolation Type
              selectInput(ns("interp"), "Interpolation Method:", 
                          choices = c("none" = "none",
                                      "linear" = TRUE), 
                          selected = TRUE)
       ),
-      
       column(2,
-             
              #plot color style
              selectInput(ns("plot.color"), "Plot Color Style:", 
                          choices = c("blue scale",
@@ -77,43 +58,37 @@ tagList(
                                      "blue-red"), 
                          selected = "rainbow")
       ),
-      
       column(1,
-              
              #download button
              downloadButton(ns('save.plot'), "Save Plot")
       )
-                        
-                        
     ) # end fluid row
-    ), # end well panel
-    
-    
-    tabsetPanel(
-      
-      # the "Plot" tab panel where everything realted to the plot goes
-      tabPanel("Plot",
-                 plotlyOutput(ns("plot"), height = 500)
-      ),
-      
-      tabPanel("Table",
-              dataTableOutput(ns("table"))
-      )
+  ), # end well panel
+  tabsetPanel(
+    # the "Plot" tab panel where everything realted to the plot goes
+    tabPanel("Plot",
+             plotlyOutput(ns("plot"), height = 500)
+    ),
+    tabPanel("Plot3D",
+             plotlyOutput(ns("plot3D"), height = 700)
+    ),
+    tabPanel("Table",
+             dataTableOutput(ns("table"))
     )
-    
+  )
 ) # end taglist
-
 } # end UI
 
-#=============================================================================
-# server side
 
+##############################################################################################################################
+# Server Function
+##############################################################################################################################
 
 prof.heatmap <- function(input, output, session, df) {
   
 # Reactive Data Frames:
   
-  df.active <- reactive({
+  df.react <- reactive({
     df %>% 
     filter(Parameter %in% input$param) %>% 
     filter(Site %in% c(input$site)) %>%
@@ -130,17 +105,17 @@ prof.heatmap <- function(input, output, session, df) {
   upperlimit <- reactive({max(df.limit()$Result)})
   midpoint <- reactive({(lowerlimit() + upperlimit()) / 2})
   
-# Plot creation
+# Heat map Plot creation
   
   p <- reactive({
     
     # if interploation is selected
     if(input$interp != "none"){
-      df.plot <- akima::interp(x = decimal_date(df.active()$Date), y = df.active()$Depthm, z = df.active()$Result, duplicate="strip", nx = 100, ny = 100)
+      df.plot <- akima::interp(x = decimal_date(df.react()$Date), y = df.react()$Depthm, z = df.react()$Result, duplicate="strip", nx = 100, ny = 100)
       df.plot <- interp2xyz(df.plot, data.frame=TRUE)
       df.plot <- rename(df.plot, Date = x, Depthm = y, Result = z)
     } else {
-      df.plot <- df.active()
+      df.plot <- df.react()
     }
     
     p <-  ggplot(df.plot, aes(x=Date, y=Depthm, z=Result, fill=Result)) +
@@ -159,13 +134,46 @@ prof.heatmap <- function(input, output, session, df) {
     
   })
   
+  
 # Plot - Plotly Visualization
   
   output$plot <- renderPlotly({
-    
     ggplotly(p()) %>% config(displayModeBar = F)  %>% layout(xaxis=list(fixedrange=TRUE)) %>% layout(yaxis=list(fixedrange=TRUE))
-    
   })
+  
+
+
+  # 3D Plot creation
+  
+  output$plot3D <- renderPlotly({
+    
+    # if interploation is selected
+    df.interp <- akima::interp(x = decimal_date(df.react()$Date), y = df.react()$Depthm, z = df.react()$Result, duplicate="strip", nx = 100, ny = 100)
+    
+    if(input$interp != "none"){
+      p3D <- plot_ly(x = df.interp[[2]], y = df.interp[[1]], z = df.interp[[3]]) %>% 
+        add_surface() %>%
+        layout(scene = list(
+          xaxis = list(title = 'Depth (m)'),  
+          yaxis = list(title = 'Year'),
+          zaxis = list(title = input$param),
+          camera = list(eye = list(x = 1, y = 1, z = 2))))
+    } else {
+      p3D <- plot_ly(df.react(), x = ~Result, y = ~Date, z = ~Depthm*-1, color = ~Result) %>%
+        add_markers() %>%
+        layout(scene = list(
+          xaxis = list(title = input$param),  
+          yaxis = list(range = 
+                         c(as.numeric(as.POSIXct(min(df.react()$Date), format="%Y-%m-%d"))*1000,
+                           as.numeric(as.POSIXct(max(df.react()$Date), format="%Y-%m-%d"))*1000),
+                       type = "date"),
+          zaxis = list(title = 'Depth (m)'))) #autorange = "reversed"  (no reverse capability yet of 3D plots)
+          
+    }
+    
+    p3D
+    
+  }) 
   
 # Plot - print
   
@@ -177,6 +185,6 @@ prof.heatmap <- function(input, output, session, df) {
   
 # Table
   
-  output$table <- renderDataTable(df.active())
+  output$table <- renderDataTable(df.react())
   
 } # end server

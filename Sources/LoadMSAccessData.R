@@ -233,23 +233,29 @@ df.prof.wach.site <- df.nut.prof.wach.site %>% filter(is.null(LocationDepth))
 # ! Need to update when Sites are squared away
 # Combine All Sites into 1 dataframe
 
-df.all.site.temp <- full_join(df.quab.ware.site, df.trib.tran.wach.site, by = c("Site",
-                                                                 "Watershed",
-                                                                 "LocationType",
-                                                                 "LocationLong",
-                                                                 "LocationLat",
-                                                                 "LocationLabel",
-                                                                 "LocationDescription",
-                                                                 "LocationElevFt"))
 
-df.all.site <- full_join(df.all.site.temp, df.nut.prof.wach.site, by = c("Site",
-                                                                           "Watershed",
-                                                                           "LocationType",
-                                                                           "LocationLong",
-                                                                           "LocationLat",
-                                                                           "LocationLabel",
-                                                                           "LocationDescription",
-                                                                           "LocationElevFt"))
+df.all.site.temp <- full_join(df.quab.ware.site, 
+                              df.trib.tran.wach.site, 
+                              by = c("Site",
+                                     "Watershed",
+                                     "LocationType",
+                                     "LocationLong",
+                                     "LocationLat",
+                                     "LocationLabel",
+                                     "LocationDescription",
+                                     "LocationElevFt"))
+
+df.all.site <- full_join(df.all.site.temp, 
+                         df.nut.prof.wach.site, 
+                         by = c("Site",
+                                "Station",
+                                "Watershed",
+                                "LocationType",
+                                "LocationLong",
+                                "LocationLat",
+                                "LocationLabel",
+                                "LocationDescription",
+                                "LocationElevFt"))
 # All Tributaries
 df.trib.all.site <- df.all.site %>% filter(LocationType == "Tributary")
 
