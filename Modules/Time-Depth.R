@@ -31,11 +31,11 @@ tagList(
       column(3,
              # Location and Depth Selection with Map
              wellPanel(
-               checkboxGroupInput(ns("loc"), "Station:", 
-                                  choices=levels(factor(df$Loc)),
+               checkboxGroupInput(ns("station"), "Station:", 
+                                  choices=levels(factor(df$Station)),
                                   inline = TRUE),
-               checkboxGroupInput(ns("depth"), "Depth:", 
-                                  choices=levels(factor(df$Depth)),
+               checkboxGroupInput(ns("level"), "Sampling Level:", 
+                                  choices=levels(factor(df$Sampling_Level)),
                                   inline = TRUE),
                br(),
                sitemap.UI(ns("Site Map"))
@@ -136,8 +136,8 @@ tagList(
     # Summary Tab
     tabPanel("Summary",
              column(3,
-                    checkboxInput(ns("summary.group.loc"), label = "Group by Location", value = TRUE),
-                    checkboxInput(ns("summary.group.depth"), label = "Group by Depth", value = TRUE),
+                    checkboxInput(ns("summary.group.station"), label = "Group by Station", value = TRUE),
+                    checkboxInput(ns("summary.group.level"), label = "Group by Sampling Level", value = TRUE),
                     radioButtons(ns("summary.group.time"), "Group by:",
                                  choices = c("None" = 1, 
                                              "Year" = 2, 
@@ -176,13 +176,13 @@ time.depth <- function(input, output, session, df, df.site) {
   
   output$param.ui <- renderUI({
     
-    req(input$loc) # See General Note 5
+    req(input$station) # See General Note 5
     
     ns <- session$ns # see General Note 1
     
     # Parameters which have data at any Site (in the mofule's df) within 5 years.
     param.choices.new <- df %>%
-      filter(Loc %in% c(input$loc)) %>%
+      filter(Station %in% c(input$station)) %>%
       filter(Parameter %in% parameters.non.historical) %>%
       .$Parameter %>%
       factor() %>%
@@ -190,7 +190,7 @@ time.depth <- function(input, output, session, df, df.site) {
     
     # Parameters which do NOT have data at any Site (in the mofule's df) within 5 years.
     param.choices.old <- df %>%
-      filter(Loc %in% c(input$loc)) %>%
+      filter(Station %in% c(input$station)) %>%
       filter(!(Parameter %in% parameters.non.historical)) %>%
       .$Parameter %>%
       factor() %>%
@@ -219,12 +219,12 @@ time.depth <- function(input, output, session, df, df.site) {
   
   output$range.ui <- renderUI({
     
-    req(input$loc) # See General Note 5
+    req(input$station) # See General Note 5
     
     ns <- session$ns # see General Note 1
     
     result <- df %>%
-      filter(Loc %in% c(input$loc)) %>%
+      filter(Station %in% c(input$station)) %>%
       filter(Parameter %in% input$param) %>%
       .$Result
     
@@ -243,12 +243,12 @@ time.depth <- function(input, output, session, df, df.site) {
   
   output$date.ui <- renderUI({
     
-    req(input$loc) # See General Note 5
+    req(input$station) # See General Note 5
     
     ns <- session$ns # see General Note 1
     
     Dates <- df %>% 
-      filter(Loc %in% c(input$loc)) %>%
+      filter(Station %in% c(input$station)) %>%
       .$Date
     
     Date.min <- Dates %>% min(na.rm=TRUE)
@@ -268,11 +268,11 @@ time.depth <- function(input, output, session, df, df.site) {
   
   df.react <- reactive({
     
-    req(input$loc) # See General Note 5
+    req(input$station) # See General Note 5
     
     df %>% 
-      filter(Loc %in% c(input$loc)) %>%
-      filter(Depth %in% c(input$depth)) %>%
+      filter(Station %in% c(input$station)) %>%
+      filter(Sampling_Level %in% c(input$level)) %>%
       filter(Parameter %in% c(input$param)) %>% 
       filter(Result > input$range[1], Result < input$range[2]) %>%
       filter(Date > input$date[1], Date < input$date[2])
@@ -283,21 +283,21 @@ time.depth <- function(input, output, session, df, df.site) {
   # Text - Select Site - Red
   
   output$text.num.null <- renderText({
-    req(is.null(input$loc)) # See General Note 1
+    req(is.null(input$station)) # See General Note 1
     "Select a Site"
   })
   
   # Text - Number of Samples
   
   output$text.num.text <- renderText({
-    req(input$loc) # See General Note 1
+    req(input$station) # See General Note 1
     "Number of Samples in Selected Data"
   })
   
   # Text - Number of Samples
   
   output$text.num <- renderText({
-    req(input$loc) # See General Note 1
+    req(input$station) # See General Note 1
     df.react() %>% summarise(n()) %>% paste()
   })
   
@@ -335,17 +335,17 @@ callModule(plot.time.depth, "Plot", df = df.react)
     }
     
     # group by Location
-    if(input$summary.group.loc == TRUE){
-      sum.dots <- c(sum.dots, "Site")
+    if(input$summary.group.station == TRUE){
+      sum.dots <- c(sum.dots, "Station")
     }
     
     # group by Depth
-    if(input$summary.group.depth == TRUE){
-      sum.dots <- c(sum.dots, "Depth")
+    if(input$summary.group.level == TRUE){
+      sum.dots <- c(sum.dots, "Sampling_Level")
     } 
     
     # Applying Grouping if Grouping selected
-    if (input$summary.group.loc == FALSE & input$summary.group.depth == FALSE & input$summary.group.time == 1){
+    if (input$summary.group.station == FALSE & input$summary.group.level == FALSE & input$summary.group.time == 1){
       sum.2 <- sum.1
     } else {
       sum.2 <- sum.1 %>%

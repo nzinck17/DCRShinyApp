@@ -108,19 +108,19 @@ plot.time.depth.UI <- function(id) {
                         column(3,
                                radioButtons(ns("plot.color"), label = "Group with Colors:", 
                                             choices = c("None" = 1, 
-                                                        "Site" = "Site",
-                                                        "Depth" = "Depthm",
+                                                        "Station" = "Station",
+                                                        "Sampling Level" = "Sampling_Level",
                                                         "met/hydro filter 1 (select group)" = "met1",
                                                         "met/hydro filter 2 (select group)" = "met2",
                                                         "Flagged data" = "FlagCode"),
-                                            selected = "Site")
+                                            selected = "Station")
                         ), # end column
                         # new column
                         column(3,
                                radioButtons(ns("plot.shape"), label = "Group with Shapes:", 
                                             choices = c("None" = 1, 
-                                                        "Site" = "Site",
-                                                        "Depth" = "Depthm",
+                                                        "Station" = "Station",
+                                                        "Sampling Level" = "Sampling_Level",
                                                         "met/hydro filter 1 (select group)" = "met1",
                                                         "met/hydro filter 2 (select group)" = "met2",
                                                         "Flagged data" = "FlagCode"),
@@ -284,15 +284,15 @@ plot.time.depth <- function(input, output, session, df) {
     }
     
     # Facet for Sites if no grouping for site is selected and number of sites is greater than 1
-    if(input$plot.color != "Loc" & input$plot.shape != "Loc" & length(c(input$loc)) > 1){
-      if(input$plot.color != "Depthm" & input$plot.shape != "Depthm" & length(c(input$depth)) > 1){
-        p <- p + facet_grid(Depth~Loc)
+    if(input$plot.color != "Station" & input$plot.shape != "Station" & length(c(input$station)) > 1){
+      if(input$plot.color != "SamplingLevel" & input$plot.shape != "SamplingLevel" & length(c(input$level)) > 1){
+        p <- p + facet_grid(Station~SamplingLevel)
       } else {
-        p <- p + facet_grid(Depth~.)
+        p <- p + facet_grid(Station~.)
       }
     } else {
-      if(input$plot.color != "Depthm" & input$plot.shape != "Depthm" & length(c(input$depth)) > 1){
-        p <- p + facet_grid(.~Loc)
+      if(input$plot.color != "SamplingLevel" & input$plot.shape != "SamplingLevel" & length(c(input$level)) > 1){
+        p <- p + facet_grid(.~SamplingLevel)
       }
     }
 

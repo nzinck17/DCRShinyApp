@@ -463,14 +463,14 @@ regress <- function(input, output, session, df, df.site) {
       filter(Parameter %in% c(input$x.param),
              Result > input$x.range[1], Result < input$x.range[2]) %>%
       rename(x.Parameter = Parameter, x.Result = Result) %>%
-      select(Site, Loc, Depth, Date, x.Parameter, x.Result)
+      select(Site, Date, x.Parameter, x.Result)
     
     # Y Parameter filter and make modifications
     df.temp.y <-  df.temp %>% 
       filter(Parameter %in% c(input$y.param),
              Result > input$y.range[1], Result < input$y.range[2]) %>%
       rename(y.Parameter = Parameter, y.Result = Result) %>%
-      select(Site, Loc, Depth, Date, y.Parameter, y.Result)
+      select(Site, Date, y.Parameter, y.Result)
     
     # Join the two X and Y parameters dataframes
     inner_join(df.temp.x, df.temp.y, by = c("Site", "Date"))
