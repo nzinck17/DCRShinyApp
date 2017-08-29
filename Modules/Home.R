@@ -55,6 +55,11 @@ Home <- function(input, output, session, df.site) {
 
   df.site$LocationType[df.site$LocationType == "Nutrient"] <- "Reservoir"
   
+  # to fix duplicated Reservoir (Nutrient locations due to multiple depths)
+  df.site$Site[!is.na(df.site$Station)] <- df.site$Station[!is.na(df.site$Station)]
+  df.site <- df.site[!duplicated(df.site[,c("Site", "LocationLat", "LocationLong", "LocationCategory")]),]
+  
+  
 # levels (Categories) of Colors and Legend
   
   map.levels <- c("Quabbin Tributary",

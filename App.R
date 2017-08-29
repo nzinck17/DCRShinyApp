@@ -26,9 +26,11 @@ library(lubridate)
 library(leaflet)
 library(RColorBrewer)
 library(DT)
+library(akima)
 #library(RODBC)
 library(DBI)
 library(odbc)
+
 
 ### Run/Source Scripts that load data
 
@@ -43,7 +45,6 @@ source("Modules/Regress.R")
 source("Modules/Time-Depth.R")
 source("Modules/Regress-Depth.R")
 source("Modules/Profile-Heatmap.R")
-source("Modules/Profile-3D.R")
 source("Modules/Profile-Line.R")
 source("Modules/Profile-Summary.R")
 source("Modules/MapPlot.R")
@@ -56,9 +57,9 @@ source("Modules/Report-Custom.R")
 source("Modules2/Plot-Time.R")
 source("Modules2/Plot-Time-Depth.R")
 source("Modules2/Plot-Regress.R")
-#source("Modules2/Plot-Regress-Depth.R")
+source("Modules2/Plot-Regress-Depth.R")
 source("Modules2/Summary.R")
-#source("Modules2/Summary-Depth.R")
+source("Modules2/Summary-Depth.R")
 #source("Modules2/Summary-Profile.R")
 source("Modules2/SiteMap.R")
 
@@ -169,13 +170,7 @@ tabPanel("Reservoir",
                          )
                 ),
                 tabPanel("Heat Map Standard"),
-                tabPanel("3D",
-                         fluidRow(column(10, h4("Profile 3D", align = "center")), column(2)),
-                         tabsetPanel(
-                           tabPanel("Quabbin", prof.3D.UI("Quabbin Profile 3D", df.prof.quab)),
-                           tabPanel("Wachusett", prof.3D.UI("Wachusett Profile 3D", df.prof.wach))
-                         )
-                ),
+
                 tabPanel("Line Plot Custom",
                          fluidRow(column(10, h4("Profile Line Plot (Custom)", align = "center")), column(2)),
                          tabsetPanel(
@@ -362,9 +357,6 @@ server <- function(input, output, session) {
   # Profile
   callModule(prof.heatmap, "Quabbin Profile Heatmap", df = df.prof.quab)
   callModule(prof.heatmap, "Wachusett Profile Heatmap", df = df.prof.wach)
-  
-  callModule(prof.3D, "Quabbin Profile 3D", df = df.prof.quab)
-  callModule(prof.3D, "Wachusett Profile 3D", df = df.prof.wach)
   
   callModule(prof.line, "Quabbin Profile Line", df = df.prof.quab)
   callModule(prof.line, "Wachusett Profile Line", df = df.prof.wach)

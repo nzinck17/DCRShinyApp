@@ -56,7 +56,8 @@ tagList(
              br(), br(), br(),
              # Number of Samples
              wellPanel(
-               h2(textOutput(ns("text.num.null")), align = "center"),
+               h3(textOutput(ns("text.num.null1")), align = "center"),
+               h3(textOutput(ns("text.num.null2")), align = "center"),
                h4(textOutput(ns("text.num.text")), align = "center"),
                h3(textOutput(ns("text.num")), align = "center")
              ) # end well Panel
@@ -133,24 +134,9 @@ tagList(
              ) # end fluid row
     ), # end tabpanel
     
-    # Summary Tab
     tabPanel("Summary",
-             column(3,
-                    checkboxInput(ns("summary.group.station"), label = "Group by Station", value = TRUE),
-                    checkboxInput(ns("summary.group.level"), label = "Group by Sampling Level", value = TRUE),
-                    radioButtons(ns("summary.group.time"), "Group by:",
-                                 choices = c("None" = 1, 
-                                             "Year" = 2, 
-                                             "Season (all years)" = 3, 
-                                             "Month (all years)" = 4, 
-                                             "Season (each year)" = 5, 
-                                             "month (each year)" = 6),
-                                 selected = 1)
-             ),
-             column(9,
-                    tableOutput(ns("summary"))
-             ) # end column
-    ) # end Tab Panel - "Summary"
+             summary.depth.UI(ns("Summary"))
+    ) # end Tab Panel - Summary
   ) # end tabset panel
 ) # end taglist
 } # end UI
@@ -176,22 +162,24 @@ time.depth <- function(input, output, session, df, df.site) {
   
   output$param.ui <- renderUI({
     
-    req(input$station) # See General Note 5
+    req(input$station, input$level) # See General Note 5
     
     ns <- session$ns # see General Note 1
     
     # Parameters which have data at any Site (in the mofule's df) within 5 years.
     param.choices.new <- df %>%
-      filter(Station %in% c(input$station)) %>%
-      filter(Parameter %in% parameters.non.historical) %>%
+      filter(Station %in% c(input$station),
+             Sampling_Level %in% c(input$level),
+             Parameter %in% parameters.non.historical) %>%
       .$Parameter %>%
       factor() %>%
       levels()
     
     # Parameters which do NOT have data at any Site (in the mofule's df) within 5 years.
     param.choices.old <- df %>%
-      filter(Station %in% c(input$station)) %>%
-      filter(!(Parameter %in% parameters.non.historical)) %>%
+      filter(Station %in% c(input$station),
+             Sampling_Level %in% c(input$level),
+             !(Parameter %in% parameters.non.historical)) %>%
       .$Parameter %>%
       factor() %>%
       levels()
@@ -219,13 +207,14 @@ time.depth <- function(input, output, session, df, df.site) {
   
   output$range.ui <- renderUI({
     
-    req(input$station) # See General Note 5
+    req(input$station, input$level) # See General Note 5
     
     ns <- session$ns # see General Note 1
     
     result <- df %>%
-      filter(Station %in% c(input$station)) %>%
-      filter(Parameter %in% input$param) %>%
+      filter(Station %in% c(input$station),
+             Sampling_Level %in% c(input$level),
+             Parameter %in% input$param) %>%
       .$Result
     
     param.min <- result %>% min(na.rm=TRUE)
@@ -243,12 +232,13 @@ time.depth <- function(input, output, session, df, df.site) {
   
   output$date.ui <- renderUI({
     
-    req(input$station) # See General Note 5
+    req(input$station, input$level) # See General Note 5
     
     ns <- session$ns # see General Note 1
     
     Dates <- df %>% 
-      filter(Station %in% c(input$station)) %>%
+      filter(Station %in% c(input$station),
+             Sampling_Level %in% c(input$level)) %>%
       .$Date
     
     Date.min <- Dates %>% min(na.rm=TRUE)
@@ -268,36 +258,43 @@ time.depth <- function(input, output, session, df, df.site) {
   
   df.react <- reactive({
     
-    req(input$station) # See General Note 5
+    req(input$station, input$level, input$param, input$range, input$date) # See General Note 5
     
     df %>% 
-      filter(Station %in% c(input$station)) %>%
-      filter(Sampling_Level %in% c(input$level)) %>%
-      filter(Parameter %in% c(input$param)) %>% 
-      filter(Result > input$range[1], Result < input$range[2]) %>%
-      filter(Date > input$date[1], Date < input$date[2])
+      filter(Station %in% c(input$station),
+             Sampling_Level %in% c(input$level),
+             Parameter %in% c(input$param),
+             Result > input$range[1], Result < input$range[2],
+             Date > input$date[1], Date < input$date[2])
 
   })
   
   
-  # Text - Select Site - Red
+  # Text - Select Station
   
-  output$text.num.null <- renderText({
+  output$text.num.null1 <- renderText({
     req(is.null(input$station)) # See General Note 1
-    "Select a Site"
+    "Select a Station"
+  })
+  
+  # Text - Select Depth
+  
+  output$text.num.null2 <- renderText({
+    req(is.null(input$level)) # See General Note 1
+    "Select a Depth"
   })
   
   # Text - Number of Samples
   
   output$text.num.text <- renderText({
-    req(input$station) # See General Note 1
+    req(input$station, input$level) # See General Note 1
     "Number of Samples in Selected Data"
   })
   
   # Text - Number of Samples
   
   output$text.num <- renderText({
-    req(input$station) # See General Note 1
+    req(input$station, input$level) # See General Note 1
     df.react() %>% summarise(n()) %>% paste()
   })
   
@@ -311,56 +308,7 @@ callModule(plot.time.depth, "Plot", df = df.react)
   
 # Create Summary
   
-  output$summary <- renderTable({
-    
-    sum.1 <- df.react() %>%
-      mutate(Year = lubridate::year(Date), 
-             Season = getSeason(Date),
-             Month = lubridate::month(Date)
-      )
-    
-    # group by time
-    if (input$summary.group.time == 1){
-      sum.dots = c()
-    } else if (input$summary.group.time == 2) {
-      sum.dots = c("Year")
-    } else if (input$summary.group.time == 3) {
-      sum.dots = c("Season")
-    } else if (input$summary.group.time == 4) {
-      sum.dots = c("Month")
-    } else if (input$summary.group.time == 5) {
-      sum.dots = c("Year", "Season")
-    } else if (input$summary.group.time == 6) {
-      sum.dots = c("Year", "Month")
-    }
-    
-    # group by Location
-    if(input$summary.group.station == TRUE){
-      sum.dots <- c(sum.dots, "Station")
-    }
-    
-    # group by Depth
-    if(input$summary.group.level == TRUE){
-      sum.dots <- c(sum.dots, "Sampling_Level")
-    } 
-    
-    # Applying Grouping if Grouping selected
-    if (input$summary.group.station == FALSE & input$summary.group.level == FALSE & input$summary.group.time == 1){
-      sum.2 <- sum.1
-    } else {
-      sum.2 <- sum.1 %>%
-        group_by_(.dots = sum.dots)
-    }
-    
-    # Making the Sumamry Statistic Columns
-    sum.2 %>% summarise(average = mean(Result), 
-                                 min = min(Result), 
-                                 max = max(Result), 
-                                 median = median(Result), 
-                                 variance = var(Result), 
-                                 `stand.dev.` = sd(Result),
-                                 `number of samples` = n())
-  })
+  callModule(summary.depth, "Summary", df = df.react)
   
   
   # Site Map
