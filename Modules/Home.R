@@ -10,7 +10,8 @@
 #
 # To-Do List:
 #   1. Add watershed delineations
-#   2. Could add in the !%in% function for simplification
+#   2. Make use of stations for nutrient data for no overlap
+#   3. 
 
 ##############################################################################################################################
 # User Interface
@@ -51,26 +52,30 @@ tagList(
 ##############################################################################################################################
 
 Home <- function(input, output, session, df.site) {
+
+  df.site$LocationType[df.site$LocationType == "Nutrient"] <- "Reservoir"
+  
+  # to fix duplicated Reservoir (Nutrient locations due to multiple depths)
+  df.site$Site[!is.na(df.site$Station)] <- df.site$Station[!is.na(df.site$Station)]
+  df.site <- df.site[!duplicated(df.site[,c("Site", "LocationLat", "LocationLong", "LocationCategory")]),]
+  
   
 # levels (Categories) of Colors and Legend
   
   map.levels <- c("Quabbin Tributary",
                   "Ware River Tributary", 
                   "Wachusett Tributary",
-                  "Quabbin Reservoir",
+                  "Quabbin Transect",
                   "Wachusett Transect",
-                  "Not Available")
+                  "Quabbin Reservoir",
+                  "Wachusett Reservoir")
   
 # Create a new column in df.site for coloring and legend purposes
   
   df.site.react <- reactive({
     df.site.temp <- df.site %>%
-      mutate(MapFactor = paste(Watershed, Type))
-    df.site.temp$MapFactor[!(df.site.temp$MapFactor %in% c("Quabbin Tributary",
-                                                           "Ware River Tributary", 
-                                                           "Wachusett Tributary",
-                                                           "Quabbin Reservoir",
-                                                           "Wachusett Transect"))] <- "Not Available"
+      mutate(MapFactor = paste(Watershed, LocationType))
+
     df.site.temp$MapFactor <- factor(df.site.temp$MapFactor, 
                                         levels = map.levels)
     df.site.temp
@@ -85,7 +90,8 @@ Home <- function(input, output, session, df.site) {
                             "red2",
                             "orange1",
                             "orange2",
-                            "gray"), 
+                            "yellow1",
+                            "yellow2"),
                 domain = factor(map.levels,
                                 levels = map.levels),
                 ordered = TRUE)

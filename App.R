@@ -26,9 +26,11 @@ library(lubridate)
 library(leaflet)
 library(RColorBrewer)
 library(DT)
+library(akima)
 #library(RODBC)
 library(DBI)
 library(odbc)
+
 
 ### Run/Source Scripts that load data
 
@@ -43,7 +45,6 @@ source("Modules/Regress.R")
 source("Modules/Time-Depth.R")
 source("Modules/Regress-Depth.R")
 source("Modules/Profile-Heatmap.R")
-source("Modules/Profile-3D.R")
 source("Modules/Profile-Line.R")
 source("Modules/Profile-Summary.R")
 source("Modules/MapPlot.R")
@@ -56,9 +57,9 @@ source("Modules/Report-Custom.R")
 source("Modules2/Plot-Time.R")
 source("Modules2/Plot-Time-Depth.R")
 source("Modules2/Plot-Regress.R")
-#source("Modules2/Plot-Regress-Depth.R")
+source("Modules2/Plot-Regress-Depth.R")
 source("Modules2/Summary.R")
-#source("Modules2/Summary-Depth.R")
+source("Modules2/Summary-Depth.R")
 #source("Modules2/Summary-Profile.R")
 source("Modules2/SiteMap.R")
 
@@ -132,31 +133,31 @@ tabPanel("Reservoir",
                 tabPanel("Time-Series",
                          fluidRow(column(10, h4("Transect Time-Series Analysis", align = "center")), column(2)),
                          tabsetPanel(
-                           tabPanel("Quabbin", time.UI("Quabbin Res Tran Time", df.res.quab)),
-                           tabPanel("Wachusett", time.UI("Wachusett Res Tran Time", df.res.wach))
+                           tabPanel("Quabbin", time.UI("Quabbin Transect Time", df.tran.quab)),
+                           tabPanel("Wachusett", time.UI("Wachusett Transect Time", df.tran.wach))
                          ) # end tabset Panel
                 ), # end tabpanel
                 tabPanel("Regression",
                          fluidRow(column(10, h4("Transect Regression Analysis", align = "center")), column(2)),
                          tabsetPanel(
-                           tabPanel("Quabbin", regress.UI("Quabbin Res Tran Regress", df.res.quab)),
-                           tabPanel("Wachusett", regress.UI("Wachusett Res Tran Regress", df.res.wach))
+                           tabPanel("Quabbin", regress.UI("Quabbin Transect Regress", df.tran.quab)),
+                           tabPanel("Wachusett", regress.UI("Wachusett Transect Regress", df.tran.wach))
                          ) # end tabset panel
                 ), # end tabpanel
 
                 "Nutrient",
                 tabPanel("Time-Series",
-                         fluidRow(column(10, h4("Nutrition Time-Series Analysis", align = "center")), column(2)),
+                         fluidRow(column(10, h4("Nutrient Time-Series Analysis", align = "center")), column(2)),
                          tabsetPanel(
-                           tabPanel("Quabbin", time.depth.UI("Quabbin Res Nut Time", df.res.quab)),
-                           tabPanel("Wachusett", time.depth.UI("Wachusett Res Nut Time", df.res.wach))
+                           tabPanel("Quabbin", time.depth.UI("Quabbin Nutrient Time", df.nut.quab)),
+                           tabPanel("Wachusett", time.depth.UI("Wachusett Nutrient Time", df.nut.wach))
                          )
                 ),
                 tabPanel("Regression",
                          fluidRow(column(10, h4("Nutrient Regression Analysis", align = "center")), column(2)),
                          tabsetPanel(
-                           tabPanel("Quabbin", regress.depth.UI("Quabbin Res Nut Regress", df.res.quab)),
-                           tabPanel("Wachusett", regress.depth.UI("Wachusett Res Nut Regress", df.res.wach))
+                           tabPanel("Quabbin", regress.depth.UI("Quabbin Nutrient Regress", df.nut.quab)),
+                           tabPanel("Wachusett", regress.depth.UI("Wachusett Nutrient Regress", df.nut.wach))
                          )
                 ),
 
@@ -164,23 +165,17 @@ tabPanel("Reservoir",
                 tabPanel("Heat Map Custom",
                          fluidRow(column(10, h4("Profile Heatmap (Custom)", align = "center")), column(2)),
                          tabsetPanel(
-                           tabPanel("Quabbin", prof.heatmap.UI("Quabbin Profile Heatmap", df.profile.quab)),
-                           tabPanel("Wachusett", prof.heatmap.UI("Wachusett Profile Heatmap", df.profile.wach))
+                           tabPanel("Quabbin", prof.heatmap.UI("Quabbin Profile Heatmap", df.prof.quab)),
+                           tabPanel("Wachusett", prof.heatmap.UI("Wachusett Profile Heatmap", df.prof.wach))
                          )
                 ),
                 tabPanel("Heat Map Standard"),
-                tabPanel("3D",
-                         fluidRow(column(10, h4("Profile 3D", align = "center")), column(2)),
-                         tabsetPanel(
-                           tabPanel("Quabbin", prof.3D.UI("Quabbin Profile 3D", df.profile.quab)),
-                           tabPanel("Wachusett", prof.3D.UI("Wachusett Profile 3D", df.profile.wach))
-                         )
-                ),
+
                 tabPanel("Line Plot Custom",
                          fluidRow(column(10, h4("Profile Line Plot (Custom)", align = "center")), column(2)),
                          tabsetPanel(
-                           tabPanel("Quabbin", prof.line.UI("Quabbin Profile Line", df.profile.quab)),
-                           tabPanel("Wachusett", prof.line.UI("Wachusett Profile Line", df.profile.wach))
+                           tabPanel("Quabbin", prof.line.UI("Quabbin Profile Line", df.prof.quab)),
+                           tabPanel("Wachusett", prof.line.UI("Wachusett Profile Line", df.prof.wach))
                          )
                 ),
 
@@ -189,8 +184,8 @@ tabPanel("Reservoir",
                 tabPanel("Table and Summary",
                          fluidRow(column(10, h4("Profile Summary", align = "center")), column(2)),
                          tabsetPanel(
-                           tabPanel("Quabbin", prof.summary.UI("Quabbin Profile Summary", df.profile.quab)),
-                           tabPanel("Wachusett", prof.summary.UI("Wachusett Profile Summary", df.profile.wach))
+                           tabPanel("Quabbin", prof.summary.UI("Quabbin Profile Summary", df.prof.quab)),
+                           tabPanel("Wachusett", prof.summary.UI("Wachusett Profile Summary", df.prof.wach))
                          )
                 ),
 
@@ -216,8 +211,8 @@ tabPanel("Map Plot",
                       tabPanel("Ware River", map.plot.UI("Ware River Trib MapPlot", df = df.trib.quab)),
                       tabPanel("Wachusett", map.plot.UI("Wachusett Trib MapPlot", df = df.trib.quab)),
                       "Reservoir Transect",
-                      tabPanel("Quabbin", map.plot.UI("Quabbin Restran MapPlot", df = df.res.quab)),
-                      tabPanel("Wachusett", map.plot.UI("Wachusett Restran MapPlot", df = df.res.quab))
+                      tabPanel("Quabbin", map.plot.UI("Quabbin Transect MapPlot", df = df.tran.quab)),
+                      tabPanel("Wachusett", map.plot.UI("Wachusett Transect MapPlot", df = df.tran.quab))
          ) # end navlist
 
 ), # end tabpanel (page)
@@ -283,15 +278,15 @@ tabPanel("Report",
                       tabPanel("Profile",
                                fluidRow(column(10, h4("Profile Custom Reports", align = "center")), column(2)),
                                tabsetPanel(
-                                 tabPanel("Quabbin",report.custom.UI("Quabbin Profile Custom Report", df.profile.quab)),
-                                 tabPanel("Wachusett",report.custom.UI("Wachusett Profile Custom Report", df.profile.wach))
+                                 tabPanel("Quabbin",report.custom.UI("Quabbin Profile Custom Report", df.prof.quab)),
+                                 tabPanel("Wachusett",report.custom.UI("Wachusett Profile Custom Report", df.prof.wach))
                                )
                       ),
                       tabPanel("Phytoplankton",
                                fluidRow(column(10, h4("Phytoplankton Custom Reports", align = "center")), column(2)),
                                tabsetPanel(
-                                 tabPanel("Quabbin", report.custom.UI("Quabbin Phyto Custom Report", df.profile.quab)),
-                                 tabPanel("Wachusett", report.custom.UI("Wachusett Phyto Custom Report", df.profile.wach))
+                                 tabPanel("Quabbin", report.custom.UI("Quabbin Phyto Custom Report", df.prof.quab)),
+                                 tabPanel("Wachusett", report.custom.UI("Wachusett Phyto Custom Report", df.prof.wach))
                                )
                       )
          ) # end navlist
@@ -346,31 +341,28 @@ server <- function(input, output, session) {
 # PG 3 - Reservoir
 
   # Transect
-  callModule(time, "Quabbin Res Tran Time", df = df.res.quab, df.site = df.res.quab.site)
-  callModule(time, "Wachusett Res Tran Time", df = df.res.wach, df.site = df.res.wach.site)
+  callModule(time, "Quabbin Transect Time", df = df.tran.quab, df.site = df.tran.quab.site)
+  callModule(time, "Wachusett Transect Time", df = df.tran.wach, df.site = df.tran.wach.site)
   
-  callModule(regress, "Quabbin Res Tran Regress", df = df.res.quab, df.site = df.res.quab.site)
-  callModule(regress, "Wachusett Res Tran Regress", df = df.res.wach, df.site = df.res.wach.site)
+  callModule(regress, "Quabbin Transect Regress", df = df.tran.quab, df.site = df.tran.quab.site)
+  callModule(regress, "Wachusett Transect Regress", df = df.tran.wach, df.site = df.tran.wach.site)
   
   # Nutrient
-  callModule(time.depth, "Quabbin Res Nut Time", df = df.res.quab, df.site = df.res.quab.site)
-  callModule(time.depth, "Wachusett Res Nut Time", df = df.res.wach, df.site = df.res.wach.site)
+  callModule(time.depth, "Quabbin Nutrient Time", df = df.nut.quab, df.site = df.nut.quab.site)
+  callModule(time.depth, "Wachusett Nutrient Time", df = df.nut.wach, df.site = df.nut.wach.site)
   
-  callModule(regress.depth, "Quabbin Res Nut Regress", df = df.res.quab, df.site = df.res.quab.site)
-  callModule(regress.depth, "Wachusett Res Nut Regress", df = df.res.wach, df.site = df.res.wach.site)
+  callModule(regress.depth, "Quabbin Nutrient Regress", df = df.nut.quab, df.site = df.nut.quab.site)
+  callModule(regress.depth, "Wachusett Nutrient Regress", df = df.nut.wach, df.site = df.nut.wach.site)
   
   # Profile
-  callModule(prof.heatmap, "Quabbin Profile Heatmap", df = df.profile.quab)
-  callModule(prof.heatmap, "Wachusett Profile Heatmap", df = df.profile.wach)
+  callModule(prof.heatmap, "Quabbin Profile Heatmap", df = df.prof.quab)
+  callModule(prof.heatmap, "Wachusett Profile Heatmap", df = df.prof.wach)
   
-  callModule(prof.3D, "Quabbin Profile 3D", df = df.profile.quab)
-  callModule(prof.3D, "Wachusett Profile 3D", df = df.profile.wach)
+  callModule(prof.line, "Quabbin Profile Line", df = df.prof.quab)
+  callModule(prof.line, "Wachusett Profile Line", df = df.prof.wach)
   
-  callModule(prof.line, "Quabbin Profile Line", df = df.profile.quab)
-  callModule(prof.line, "Wachusett Profile Line", df = df.profile.wach)
-  
-  callModule(prof.summary, "Quabbin Profile Summary", df = df.profile.quab)
-  callModule(prof.summary, "Wachusett Profile Summary", df = df.profile.wach)
+  callModule(prof.summary, "Quabbin Profile Summary", df = df.prof.quab)
+  callModule(prof.summary, "Wachusett Profile Summary", df = df.prof.wach)
 
   # AquaBio
 
@@ -381,8 +373,8 @@ server <- function(input, output, session) {
   callModule(map.plot, "Quabbin Trib MapPlot", df = df.trib.quab, df.site = df.trib.quab.site)
   callModule(map.plot, "Ware River Trib MapPlot", df = df.trib.ware, df.site = df.trib.ware.site)
   callModule(map.plot, "Wachusett Trib MapPlot", df = df.trib.wach, df.site = df.trib.wach.site)
-  callModule(map.plot, "Quabbin Restran MapPlot", df = df.res.quab, df.site = df.res.quab.site)
-  callModule(map.plot, "Wachusett Restran MapPlot", df = df.res.wach, df.site = df.res.wach.site)
+  callModule(map.plot, "Quabbin Transect MapPlot", df = df.tran.quab, df.site = df.tran.quab.site)
+  callModule(map.plot, "Wachusett Transect MapPlot", df = df.tran.wach, df.site = df.tran.wach.site)
 
 
 ######################################################
@@ -392,19 +384,19 @@ server <- function(input, output, session) {
 ####################################################################
 # PG 8 - Reports
 
-  callModule(report.awq, "Quabbin AWQ Report", df.trib = df.trib.quab, df.res = df.res.quab, df.profile = df.profile.quab, df.site = df.quab.site)
-  callModule(report.awq, "Wachusett AWQ Report", df.trib = df.trib.wach, df.res = df.res.wach, df.profile = df.profile.wach, df.site = df.wach.site)
-  callModule(report.mwq, "Quabbin MWQ Report", df.trib = df.trib.quab, df.res = df.res.quab, df.profile = df.profile.quab, df.site = df.quab.site)
-  callModule(report.mwq, "Wachusett MWQ Report", df.trib = df.trib.wach, df.res = df.res.wach, df.profile = df.profile.wach, df.site = df.wach.site)
+  callModule(report.awq, "Quabbin AWQ Report", df.trib = df.trib.quab, df.res = df.res.quab, df.prof = df.prof.quab, df.site = df.quab.site)
+  callModule(report.awq, "Wachusett AWQ Report", df.trib = df.trib.wach, df.res = df.res.wach, df.prof = df.prof.wach, df.site = df.wach.site)
+  callModule(report.mwq, "Quabbin MWQ Report", df.trib = df.trib.quab, df.res = df.res.quab, df.prof = df.prof.quab, df.site = df.quab.site)
+  callModule(report.mwq, "Wachusett MWQ Report", df.trib = df.trib.wach, df.res = df.res.wach, df.prof = df.prof.wach, df.site = df.wach.site)
   callModule(report.custom, "Quabbin Trib Custom Report", df = df.trib.quab, df.site = df.trib.quab.site)
   callModule(report.custom, "Ware River Trib Custom Report", df = df.trib.ware, df.site = df.trib.ware.site)
   callModule(report.custom, "Wachusett Trib Custom Report", df = df.trib.quab, df.site = df.trib.quab.site)
   callModule(report.custom, "Quabbin Res Custom Report", df = df.res.quab, df.site = df.res.quab.site)
   callModule(report.custom, "Wachusett Res Custom Report", df = df.res.quab, df.site = df.res.quab.site)
-  callModule(report.custom, "Quabbin Profile Custom Report", df = df.profile.quab, df.site = df.res.quab.site)
-  callModule(report.custom, "Wachusett Profile Custom Report", df = df.profile.wach, df.site = df.res.wach.site)
-  callModule(report.custom, "Quabbin Phyto Custom Report", df = df.profile.quab, df.site = df.res.quab.site)
-  callModule(report.custom, "Wachusett Phyto Custom Report", df = df.profile.wach, df.site = df.res.wach.site)
+  callModule(report.custom, "Quabbin Profile Custom Report", df = df.prof.quab, df.site = df.res.quab.site)
+  callModule(report.custom, "Wachusett Profile Custom Report", df = df.prof.wach, df.site = df.res.wach.site)
+  callModule(report.custom, "Quabbin Phyto Custom Report", df = df.prof.quab, df.site = df.res.quab.site)
+  callModule(report.custom, "Wachusett Phyto Custom Report", df = df.prof.wach, df.site = df.res.wach.site)
 # Code to stop app when browser session window closes
 session$onSessionEnded(function() {
       stopApp()
