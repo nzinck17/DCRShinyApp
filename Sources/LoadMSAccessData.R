@@ -125,7 +125,7 @@ df.prof.wach$Result <- as.numeric(as.character(df.prof.wach$Result))
 df.trib.res.quab$Date <- as.Date(as.character(df.trib.res.quab$Date),format ='%m/%d/%Y')
 df.trib.transect.wach$SampleDateTime <- format(df.trib.transect.wach$SampleDateTime, tz ="America/New_York", usetz=TRUE)
 df.trib.transect.wach$Date <- as.Date(as.character(df.trib.transect.wach$SampleDateTime),format ='%Y-%m-%d %H:%M:%S')
-df.nut.wach$Date <- as.Date(as.character(df.nut.wach$Date),format ='%m/%d/%Y')
+df.nut.wach$Date <- as.Date(as.character(df.nut.wach$Date),format ='%Y-%m-%d %H:%M:%S')
 df.prof.quab$Date <- as.Date(as.character(df.prof.quab$Date), format = '%d-%b-%y')
 df.prof.wach$Date <- as.Date(df.prof.wach$Date)
 

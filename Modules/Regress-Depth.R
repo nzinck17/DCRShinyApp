@@ -20,109 +20,106 @@
 regress.depth.UI <- function(id, df) {
   
 ns <- NS(id) # see General Note 1
-  
+
 tagList(
   wellPanel(
     fluidRow(
       column(3,
-             # Location and Depth Selection with Map
+             # SITE
              wellPanel(
                checkboxGroupInput(ns("station"), "Station:", 
                                   choices=levels(factor(df$Station)),
                                   inline = TRUE),
                checkboxGroupInput(ns("level"), "Sampling Level:", 
                                   choices=levels(factor(df$Sampling_Level)),
-                                  inline = TRUE),
+                                  inline = TRUE)
+             )
+      ), # end column
+      column(3,
+             # TEXT
+             wellPanel(
+               h3(textOutput(ns("text.num.null1")), align = "center"),
+               h3(textOutput(ns("text.num.null2")), align = "center"),
+               h4(textOutput(ns("text.num.text")), align = "center"),
+               h3(textOutput(ns("text.num")), align = "center")
+             ), # end Well Panel
+             # DATE SELECTION
+             wellPanel(
+               uiOutput(ns("date.ui")) 
+             ), # end Well Panel
+             # MAP
+             wellPanel(
                sitemap.UI(ns("Site Map"))
              ) # end Well Panel
-      ), # end Column
-      column(9,
+      ),# end Column
+      column(6,
              fluidRow(
-               column(4,
+               column(6,
                       # Y Parameter Selection
                       wellPanel(
                         uiOutput(ns("y.param.ui")),
                         uiOutput(ns("y.range.ui"))
-                      ), # end Well Panel
-                      uiOutput(ns("text.site.null.ui"))
+                      ) # well
                ), # end Column
-               column(4,
-                      # X Parameter Selection
+               column(6,
                       wellPanel(
-                        strong("X axis Parameter:"), # bold text
-                        radioButtons(ns("x.option"), label = NULL, 
-                                     choices = c("Water Quality", "Meteorology or Hydrology"), 
-                                     inline = TRUE),
-                        # SEE GENERAL NOTE 2
+                        # X Parameter Selection
+                        strong("X axis Parameter:"),
+                        radioButtons(ns("x.option"), label = NULL, choices = c("Water Quality", "Meteorology or Hydrology"), inline = TRUE),
+                        #See General Note 2
                         conditionalPanel(condition = paste0("input['", ns("x.option"), "'] == 'Water Quality' "),
                                          uiOutput(ns("x.param.ui")),
                                          uiOutput(ns("x.range.ui"))
                         ),# end Conditional Panel
                         conditionalPanel(condition = paste0("input['", ns("x.option"), "'] == 'Meteorology or Hydrology' "),
-                                         selectInput(ns("x.met.param"), label = NULL, 
-                                                     choices = c("Wind Speed", 
-                                                                 "Wind Direction", 
-                                                                 "Precipitation - 24 hrs",
-                                                                 "Precipitation - 48 hrs",
-                                                                 "Temperature",
-                                                                 "Cloud Cover",
-                                                                 "Flow - Quabbin Aquaduct",
-                                                                 "Flow - East Branch Swift",
-                                                                 "Flow - West Branch Swift",
-                                                                 "Flow - Quinapoxet",
-                                                                 "Flow - Stillwater"),
+                                         selectInput(ns("x.met.param"), label = NULL, choices = c("Wind Speed", 
+                                                                                                  "Wind Direction", 
+                                                                                                  "Precipitation - 24 hrs",
+                                                                                                  "Precipitation - 48 hrs",
+                                                                                                  "Temperature",
+                                                                                                  "Cloud Cover",
+                                                                                                  "Flow - Quabbin Aquaduct",
+                                                                                                  "Flow - East Branch Swift",
+                                                                                                  "Flow - West Branch Swift",
+                                                                                                  "Flow - Quinapoxet",
+                                                                                                  "Flow - Stillwater"),
                                                      selected = "Precipitation - 24 hrs"),
                                          sliderInput(ns("x.met.range"), "Value Range:", min = 0, max = 12, value = c(0,12), step = 0.5)
-                        ) # end Conditional Panel
-                      ) # end Well Panel
-               ), # end column
-               column(4,
-                      # Date Selection
-                      wellPanel(
-                        uiOutput(ns("date.ui"))
-                      ), # end well Panel
-                      # Number of samples Selected
-                      wellPanel(
-                        h4(textOutput(ns("text.num.text")), align = "center"),
-                        h3(textOutput(ns("text.num")), align = "center")
-                      ) # end Well Panel
-               ) # end Column
-             ), # end fluid Row
-             hr(), # horizontal Rule/Line
+                        )# end Conditional Panel
+                      )# end Well Panel
+               )
+             ),# end fluid row
+             hr(),
              br(),
              fluidRow(
                column(4,
-                      # MET/HYDRO FILTER 1
                       wellPanel(
-                        strong("Meteoro/Hydro Filter 1"), # bold text
+                        # MET/HYDRO FILTER 1
+                        strong("Meteoro/Hydro Filter 1"),
                         br(), br(),
-                        radioButtons(ns("met.option.1"), label = NULL, 
-                                     choices = c("off", "on", "group"), 
-                                     inline = TRUE),
-                        selectInput(ns("met.param.1"), label = NULL, 
-                                    choices = c("Wind Speed", 
-                                                "Wind Direction", 
-                                                "Precipitation - 24 hrs",
-                                                "Precipitation - 48 hrs",
-                                                "Temperature",
-                                                "Cloud Cover",
-                                                "Flow - Quabbin Aquaduct",
-                                                "Flow - East Branch Swift",
-                                                "Flow - West Branch Swift",
-                                                "Flow - Quinapoxet",
-                                                "Flow - Stillwater"),
+                        radioButtons(ns("met.option.1"), label = NULL, choices = c("off", "on"), inline = TRUE),
+                        selectInput(ns("met.param.1"), label = NULL, choices = c("Wind Speed", 
+                                                                                 "Wind Direction", 
+                                                                                 "Precipitation - 24 hrs",
+                                                                                 "Precipitation - 48 hrs",
+                                                                                 "Temperature",
+                                                                                 "Cloud Cover",
+                                                                                 "Flow - Quabbin Aquaduct",
+                                                                                 "Flow - East Branch Swift",
+                                                                                 "Flow - West Branch Swift",
+                                                                                 "Flow - Quinapoxet",
+                                                                                 "Flow - Stillwater"),
                                     selected = "Wind Speed"),
                         sliderInput(ns("met.value.1"), "Value Range:", min = 0, max = 12, value = c(0,12), step = 0.5)
-                      ) # end Well Panel
-               ), # end Column
+                      )# end Well Panel
+               ),# end Column
                column(4,
-                      #  MET/HYDRO FILTER 2
+                      # MET/HYDRO FILTER 2
                       wellPanel(
-                        strong("Meteoro/Hydro Filter 2"), # bold text
+                        strong("Meteoro/Hydro Filter 2"),
                         br(), br(),
                         radioButtons(ns("met.option.2"), label = NULL, 
-                                     choices = c("off", "on", "group"), 
-                                     inline = TRUE),
+                                     choices = c("off", "on"), inline = TRUE),
                         selectInput(ns("met.param.2"), label = NULL, 
                                     choices = c("Wind Speed", 
                                                 "Wind Direction", 
@@ -137,15 +134,15 @@ tagList(
                                                 "Flow - Stillwater"),
                                     selected = "Precipitation - 24 hrs"),
                         sliderInput(ns("met.value.2"), "Value Range:", min = 0, max = 12, value = c(0,12), step = 0.5)
-                      ) # end Well Panel
-               ), # end Column
+                      )# end Well Panel
+               ),# end Column
                column(4,
-                      #  MET/HYDRO FILTER 3
+                      # MET/HYDRO FILTER 3
                       wellPanel(
                         strong("Meteoro/Hydro Filter 3"),
                         br(), br(),
                         radioButtons(ns("met.option.3"), label = NULL, 
-                                     choices = c("off", "on", "group"), 
+                                     choices = c("off", "on"), 
                                      inline = TRUE),
                         selectInput(ns("met.param.3"), label = NULL, 
                                     choices = c("Wind Speed", 
@@ -161,65 +158,18 @@ tagList(
                                                 "Flow - Stillwater"),
                                     selected = "Precipitation - 24 hrs"),
                         sliderInput(ns("met.value.3"), "Value Range:", min = 0, max = 12, value = c(0,12), step = 0.5)
-                      ) # end Well Panel
-               ) # end Column
-             ) # end Fluid Row
-      ) # end Column
-    ) # end Fluid Row
-  ), # end Well Panel
-  
+                      )# end Well Panel
+               )# end Column
+             )# end Fluid Row
+      )# end Column
+    )# end Fluid Row
+  ), # end Well panel
   # Tabset Panel for plots and tables 
   tabsetPanel(
     
-    # the "Plot" tab panel where everything related to the plot goes
+    # the "Plot" tab panel
     tabPanel("Plot", 
-             # the actual plot output
-             plotlyOutput(ns("plot"), width = "100%", height = 600),
-             # area where all plot specific inputs go
-             fluidRow(br(), br(),
-                      column(3,
-                             downloadButton(ns('save.plot'), "Save Plot"),
-                             h5('make sure to save with extension ".png" or ".jpg"'),
-                             br(),
-                             radioButtons(ns("plot.regress"), "Regression Lines:", 
-                                          choices=c("None",
-                                                    "Linear",
-                                                    "Linear w/ 95% C.I.",
-                                                    "Curve",
-                                                    "Curve w/ 95% C.I."))
-                      ),
-                      column(3,
-                             checkboxGroupInput(ns("plot.display"), "Plot Display Options:", 
-                                          choices=c("Log Scale X-axis",
-                                                    "Log Scale Y-axis",
-                                                    "Param Y Performance Standard")),
-                             sliderInput(ns("plot.opacity"), "Opacity:", min = 0, max = 1, value = 1, step = 0.1),
-                             sliderInput(ns("plot.jitter"), "Jitter:", min = 0, max = 1, value = 0, step = 0.1)
-                      ),
-                      column(3,
-                             radioButtons(ns("plot.color"), label = "Group with Colors:", 
-                                          choices = c("None" = 1, 
-                                                      "Station" = "Station",
-                                                      "Sampling Level" = "Sampling_Level",
-                                                      "Met/hydro filter 1 (select group)" = "met1",
-                                                      "Met/hydro filter 2 (select group)" = "met2",
-                                                      "Met/hydro filter 3 (select group)" = "met3",
-                                                      "Flagged data" = "FlagCode"),
-                                          selected = "Loc")
-                      ), # end column
-                      # new column
-                      column(3,
-                             radioButtons(ns("plot.shape"), label = "Group with Shapes:", 
-                                          choices = c("None" = 1, 
-                                                      "Station" = "Station",
-                                                      "Sampling Level" = "Sampling_Level",
-                                                      "Met/hydro filter 1 (select group)" = "met1",
-                                                      "Met/hydro filter 2 (select group)" = "met2",
-                                                      "Met/hydro filter 3 (select group)" = "met3",
-                                                      "Flagged data" = "FlagCode"),
-                                          selected = 1)
-                      ) # end column
-             ) # end flluid row
+             plot.regress.UI(ns("Plot"))
     ), # end "plot" tabpanel
     
     # Table tabpanel
@@ -237,7 +187,7 @@ tagList(
     ) # end Tab panel - Table
   )  # end tabsetpanel - Plot and Table
 ) # end Taglist
-} # end UI Function
+} # end UI function
 
 
 ##############################################################################################################################
@@ -260,22 +210,24 @@ regress.depth <- function(input, output, session, df, df.site) {
   
   output$y.param.ui <- renderUI({
     
-    req(input$station) # See General Note _
+    req(input$station, input$level) # See General Note _
     
     ns <- session$ns
     
     # Parameters which have data at any Site (in the mofule's df) within 5 years.
     y.param.choices.new <- df %>%
-      filter(Station %in% c(input$station)) %>%
-      filter(Parameter %in% parameters.non.historical) %>%
+      filter(Station %in% c(input$station),
+             Sampling_Level %in% c(input$level),
+             Parameter %in% parameters.non.historical) %>%
       .$Parameter %>%
       factor() %>%
       levels()
     
     # Parameters which do NOT have data at any Site (in the mofule's df) within 5 years.
     y.param.choices.old <- df %>%
-      filter(Station %in% c(input$station)) %>%
-      filter(!(Parameter %in% parameters.non.historical)) %>%
+      filter(Station %in% c(input$station),
+             Sampling_Level %in% c(input$level),
+             !(Parameter %in% parameters.non.historical)) %>%
       .$Parameter %>%
       factor() %>%
       levels()
@@ -304,13 +256,14 @@ regress.depth <- function(input, output, session, df, df.site) {
   
   output$y.range.ui <- renderUI({
     
-    req(input$station) # See General Note 5
+    req(input$station, input$level) # See General Note 5
     
     ns <- session$ns # see General Note 1
     
     y.result <- df %>%
-      filter(Station %in% c(input$station)) %>%
-      filter(Parameter %in% input$y.param) %>%
+      filter(Station %in% c(input$station),
+             Sampling_Level %in% c(input$level),
+             Parameter %in% input$y.param) %>%
       .$Result
     
     y.param.min <- y.result %>% min(na.rm=TRUE)
@@ -330,22 +283,24 @@ regress.depth <- function(input, output, session, df, df.site) {
   
   output$x.param.ui <- renderUI({
     
-    req(input$station) # See General Note _
+    req(input$station, input$level) # See General Note _
     
     ns <- session$ns
     
     # Parameters which have data at any Site (in the mofule's df) within 5 years.
     x.param.choices.new <- df %>%
-      filter(Station %in% c(input$station)) %>%
-      filter(Parameter %in% parameters.non.historical) %>%
+      filter(Station %in% c(input$station),
+             Sampling_Level %in% c(input$level),
+             Parameter %in% parameters.non.historical) %>%
       .$Parameter %>%
       factor() %>%
       levels()
     
     # Parameters which do NOT have data at any Site (in the mofule's df) within 5 years.
     x.param.choices.old <- df %>%
-      filter(Station %in% c(input$station)) %>%
-      filter(!(Parameter %in% parameters.non.historical)) %>%
+      filter(Station %in% c(input$station),
+             Sampling_Level %in% c(input$level),
+             !(Parameter %in% parameters.non.historical)) %>%
       .$Parameter %>%
       factor() %>%
       levels()
@@ -372,13 +327,14 @@ regress.depth <- function(input, output, session, df, df.site) {
   
   output$x.range.ui <- renderUI({
     
-    req(input$station) # See General Note 5
+    req(input$station, input$level) # See General Note 5
     
     ns <- session$ns # see General Note 1
     
     x.result <- df %>%
-      filter(Station %in% c(input$station)) %>%
-      filter(Parameter %in% input$x.param) %>%
+      filter(Station %in% c(input$station),
+             Sampling_Level %in% c(input$level),
+             Parameter %in% input$x.param) %>%
       .$Result
     
     x.param.min <- x.result %>% min(na.rm=TRUE)
@@ -395,12 +351,13 @@ regress.depth <- function(input, output, session, df, df.site) {
   
   output$date.ui <- renderUI({
     
-    req(input$station) # See General Note 5
+    req(input$station, input$level) # See General Note 5
     
     ns <- session$ns # see General Note 1
     
     Dates <- df %>% 
-      filter(Station %in% c(input$station)) %>%
+      filter(Station %in% c(input$station),
+             Sampling_Level %in% c(input$level)) %>%
       .$Date
     
     Date.min <- Dates %>% min(na.rm = TRUE)
@@ -420,7 +377,7 @@ regress.depth <- function(input, output, session, df, df.site) {
   
   df.react <- reactive({
     
-    req(input$station) # See General Note 5
+    req(input$station, input$level, input$y.param, input$y.range, input$x.param, input$x.range, input$date) # See General Note 5
     
     # filter by location, depth, and Date adn save
     df.temp <- df %>% 
@@ -433,186 +390,52 @@ regress.depth <- function(input, output, session, df, df.site) {
       filter(Parameter %in% c(input$x.param),
              Result > input$x.range[1], Result < input$x.range[2]) %>%
       rename(x.Parameter = Parameter, x.Result = Result) %>%
-      select(Site, Loc, Depth, Date, x.Parameter, x.Result)
+      select(Site, Station, Sampling_Level, Date, x.Parameter, x.Result)
     
     # Y Parameter filter and make modifications
     df.temp.y <-  df.temp %>% 
       filter(Parameter %in% c(input$y.param),
              Result > input$y.range[1], Result < input$y.range[2]) %>%
       rename(y.Parameter = Parameter, y.Result = Result) %>%
-      select(Site, Loc, Depth, Date, y.Parameter, y.Result)
+      select(Site, Station, Sampling_Level, Date, y.Parameter, y.Result)
     
     # Join the two X and Y parameters dataframes (Is Site redundant?)
-    inner_join(df.temp.x, df.temp.y, by = c("Site", "Loc", "Depth", "Date"))
+    inner_join(df.temp.x, df.temp.y, by = c("Site", "Station", "Sampling_Level", "Date"))
     
   })
   
   
-  # Text - Select Site
+  # Text - Select Station
   
-  output$text.site.null.ui <- renderUI({
-    
+  output$text.num.null1 <- renderText({
     req(is.null(input$station)) # See General Note 1
-    wellPanel(
-      h2("Select a Site", align = "center")
-    )
-    
+    "Select a Station"
   })
   
+  # Text - Select Depth
   
+  output$text.num.null2 <- renderText({
+    req(is.null(input$level)) # See General Note 1
+    "Select a Depth"
+  })
   
   # Text - Number of Samples
   
   output$text.num.text <- renderText({
-    req(input$station) # See General Note 1
+    req(input$station, input$level) # See General Note 1
     "Number of Samples in Selected Data"
   })
   
   # Text - Number of Samples
   
   output$text.num <- renderText({
-    req(input$station) # See General Note 1
+    req(input$station, input$level) # See General Note 1
     df.react() %>% summarise(n()) %>% paste()
   })
-  
-  
-# Jitter Scheme Factor Calculation 
-  
-  jitter.x <- reactive({
-    input$plot.jitter*IQR(df.react()$x.Result)*0.06
-  })
-  
-  jitter.y <- reactive({
-    input$plot.jitter*IQR(df.react()$y.Result)*0.06
-  })
-  
 
-# Plot Creation
+  # Plot
   
-  p <- reactive({
-
-    # Features in which all plot options have in common
-    p <- ggplot(df.react(), aes(x = x.Result, y = y.Result)) +
-      labs(x = paste(input$x.param, " (", x.param.units(),")", sep= ""), 
-           y = paste(input$y.param, " (", y.param.units(),")", sep= "")) +
-      theme_bw() +
-      theme(plot.margin = unit(c(0.2, 0.2, 0.2, 0.5), "in"))
-    
-    # Coloring and Shapes as well as Trendline
-    
-    # Group by both Color and Shape when both selected
-    if(input$plot.color != 1 & input$plot.shape != 1){
-      p <- p + geom_point(aes_string(color = input$plot.color, shape = input$plot.shape),
-                          alpha = input$plot.opacity,
-                          position = position_jitter(width = jitter.x(), height = jitter.y()))
-      if(input$plot.regress == "Linear"){
-        p <- p + geom_smooth(method = "lm", se = FALSE, size = 1.5, aes_string(color = input$plot.color, linetype = input$plot.shape))
-      }
-      if(input$plot.regress == "Linear w/ 95% C.I."){
-        p <- p + geom_smooth(method = "lm", size = 1.5, aes_string(color = input$plot.color, linetype = input$plot.shape))
-      }
-      if(input$plot.regress == "Curve"){
-        p <- p + geom_smooth(method = "loess", se = FALSE, size = 1.5, aes_string(color = input$plot.color, linetype = input$plot.shape))
-      }
-      if(input$plot.regress == "Curve w/ 95% C.I."){
-        p <- p + geom_smooth(method = "loess", size = 1.5, aes_string(color = input$plot.color, linetype = input$plot.shape))
-      }
-    }
-    # Group by only Color when only color grouping is selected
-    else if (input$plot.color != 1){
-      p <- p + geom_point(aes_string(color = input$plot.color),
-                          alpha = input$plot.opacity,
-                          position = position_jitter(width = jitter.x(), height = jitter.y()))
-      if(input$plot.regress == "Linear"){
-        p <- p + geom_smooth(method = "lm", se = FALSE, size = 1.5, aes_string(color = input$plot.color))
-      }
-      if(input$plot.regress == "Linear w/ 95% C.I."){
-        p <- p + geom_smooth(method = "lm", size = 1.5, aes_string(color = input$plot.color))
-      }
-      if(input$plot.regress == "Curve"){
-        p <- p + geom_smooth(method = "loess", se = FALSE, size = 1.5, aes_string(color = input$plot.color))
-      }
-      if(input$plot.regress == "Curve w/ 95% C.I."){
-        p <- p + geom_smooth(method = "loess", size = 1.5, aes_string(color = input$plot.color))
-      }
-    }
-    # Group by only Shape when only shape grouping is selected 
-    else if (input$plot.shape != 1){
-      p <- p + geom_point(aes_string(shape = input$plot.shape),
-                          alpha = input$plot.opacity,
-                          position = position_jitter(width = jitter.x(), height = jitter.y()))
-      if(input$plot.regress == "Linear"){
-        p <- p + geom_smooth(method = "lm", se = FALSE, size = 1.5, aes_string(linetype = input$plot.shape))
-      }
-      if(input$plot.regress == "Linear w/ 95% C.I."){
-        p <- p + geom_smooth(method = "lm", size = 1.5, aes_string(linetype = input$plot.shape))
-      }
-      if(input$plot.regress == "Curve"){
-        p <- p + geom_smooth(method = "loess", se = FALSE, size = 1.5, aes_string(linetype = input$plot.shape))
-      }
-      if(input$plot.regress == "Curve w/ 95% C.I."){
-        p <- p + geom_smooth(method = "loess", size = 1.5, aes_string(linetype = input$plot.shape))
-      }
-    }
-    # No Grouping Selected
-    else {
-      p <- p + geom_point(alpha = input$plot.opacity,
-                          position = position_jitter(width = jitter.x(), height = jitter.y()))
-      if(input$plot.regress == "Linear"){
-        p <- p + geom_smooth(method = "lm", se = FALSE, size = 1.5)
-      }
-      if(input$plot.regress == "Linear w/ 95% C.I."){
-        p <- p + geom_smooth(method = "lm", size = 1.5)
-      }
-      if(input$plot.regress == "Curve"){
-        p <- p + geom_smooth(method = "loess", se = FALSE, size = 1.5)
-      }
-      if(input$plot.regress == "Curve w/ 95% C.I."){
-        p <- p + geom_smooth(method = "loess", size = 1.5)
-      }
-    }
-    
-    # Facet for Sites if no grouping for site is selected and number of sites is greater than 1
-    if(input$plot.color != "Station" & input$plot.shape != "Station" & length(c(input$station)) > 1){
-      if(input$plot.color != "Sampling_Level" & input$plot.shape != "Sampling_Level" & length(c(input$level)) > 1){
-        p <- p + facet_grid(Loc~Depth)
-      } else {
-        p <- p + facet_grid(Loc~.)
-      }
-    } else {
-      if(input$plot.color != "Sampling_Level" & input$plot.shape != "Sampling_Level" & length(c(input$level)) > 1){
-        p <- p + facet_grid(.~Depth)
-      }
-    }
-    
-    # Log Scale Options
-    if("Log Scale X-axis" %in% input$plot.display){
-      p <- p + scale_x_log10()
-    }
-    
-    if("Log Scale Y-axis" %in% input$plot.display){
-      p <- p + scale_y_log10()
-    }
-    
-    p
-    
-  })
-  
-  
-  # Plot Visual
-  
-  output$plot <- renderPlotly({
-    ggplotly(p())
-  })
-  
-  
-  # Plot Print
-  
-  output$save.plot <- downloadHandler(
-    filename = function (){paste(input$y.param,' Site(s) ', paste(unique(df.react()$Loc)),' from ', input$date[1],' to ', input$date[2], '.png', sep='')},
-    content = function(file) {ggsave(file, plot = p(), device = "png")}, 
-    contentType = 'image/png'
-  )
+  callModule(plot.regress.depth, "Plot", df = df.react)
   
   
   # Tables

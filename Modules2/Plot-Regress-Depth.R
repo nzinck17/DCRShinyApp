@@ -1,5 +1,5 @@
 ##############################################################################################################################
-#     Title: Plot-Time-Depth.R
+#     Title: Plot-Regress.R
 #     Type: Secondary Module for DCR Shiny App
 #     Description: Time Series plot (for non-depth dependent data)
 #     Written by: Nick Zinck, Spring 2017
@@ -16,7 +16,7 @@
 # User Interface
 ##############################################################################################################################
 
-plot.time.depth.UI <- function(id) {
+plot.regress.depth.UI <- function(id) {
   
   ns <- NS(id) # see General Note 1
   
@@ -40,12 +40,14 @@ plot.time.depth.UI <- function(id) {
                                                        "Classic"))
                         ), # end column
                         column(2,
-                               checkboxGroupInput(ns("plot.display.log"), "Misc. Display :", 
-                                                  choices= c("Log-scale Y Axis"))
+                               checkboxGroupInput(ns("plot.display.log"), "Log-Scale :", 
+                                                  choices= c("X Axis",
+                                                             "Y Axis"))
                         ), # end column
                         column(2,
-                               sliderInput(ns("plot.display.psize"), "Point Size:",
-                                           min = 0.5, max = 4, value = 1.5, step = 0.5)
+                               sliderInput(ns("plot.display.opacity"), "Opacity:", min = 0, max = 1, value = 1, step = 0.1),
+                               sliderInput(ns("plot.display.jitter"), "Jitter:", min = 0, max = 1, value = 0, step = 0.1),
+                               sliderInput(ns("plot.display.psize"), "Point Size:", min = 0.5, max = 4, value = 1.5, step = 0.5)
                         ) # end column
                ), # end Tab Panel
                tabPanel("Trends and Lines", br(), br(),
@@ -113,7 +115,7 @@ plot.time.depth.UI <- function(id) {
                                                         "met/hydro filter 1 (select group)" = "met1",
                                                         "met/hydro filter 2 (select group)" = "met2",
                                                         "Flagged data" = "FlagCode"),
-                                            selected = "Station")
+                                            selected = "Site")
                         ), # end column
                         # new column
                         column(3,
@@ -164,7 +166,7 @@ plot.time.depth.UI <- function(id) {
 # Server Function
 ##############################################################################################################################
 
-plot.time.depth <- function(input, output, session, df) {
+plot.regress.depth <- function(input, output, session, df) {
   
   
 ### Text For Plot
@@ -179,14 +181,24 @@ plot.time.depth <- function(input, output, session, df) {
     df() %>% .$Depthm %>% factor() %>% levels() %>% paste()
   })
   
-  # Param Text
-  text.param <- reactive({
-    df() %>% .$Parameter %>% factor() %>% levels() %>% paste()
+  # X Param Text
+  x.text.param <- reactive({
+    df() %>% .$x.Parameter %>% factor() %>% levels() %>% paste()
   })
   
-  # Units Text
-  text.units <- reactive({
-    df() %>% .$Units %>% factor() %>% levels() %>% paste()
+  # X Units Text
+  x.text.units <- reactive({
+    df() %>% .$x.Units %>% factor() %>% levels() %>% paste()
+  })
+  
+  # Y Param Text
+  y.text.param <- reactive({
+    df() %>% .$y.Parameter %>% factor() %>% levels() %>% paste()
+  })
+  
+  # Y Units Text
+  y.text.units <- reactive({
+    df() %>% .$y.Units %>% factor() %>% levels() %>% paste()
   })
   
   # Date Text - Start
@@ -199,7 +211,17 @@ plot.time.depth <- function(input, output, session, df) {
     df() %>% .$Date %>% max(na.rm = TRUE) %>% paste()
   })
   
-
+### Other Pre Plot
+  
+  # Jitter Scheme Factor Calculation 
+  
+  jitter.x <- reactive({
+    input$plot.display.jitter*IQR(df()$x.Result)*0.06
+  })
+  
+  jitter.y <- reactive({
+    input$plot.display.jitter*IQR(df()$y.Result)*0.06
+  })
 
 ### PLOT
   
@@ -208,7 +230,7 @@ plot.time.depth <- function(input, output, session, df) {
   p <- reactive({
     
     # Features in which all plot options have in common
-    p <- ggplot(df(), aes(x = Date, y = Result))
+    p <- ggplot(df(), aes(x = x.Result, y = y.Result))
       
 
 # Display Tab
@@ -216,7 +238,7 @@ plot.time.depth <- function(input, output, session, df) {
     # Theme based on selection
     if(input$plot.display.theme == "Gray"){
       p <- p + theme_gray()
-    }
+    }    
     if(input$plot.display.theme == "Black and White"){
       p <- p + theme_bw()
     }
@@ -237,7 +259,10 @@ plot.time.depth <- function(input, output, session, df) {
     }
 
     # Log Scale
-    if("Log-scale Y Axis" %in% input$plot.display.log){
+    if("X Axis" %in% input$plot.display.log){
+      p <- p + scale_x_log10()
+    }
+    if("Y Axis" %in% input$plot.display.log){
       p <- p + scale_y_log10()
     }
     
@@ -245,7 +270,10 @@ plot.time.depth <- function(input, output, session, df) {
     
     # Group by both Color and Shape when both selected
     if(input$plot.color != 1 & input$plot.shape != 1){
-      p <- p + geom_point(aes_string(color = input$plot.color, shape = input$plot.shape), size = input$plot.display.psize)
+      p <- p + geom_point(aes_string(color = input$plot.color, shape = input$plot.shape), 
+                          size = input$plot.display.psize,
+                          alpha = input$plot.display.opacity,
+                          position = position_jitter(width = jitter.x(), height = jitter.y()))
       if(input$plot.line.trend != "None"){
         p <- p + geom_smooth(method = input$plot.line.trend, 
                              size = input$plot.line.trend.size,
@@ -255,7 +283,10 @@ plot.time.depth <- function(input, output, session, df) {
     }
     # Group by only Color when only color grouping is selected
     else if (input$plot.color != 1){
-      p <- p + geom_point(aes_string(color = input$plot.color), size = input$plot.display.psize)
+      p <- p + geom_point(aes_string(color = input$plot.color), 
+                          size = input$plot.display.psize,
+                          alpha = input$plot.display.opacity,
+                          position = position_jitter(width = jitter.x(), height = jitter.y()))
       if(input$plot.line.trend != "None"){
         p <- p + geom_smooth(method = input$plot.line.trend, 
                              size = input$plot.line.trend.size,
@@ -265,7 +296,10 @@ plot.time.depth <- function(input, output, session, df) {
     } 
     # Group by only Shape when only shape grouping is selected 
     else if (input$plot.shape != 1){
-      p <- p + geom_point(aes_string(shape = input$plot.shape), size = input$plot.display.psize)
+      p <- p + geom_point(aes_string(shape = input$plot.shape), 
+                          size = input$plot.display.psize,
+                          alpha = input$plot.display.opacity,
+                          position = position_jitter(width = jitter.x(), height = jitter.y()))
       if(input$plot.line.trend != "None"){
         p <- p + geom_smooth(method = input$plot.line.trend, 
                              size = input$plot.line.trend.size,
@@ -275,7 +309,9 @@ plot.time.depth <- function(input, output, session, df) {
     } 
     # No Grouping Selected
     else {
-      p <- p + geom_point(size = input$plot.display.psize)
+      p <- p + geom_point(size = input$plot.display.psize,
+                          alpha = input$plot.display.opacity,
+                          position = position_jitter(width = jitter.x(), height = jitter.y()))
       if(input$plot.line.trend != "None"){
         p <- p + geom_smooth(method = input$plot.line.trend, 
                              size = input$plot.line.trend.size,
@@ -327,8 +363,7 @@ plot.time.depth <- function(input, output, session, df) {
       p <- p + ggtitle("")
     }
     if(input$plot.title == "Auto"){
-      p <- p + ggtitle(paste(text.param(), "at", 
-                             text.station(), text.depth(),
+      p <- p + ggtitle(paste(y.text.param(), "vs", x.text.param(), "at", text.station(), text.depth(),
                              "from", text.date.start(), "to", text.date.end(), sep= " "))
     }
     if(input$plot.title == "Custom"){
@@ -340,7 +375,7 @@ plot.time.depth <- function(input, output, session, df) {
       p <- p + xlab("")
     }
     if(input$plot.xlab == "Auto"){
-      p <- p + xlab("Date")
+      p <- p + xlab(paste(x.text.param(), " (", x.text.units(),")", sep= ""))
     }
     if(input$plot.xlab == "Custom"){
       p <- p + xlab(input$plot.xlab.text)
@@ -351,7 +386,7 @@ plot.time.depth <- function(input, output, session, df) {
       p <- p + ylab("")
     }
     if(input$plot.ylab == "Auto"){
-      p <- p + ylab(paste(text.param(), " (", text.units(),")", sep= ""))
+      p <- p + ylab(paste(y.text.param(), " (", y.text.units(),")", sep= ""))
     }
     if(input$plot.ylab == "Custom"){
       p <- p + ylab(input$plot.ylab.text)

@@ -25,23 +25,19 @@ tagList(
   wellPanel(
     fluidRow(
       # first column
+      column(2,
+             # Site Input
+             selectInput(ns("site"), "Site: (Choose First)", 
+                         choices = levels(factor(df$Site)), 
+                         selected = factor(df$Site)[1])
+      ),
       column(3,
              # Parameter Input
-             selectInput(ns("param"), "Parameter:",        
-                         choices=levels(factor(df$Parameter)),
-                         selected = factor(df$Parameter[1]))
+             uiOutput(ns("param.ui"))
       ),
       column(2,
              # Date Input
-             selectInput(ns("date"), "Year:", 
-                        choices = year(seq(as.Date("1990/1/1"), Sys.Date(), "years")), 
-                        selected = year(Sys.Date() - years(5)))
-      ),
-      column(2,
-             # Site Input
-             selectInput(ns("site"), "Site:", 
-                         choices = levels(factor(df$Site)), 
-                         selected = factor(df$Site)[1])
+             uiOutput(ns("date.ui"))
       ),
       column(2,
              #Interpolation Type
@@ -86,13 +82,77 @@ tagList(
 
 prof.heatmap <- function(input, output, session, df) {
   
+  # Non Historical Parameters (when a Parameter has not been used in over 5 years). See General Note 6
+  
+  parameters.non.historical <- df %>%
+    filter(Date > Sys.Date()-years(5), Date < Sys.Date()) %>%
+    .$Parameter %>%
+    factor() %>%
+    levels()
+  
+  
+  # Parameter Selection UI
+  
+  output$param.ui <- renderUI({
+    
+    req(input$site) # See General Note 5
+    
+    ns <- session$ns # see General Note 1
+    
+    # Parameters which have data at any Site (in the mofule's df) within 5 years.
+    param.choices.new <- df %>%
+      filter(Site %in% input$site,
+             Parameter %in% parameters.non.historical) %>%
+      .$Parameter %>%
+      factor() %>%
+      levels()
+    
+    # Parameters which do NOT have data at any Site (in the mofule's df) within 5 years.
+    param.choices.old <- df %>%
+      filter(Site %in% input$site,
+             !(Parameter %in% parameters.non.historical)) %>%
+      .$Parameter %>%
+      factor() %>%
+      levels()
+    
+    # Recent Parameters first and then old parameters
+    param.choices <- c(param.choices.new, param.choices.old)
+    
+    selectInput(ns("param"), "Parameter: ",
+                choices=c(param.choices))
+    
+  })
+  
+  # Date Selection UI
+  
+  output$date.ui <- renderUI({
+    
+    req(input$site) # See General Note 5
+    
+    ns <- session$ns # see General Note 1
+    
+    Dates <- df %>% 
+      filter(Site %in% input$site) %>%
+      .$Date
+    
+    Date.min <- Dates %>% min(na.rm=TRUE)
+    Date.max <- Dates %>% max(na.rm=TRUE)
+    
+    # Date Input
+    selectInput(ns("date"), "Year:", 
+                choices = year(seq(Date.min, Date.max, "years")), 
+                selected = year(Date.max))
+    
+  })
+  
+  
 # Reactive Data Frames:
   
   df.react <- reactive({
     df %>% 
-    filter(Parameter %in% input$param) %>% 
-    filter(Site %in% c(input$site)) %>%
-    filter(year(Date) == input$date) #%>%
+      filter(Site %in% input$site,
+             Parameter %in% input$param,
+             year(Date) == input$date)
     #filter(!is.na(Date)) %>%
     #filter(!is.na(Depthm)) %>%
     #filter(!is.na(Result))
@@ -157,7 +217,7 @@ prof.heatmap <- function(input, output, session, df) {
           xaxis = list(title = 'Depth (m)'),  
           yaxis = list(title = 'Year'),
           zaxis = list(title = input$param),
-          camera = list(eye = list(x = 1, y = 1, z = 2))))
+          camera = list(eye = list(x = 0.5, y = 0.2, z = 2.0))))
     } else {
       p3D <- plot_ly(df.react(), x = ~Result, y = ~Date, z = ~Depthm*-1, color = ~Result) %>%
         add_markers() %>%
