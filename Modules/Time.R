@@ -337,7 +337,7 @@ time <- function(input, output, session, df, df.site) {
   
 
   
-# Text - Select Site - Red
+# Text - Select Site
   
   output$text.num.null <- renderText({
     req(is.null(site.list())) # See General Note 1

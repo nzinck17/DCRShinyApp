@@ -58,6 +58,10 @@ source("Modules2/Plot-Time.R")
 source("Modules2/Plot-Time-Depth.R")
 source("Modules2/Plot-Regress.R")
 source("Modules2/Plot-Regress-Depth.R")
+source("Modules2/Plot-Profline-Custom.R")
+#source("Modules2/Plot-Profline-Standard.R")
+#source("Modules2/Plot-Profline-Custom.R")
+#source("Modules2/Plot-Profline-Standard.R")
 source("Modules2/Summary.R")
 source("Modules2/Summary-Depth.R")
 #source("Modules2/Summary-Profile.R")
@@ -162,25 +166,20 @@ tabPanel("Reservoir",
                 ),
 
                 "Profile",
-                tabPanel("Heat Map Custom",
-                         fluidRow(column(10, h4("Profile Heatmap (Custom)", align = "center")), column(2)),
+                tabPanel("Heat Map",
+                         fluidRow(column(10, h4("Profile Heatmap", align = "center")), column(2)),
                          tabsetPanel(
                            tabPanel("Quabbin", prof.heatmap.UI("Quabbin Profile Heatmap", df.prof.quab)),
                            tabPanel("Wachusett", prof.heatmap.UI("Wachusett Profile Heatmap", df.prof.wach))
                          )
                 ),
-                tabPanel("Heat Map Standard"),
-
-                tabPanel("Line Plot Custom",
-                         fluidRow(column(10, h4("Profile Line Plot (Custom)", align = "center")), column(2)),
+                tabPanel("Line Plot",
+                         fluidRow(column(10, h4("Profile Line Plot", align = "center")), column(2)),
                          tabsetPanel(
                            tabPanel("Quabbin", prof.line.UI("Quabbin Profile Line", df.prof.quab)),
                            tabPanel("Wachusett", prof.line.UI("Wachusett Profile Line", df.prof.wach))
                          )
                 ),
-
-                tabPanel("Line Plot Standard"),
-
                 tabPanel("Table and Summary",
                          fluidRow(column(10, h4("Profile Summary", align = "center")), column(2)),
                          tabsetPanel(

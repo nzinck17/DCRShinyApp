@@ -1,255 +1,263 @@
 ##############################################################################################################################
-#     Title: ProfileLinePlot - Shiny Module
-#     Description: This script will plot Profile Line Plots
+#     Title: Profile-Line.R
+#     Type: Module for DCR Shiny App
+#     Description: Line Plot for 
 #     Written by: Nick Zinck, Spring 2017
-#     Note: TBD
 ##############################################################################################################################
 
-# load libraries
-library(shiny)
-library(ggplot2)
-library(plotly)
-library(dplyr)
-library(lubridate)
+# Notes: 
+#   1. req() will delay the rendering of a widget or other reactive object until a certain logical expression is TRUE or not NULL
+#   2. Tried Progress Bar for Plot and did not work well. Used Custom Message instead
 
-#=========================================================================
-# UI side
+# To-Do List:
+#   1. Make Loading Bar for Plot
+#   2. Make option for COloring Scale (whether based on Site, Year; Site; or None)
+#   3. Change Decimal Date to DOY
+
+##############################################################################################################################
+# User Interface
+##
 
 prof.line.UI <- function(id, df) {
   
 ns <- NS(id)
 
 tagList(
-  
   wellPanel(
-    
     fluidRow(
-      
-      # first column
-      column(3,
-             
-             # Parameter Input
-             checkboxGroupInput(ns("param"), "Parameter:",        
-                         choices=levels(factor(df$Parameter)),
-                         selected = factor(df$Parameter[1]))
-      ),
-      
-      
-      column(3,
-             
-             radioButtons(ns("date.option"), "Choose Date Method:",        
-                                choices=c("Select Year",
-                                          "Select Month",
-                                          "Calendar Range",
-                                          "Single Day"),
-                                selected = "Select Year"),
-             
-             # Date Input
-             uiOutput(ns("date.ui"))
-             
-      ),
-      
-      
       column(2,
-             
-             # Site Input
-             checkboxGroupInput(ns("site"), "Site:", 
-                         choices = levels(factor(df$Site)), 
-                         selected = factor(df$Site)[1])
+             # SITE
+             wellPanel(
+               checkboxGroupInput(ns("site"), "Site: (Select First)", 
+                                  choices = levels(factor(df$Site)))
+             )
       ),
-                        
-      
       column(2,
-             
-             radioButtons(ns("plot.color"), label = "Group with Colors:", 
-                          choices = c("Parameter",
-                                      "Site"),
-                          selected = "Parameter"),
-
-             radioButtons(ns("plot.linetype"), label = "Group with Linetypes:", 
-                           choices = c("Parameter",
-                                       "Site"),
-                           selected = "Site")
+             # SITE
+             wellPanel(
+               h3(textOutput(ns("text.site.null")), align = "center"),
+               h3(textOutput(ns("text.param.null")), align = "center"),
+               h4(textOutput(ns("text.num.text")), align = "center"),
+               h3(textOutput(ns("text.num")), align = "center")
+             )
       ),
-      
-      
-      column(1,
-             
-             downloadButton(ns('save.plot'), "Save Plot")
-      )
-      
-
-      )
+      column(3,
+             # PARAMETER
+             wellPanel(
+               uiOutput(ns("param.ui"))
+             )
+      ),
+      column(5,
+             # DATE
+             wellPanel(
+               fluidRow(
+                 column(6,
+                        radioButtons(ns("date.option"), "Choose Date Method:",        
+                                     choices=c("Calendar Range",
+                                               "Select Year",
+                                               "Select Month",
+                                               "Select Day"),
+                                     selected = "Calendar Range")
+                 ),
+                 column(6,
+                        uiOutput(ns("date.ui"))
+                 )
+               ) # end Fluid Row
+             ) # end Well Panel
+      ) # end Column
+    ) # end Fluid Row
   ), # well panel
   
-  
   tabsetPanel(
-    
     # the "Plot" tab panel where everything realted to the plot goes
-    tabPanel("Plot", 
-             
+    tabPanel("Custom Plot",
+             plot.profline.custom.UI(ns("Plot Profile Line Custom"))
+    ),
+    tabPanel("Standard Template Line Plot",
              fluidRow(
-               plotOutput(ns("plot"), height = 500)
+               h2("Soon to Come", align = "center")
              )
     ),
-    
-    tabPanel("Plot (interactive)", 
-             
-             fluidRow(
-               plotlyOutput(ns("plotly"), height = 500),
-               downloadButton(ns('save.plot2'), "Save Plot")
-             )
-             
-    ),
-    
-    tabPanel("Table", 
-             
+    tabPanel("Table",
              fluidRow(
                dataTableOutput(ns("table.dynamic"))
              )
-             
     )
   ) # end tabsetpanel
-    
-  ) # end taglist 
+) # end taglist 
 }
 
-#========================================================================
-# server side
+##############################################################################################################################
+# Server Function
+##############################################################################################################################
+
 
 prof.line <- function(input, output, session, df) {
+  
+  # filter DF for blank data
+  
+  df <- df %>% filter(!is.na(Date), 
+                      !is.na(Depthm),
+                      !is.na(Result))
+  
+  # Non Historical Parameters (when a Parameter has not been used in over 5 years). See General Note 6
+  
+  parameters.non.historical <- df %>%
+    filter(Date > Sys.Date()-years(5), Date < Sys.Date()) %>%
+    .$Parameter %>%
+    factor() %>%
+    levels()
+  
+  
+  # Parameter Selection UI
+  
+  output$param.ui <- renderUI({
+    
+    req(input$site) # See General Note 5
+    
+    ns <- session$ns # see General Note 1
+    
+    # Parameters which have data at any Site (in the mofule's df) within 5 years.
+    param.choices.new <- df %>%
+      filter(Site %in% input$site,
+             Parameter %in% parameters.non.historical) %>%
+      .$Parameter %>%
+      factor() %>%
+      levels()
+    
+    # Parameters which do NOT have data at any Site (in the mofule's df) within 5 years.
+    param.choices.old <- df %>%
+      filter(Site %in% input$site,
+             !(Parameter %in% parameters.non.historical)) %>%
+      .$Parameter %>%
+      factor() %>%
+      levels()
+    
+    # Recent Parameters first and then old parameters
+    param.choices <- c(param.choices.new, param.choices.old)
+    
+    # Parameter Input
+    checkboxGroupInput(ns("param"), "Parameter:",        
+                       choices=levels(factor(df$Parameter)))
+    
+  })
+  
   
 # Depending on input$date.option, we'll generate a different UI date component 
   
   output$date.ui <- renderUI({
     
+    req(input$site) # See General Note 5
+    
     ns <- session$ns
+    
+    Dates <- df %>% 
+      filter(Site %in% input$site) %>%
+      .$Date
+    
+    Date.min <- Dates %>% min(na.rm=TRUE)
+    Date.max <- Dates %>% max(na.rm=TRUE)
+    
+    # Date Input
+    
+    Months.unique <- levels(factor(month(Dates)))
+    Days.unique <- levels(factor(Dates))
     
     switch(input$date.option,
            
-           "Select Year" = selectInput(ns("date"), "Year:", 
-                         choices = year(seq(as.Date("1990/1/1"), Sys.Date(), "years")), 
-                         selected = year(Sys.Date() - years(10))),
-           
-           "Select Month" = selectInput(ns("date"), "Month:", 
-                       choices = c(January = 1,
-                                   February = 2,
-                                   March = 3,
-                                   April = 4,
-                                   May = 5,
-                                   June = 6,
-                                   July = 7,
-                                   August = 8,
-                                   September = 9,
-                                   October = 10,
-                                   November = 11,
-                                   December = 12), 
-                       selected = month(Sys.Date())),
-           
            "Calendar Range" = dateRangeInput(ns("date"), "Date Range:", 
-                                             start = Sys.Date() - years(1), 
-                                             end = Sys.Date(), 
-                                             min = as.Date("1990/1/1"),
-                                             max = Sys.Date(),
+                                             start = Date.max - years(1), 
+                                             end = Date.max,  
+                                             min = Date.min,
+                                             max = Date.max,
                                              startview = "year"),
            
-           "Single Day" = selectInput(ns("date"), "Year:", 
-                                        choices = levels(factor(df$Date)), 
-                                        selected = factor(df$Date)[1])
+           "Select Year" = selectInput(ns("date"), "Year:", 
+                                       choices = year(seq(Date.min, Date.max, "years")), 
+                                       selected = year(Date.max)),
+           
+           "Select Month" = selectInput(ns("date"), "Month:", 
+                       choices = c(Months.unique), 
+                       selected = month(Sys.Date())),
+           
+           "Select Day" = selectInput(ns("date"), "Year:", 
+                                        choices = Days.unique)
            
     )
   })
   
+  
 # Reactive Data Frames for different date selection methods:
   
-
-  df.active <- reactive({
+  df.react <- reactive({
+    
+    req(input$site, input$param, input$date) # See General Note 5
     
     if(input$date.option == "Select Year"){
       
         df %>% 
-          filter(Parameter %in% input$param) %>% 
-          filter(Site %in% c(input$site)) %>% 
-          filter(year(Date) == input$date)
+          filter(Parameter %in% input$param,
+                 Site %in% c(input$site),
+                 year(Date) == input$date)
       
     } else if (input$date.option == "Select Month"){
       df %>% 
-        filter(Parameter %in% input$param) %>% 
-        filter(Site %in% c(input$site)) %>% 
-        filter(month(Date) == input$date)
+        filter(Parameter %in% input$param,
+               Site %in% c(input$site),
+               month(Date) == input$date)
       
     } else if (input$date.option == "Calendar Range"){
       df %>% 
-        filter(Parameter %in% input$param) %>% 
-        filter(Site %in% c(input$site)) %>% 
-        filter(Date > input$date[1], Date < input$date[2])
+        filter(Parameter %in% input$param,
+               Site %in% c(input$site),
+               Date > input$date[1], Date < input$date[2])
       
-    } else if (input$date.option == "Single Day"){
+    } else if (input$date.option == "Select Day"){
   
         df %>% 
-          filter(Parameter %in% input$param) %>% 
-          filter(Site %in% c(input$site)) %>% 
-          filter(Date == input$date)
+          filter(Parameter %in% input$param,
+                 Site %in% c(input$site),
+                 Date == input$date)
     }
     
   })
-
-# Plot Creation
   
-  p <- reactive({
-    
-    p <- ggplot(df.active(),aes(x=Result,y=Depthm)) +
-      scale_y_reverse() +
-      theme_bw()
-    
-    # The coloring and facetting organization to not allow for a user to have hidden grouped Sites, params, or Dates
-    
-    # No Parameter Coloring/linetype --> facet by param
-    if(input$plot.color != "Parameter" & input$plot.linetype != "Parameter"){
-      p <- p + geom_path(aes_string(color = input$plot.color, linetype = input$plot.linetype)) +
-        facet_grid(Parameter~Date)
-      # No Site Coloring/linetype --> facet by site
-    } else if(input$plot.color != "Site" & input$plot.linetype != "Site"){
-      p <- p + geom_path(aes_string(color = input$plot.color, linetype = input$plot.linetype)) +
-        facet_grid(Site~Date)
-      # Param and Site both colored or linetyped
-    } else {
-      p <- p + geom_path(aes_string(color = input$plot.color, linetype = input$plot.linetype)) +
-        facet_grid(.~Date)
-    }
   
-  p
+  # Text - Select Site
   
-  })
-
-# Plot visual
-  
-  output$plot <- renderPlot({
-    
-    p()
-
+  output$text.site.null <- renderText({
+    req(is.null(input$site)) # See General Note 1
+    "Select Site(s)"
   })
   
-# Plot visual (interactive)
+  # Text - Select Parameter
   
-  output$plotly <- renderPlotly({
-    
-    ggplotly(p() + theme(plot.margin = unit(c(0.2, 0.2, 0.2, 0.5), "in")))
-    
+  output$text.param.null <- renderText({
+    req(!is.null(input$site), is.null(input$param)) # See General Note 1
+    "Select Parameter(s)"
   })
   
-# Plot - print
+  # Text - Number of Samples
   
-  output$save.plot <- downloadHandler(
-    filename = function (){paste(input$date,' ', input$param,' Site ',input$site,'.png', sep='')},
-    content = function(file) {ggsave(file, plot = p(), device = "png")},   #function(file) {ggsave(file, plot = p(), device = "png")}
-    contentType = 'image/png'
-  )
+  output$text.num.text <- renderText({
+    req(input$site, input$param) # See General Note 1
+    "Number of Samples in Selected Data"
+  })
   
+  # Text - Number of Samples
+  
+  output$text.num <- renderText({
+    req(df.react()) # See General Note 1
+    df.react() %>% summarise(n()) %>% paste()
+  })
+  
+# Plot
+
+  callModule(plot.profline.custom, "Plot Profile Line Custom", df = df.react)
   
 # Table
   
-  output$table.dynamic <- renderDataTable(df.active())
+  output$table.dynamic <- renderDataTable(df.react())
   
   
 }

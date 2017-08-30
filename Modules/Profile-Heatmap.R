@@ -7,7 +7,8 @@
 
 # Notes: 
 #   1. req() will delay the rendering of a widget or other reactive object until a certain logical expression is TRUE or not NULL
-#
+#   2. Tried Progress Bar for Plot and did not work well. Used Custom Message instead
+
 # To-Do List:
 #   1. Make Loading Bar for Plot
 #   2. Make option for COloring Scale (whether based on Site, Year; Site; or None)
@@ -24,7 +25,6 @@ ns <- NS(id)
 tagList(
   wellPanel(
     fluidRow(
-      # first column
       column(2,
              # Site Input
              selectInput(ns("site"), "Site: (Choose First)", 
@@ -70,6 +70,11 @@ tagList(
     ),
     tabPanel("Table",
              dataTableOutput(ns("table"))
+    ),
+    tabPanel("Standard Template Heatmap Plot",
+             fluidRow(
+               h2("Soon to Come", align = "center")
+             )
     )
   )
 ) # end taglist
@@ -81,6 +86,12 @@ tagList(
 ##############################################################################################################################
 
 prof.heatmap <- function(input, output, session, df) {
+  
+  # filter DF for blank data
+  
+  df <- df %>% filter(!is.na(Date), 
+                      !is.na(Depthm),
+                      !is.na(Result))
   
   # Non Historical Parameters (when a Parameter has not been used in over 5 years). See General Note 6
   
@@ -118,7 +129,7 @@ prof.heatmap <- function(input, output, session, df) {
     # Recent Parameters first and then old parameters
     param.choices <- c(param.choices.new, param.choices.old)
     
-    selectInput(ns("param"), "Parameter: ",
+    selectInput(ns("param"), "Parameter: (Choose Second)",
                 choices=c(param.choices))
     
   })
@@ -127,12 +138,13 @@ prof.heatmap <- function(input, output, session, df) {
   
   output$date.ui <- renderUI({
     
-    req(input$site) # See General Note 5
+    req(input$site, input$param) # See General Note 5
     
     ns <- session$ns # see General Note 1
     
     Dates <- df %>% 
-      filter(Site %in% input$site) %>%
+      filter(Site %in% input$site,
+             Parameter %in% input$param) %>%
       .$Date
     
     Date.min <- Dates %>% min(na.rm=TRUE)
@@ -149,13 +161,14 @@ prof.heatmap <- function(input, output, session, df) {
 # Reactive Data Frames:
   
   df.react <- reactive({
+    
+    req(input$site, input$param, input$date) # See General Note 5
+    
     df %>% 
       filter(Site %in% input$site,
              Parameter %in% input$param,
              year(Date) == input$date)
-    #filter(!is.na(Date)) %>%
-    #filter(!is.na(Depthm)) %>%
-    #filter(!is.na(Result))
+
   })
   
 # Reactive Data for color scale use
@@ -174,13 +187,15 @@ prof.heatmap <- function(input, output, session, df) {
       df.plot <- akima::interp(x = decimal_date(df.react()$Date), y = df.react()$Depthm, z = df.react()$Result, duplicate="strip", nx = 100, ny = 100)
       df.plot <- interp2xyz(df.plot, data.frame=TRUE)
       df.plot <- rename(df.plot, Date = x, Depthm = y, Result = z)
+      df.plot$Date <- as.Date(format(date_decimal(df.plot$Date), "%Y-%m-%d"))
     } else {
       df.plot <- df.react()
     }
     
     p <-  ggplot(df.plot, aes(x=Date, y=Depthm, z=Result, fill=Result)) +
       geom_tile(height = 1) +
-      scale_y_reverse()
+      scale_y_reverse() + 
+      scale_x_date(date_breaks = "months", date_labels = ("%b-%Y"))
     
     if(input$plot.color == "blue scale"){
       p <- p + scale_fill_gradient(limits = c(lowerlimit(),upperlimit()))
@@ -193,9 +208,9 @@ prof.heatmap <- function(input, output, session, df) {
     p
     
   })
+
   
-  
-# Plot - Plotly Visualization
+# Heat Map Plot - Plotly Visualization
   
   output$plot <- renderPlotly({
     ggplotly(p()) %>% config(displayModeBar = F)  %>% layout(xaxis=list(fixedrange=TRUE)) %>% layout(yaxis=list(fixedrange=TRUE))
