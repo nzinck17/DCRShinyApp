@@ -7,7 +7,7 @@
 
 # File name path from the Shiny App Folder (***Update if name changed****)
 
-filename.quab <- "DBQ=C:/WQDatabase/QuabbinWQdataNZ.mdb"
+filename.quab <- "DBQ=C:/WQDatabase/QuabbinWQdata_fe.mdb"
 filename.wach.wq <- "DBQ=C:/WQDatabase/WaterQualityDB_fe.mdb"
 filename.wach.aquabio <- "DBQ=C:/WQDatabase/AqBioDBWachusett_fe.mdb"
 
@@ -107,7 +107,7 @@ rm(con)
 
 # rename the columns of the Wachusett Trib and Res to match Quabbin
 df.trib.transect.wach <- rename(df.trib.transect.wach, Site = Location, `Result Temp` = Result, Result = FinalResult)
-df.nut.wach <- rename(df.nut.wach, Site = Location, Result = Finalresult, Date = Date_Collected, Time = Collection_Time, 
+df.nut.wach <- rename(df.nut.wach, Site = Location, Result = Finalresult, Date = Date_Collected, Time = Collection_Time,
                       Parameter = Component, Units = Unit_of_Measure)
 df.prof.wach <- rename(df.prof.wach, Date = Pro_Date, Site = Pro_Station, Time = Pro_TimeFormatted, Depthm = Pro_Depth_m)
 
@@ -162,7 +162,7 @@ df.nut.prof.wach.site$Watershed <- "Wachusett"
 
 ###
 # Combine WQ with Site info (Gets the Station and Sampling Level for Nutrient Sites)
-df.trib.res.quab <- left_join(df.trib.res.quab, df.quab.ware.site, "Site")  # 
+df.trib.res.quab <- left_join(df.trib.res.quab, df.quab.ware.site, "Site")  #
 df.trib.transect.wach <- left_join(df.trib.transect.wach, df.trib.tran.wach.site, "Site")
 
 #############################################################################################################################
@@ -234,8 +234,8 @@ df.prof.wach.site <- df.nut.prof.wach.site %>% filter(is.null(LocationDepth))
 # Combine All Sites into 1 dataframe
 
 
-df.all.site.temp <- full_join(df.quab.ware.site, 
-                              df.trib.tran.wach.site, 
+df.all.site.temp <- full_join(df.quab.ware.site,
+                              df.trib.tran.wach.site,
                               by = c("Site",
                                      "Watershed",
                                      "LocationType",
@@ -245,8 +245,8 @@ df.all.site.temp <- full_join(df.quab.ware.site,
                                      "LocationDescription",
                                      "LocationElevFt"))
 
-df.all.site <- full_join(df.all.site.temp, 
-                         df.nut.prof.wach.site, 
+df.all.site <- full_join(df.all.site.temp,
+                         df.nut.prof.wach.site,
                          by = c("Site",
                                 "Station",
                                 "Watershed",
