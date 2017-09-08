@@ -7,9 +7,9 @@
 
 # File name path from the Shiny App Folder (***Update if name changed****)
 
-filename.quab <- "DBQ=C:/WQDatabase/QuabbinWQdata_fe.mdb"
-filename.wach.wq <- "DBQ=C:/WQDatabase/WaterQualityDB_fe.mdb"
-filename.wach.aquabio <- "DBQ=C:/WQDatabase/AqBioDBWachusett_fe.mdb"
+filename.quab <- "DBQ=C:/WQDatabase/QUABBIN_WQDB_fe.mdb"
+filename.wach.wq <- "DBQ=C:/WQDatabase/WACHUSETT_WQDB_fe.mdb"
+filename.wach.aquabio <- "DBQ=C:/WQDatabase/WACHUSETT_AQBIO_DB_fe.mdb"
 
 ##############################################################################################################################
 # Get data from Database *(Connect to database, fetch tables, and close connection)
