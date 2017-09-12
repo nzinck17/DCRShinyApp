@@ -1,5 +1,5 @@
 ##############################################################################################################################
-#     Title: LoadMSAccessData
+#     Title: LoadMSAccessData.R
 #     Description: This script will load WQ data from both Quabbin and Wachusett Microsof Access Database
 #     Written by: Nick Zinck, Spring 2017
 #     Note: TBD
@@ -11,164 +11,174 @@ filename.quab <- "DBQ=C:/WQDatabase/QuabbinWQdataNZ.mdb"
 filename.wach.wq <- "DBQ=C:/WQDatabase/WaterQualityDB_fe.mdb"
 filename.wach.aquabio <- "DBQ=C:/WQDatabase/AqBioDBWachusett_fe.mdb"
 
+
 ##############################################################################################################################
-# Get data from Database *(Connect to database, fetch tables, and close connection)
+# GET DATA FROM DATABASE *(Connect to database, fetch tables, and close connection)
+##############################################################################################################################
 
-# Quabbin Tribs and Res
+### Quabbin Tribs and Res
 
+# Connect to db
 con <- dbConnect(odbc::odbc(),
                  .connection_string = paste("driver={Microsoft Access Driver (*.mdb, *.accdb)}", filename.quab, "Uid=Admin;Pwd=;", sep = ";"),
                  timezone = "America/New_York")
 
-
-# connection.name <- paste("Driver={Microsoft Access Driver (*.mdb, *.accdb)}",
-#                          filename.quab,
-#                          "Encrypt=yes",
-#                          "TrustServerCertificate=no",
-#                          "Connection Timeout=30",
-#                          "ReadOnly=False",
-#                          sep = ";")
-
-
+# Read Tables
 df.trib.res.quab <- dbReadTable(con, "tblWQTribRes2")
 df.prof.quab <- dbReadTable(con, "tblWQProfile")
 df.quab.ware.site <- dbReadTable(con, "tblSiteLocation2")
 df.quab.param <- dbReadTable(con, "tblParameters")
+
 # Disconnect from db and remove connection obj
 dbDisconnect(con)
 rm(con)
 
-## RODBC METHOD
-# df.trib.res.quab <- sqlFetch(connection, "tblWQTribRes2")
-# df.prof.quab <- sqlFetch(connection, "tblWQProfile")
-# df.quab.ware.site <- sqlFetch(connection, "tblSiteLocation2")
-# df.quab.param <- sqlFetch(connection, "tblParameters")
-# close(connection)
-# rm(connection)
 
-# Wachusett Tribs
+### Wachusett Tribs
+
+# Connect to db
 con <- dbConnect(odbc::odbc(),
                              .connection_string = paste("driver={Microsoft Access Driver (*.mdb, *.accdb)}",
                               filename.wach.wq, "Uid=Admin;Pwd=;", sep = ";"),
                              timezone = "America/New_York")
 
-# connection.name <- paste("Driver={Microsoft Access Driver (*.mdb, *.accdb)}",
-#                          filename.wach.wq,
-#                          "Encrypt=yes",
-#                          "TrustServerCertificate=no",
-#                          "Connection Timeout=30",
-#                          "ReadOnly=False",
-#                          sep = ";")
-
-
+# Read Tables
 df.trib.transect.wach <- dbReadTable(con, "tblWQALLDATA")
 df.trib.tran.wach.site <- dbReadTable(con, "tblLocations")
 df.trib.transect.wach.param <- dbReadTable(con, "tblParameters")
+
 # Disconnect from db and remove connection obj
 dbDisconnect(con)
 rm(con)
 
-## RODBC METHOD
-# df.trib.transect.wach <- sqlFetch(connection, "tblWQALLDATA")
-# df.trib.tran.wach.site <- sqlFetch(connection, "tblLocations")
-# df.trib.transect.wach.param <- sqlFetch(connection, "tblParameters")
-# close(connection)
-# rm(connection)
 
-# Wachusett Profile
+### Wachusett Profile
+
+# Connect to db
 con<- dbConnect(odbc::odbc(),
                              .connection_string = paste("driver={Microsoft Access Driver (*.mdb, *.accdb)}",
                               filename.wach.aquabio, "Uid=Admin;Pwd=;", sep = ";"),
                               timezone = "America/New_York")
 
-# connection.name <- paste("Driver={Microsoft Access Driver (*.mdb, *.accdb)}",
-#                          filename.wach.aquabio,
-#                          "Encrypt=yes",
-#                          "TrustServerCertificate=no",
-#                          "Connection Timeout=30",
-#                          "ReadOnly=False",
-#                          sep = ";")
-
+# Read Tables
 df.nut.wach <- dbReadTable(con, "tbl_Nutrients")
 df.prof.wach <- dbReadTable(con, "tbl_Profiles")
 df.nut.prof.wach.site <- dbReadTable(con, "tblLocations")
+
 # Disconnect from db and remove connection obj
 dbDisconnect(con)
 rm(con)
-# df.prof.wach <- sqlFetch(connection, "tbl_Profiles")
-# df.nut.prof.wach.site <- sqlFetch(connection, "tblLocations")
-# close(connection)
-# rm(connection)
 
-#############################################################################################################################
-# RESTRUCTURING DATA
 
-### WQ data
+###########################################################################################################################
+# RESTRUCTURING WATER QUALITY DATA
+###########################################################################################################################
 
-# rename the columns of the Wachusett Trib and Res to match Quabbin
+### QUABBIN
+
+# delete columns
+df.trib.res.quab <- df.trib.res.quab %>% select(-rownames)
+df.prof.quab <- df.prof.quab %>% select(-rownames)
+
+# result format - Numeric Class (Make Character first in the case that the results are imported as factors)
+df.trib.res.quab$Result <- as.numeric(as.character(df.trib.res.quab$Result))
+df.prof.quab$Result <- as.numeric(as.character(df.prof.quab$Result))
+
+# date Format - Date Class
+df.trib.res.quab$Date <- as.Date(as.character(df.trib.res.quab$Date),format ='%m/%d/%Y')
+df.prof.quab$Date <- as.Date(as.character(df.prof.quab$Date), format = '%d-%b-%y')
+
+
+### WACHUSETT
+
+# rename columns
 df.trib.transect.wach <- rename(df.trib.transect.wach, Site = Location, `Result Temp` = Result, Result = FinalResult)
 df.nut.wach <- rename(df.nut.wach, Site = Location, Result = Finalresult, Date = Date_Collected, Time = Collection_Time, 
                       Parameter = Component, Units = Unit_of_Measure)
 df.prof.wach <- rename(df.prof.wach, Date = Pro_Date, Site = Pro_Station, Time = Pro_TimeFormatted, Depthm = Pro_Depth_m)
 
-# Reformat the Wachusett Profile data to "Tidy" data format
+# reformat the Wachusett Profile data to "Tidy" data format ("Long" instead of "Wide")
 df.prof.wach <- gather(df.prof.wach, Parameter, Result, c(Temp_C, SpCond, LDO_pct, LDO_mgL, pH, Chl_ugL, Chl_volts, Turbidity, TDS_mgL, BGA_PC_ugL))
 
-# Result Format - Numeric Class (Make Character first in the case that the results are imported as factors (could maybe be set within DB))
-df.trib.res.quab$Result <- as.numeric(as.character(df.trib.res.quab$Result))
+# result format - Numeric Class (Make Character first in the case that the results are imported as factors (could maybe be set within DB))
 df.trib.transect.wach$Result <- as.numeric(as.character(df.trib.transect.wach$Result))
 df.nut.wach$Result <- as.numeric(as.character(df.nut.wach$Result))
-df.prof.quab$Result <- as.numeric(as.character(df.prof.quab$Result))
 df.prof.wach$Result <- as.numeric(as.character(df.prof.wach$Result))
 
-# Date Format - Date Class. (Could maybe be set withing DB)
-df.trib.res.quab$Date <- as.Date(as.character(df.trib.res.quab$Date),format ='%m/%d/%Y')
+# date format - Date Class. (Could maybe be set withing DB)
 df.trib.transect.wach$SampleDateTime <- format(df.trib.transect.wach$SampleDateTime, tz ="America/New_York", usetz=TRUE)
 df.trib.transect.wach$Date <- as.Date(as.character(df.trib.transect.wach$SampleDateTime),format ='%Y-%m-%d %H:%M:%S')
 df.nut.wach$Date <- as.Date(as.character(df.nut.wach$Date),format ='%Y-%m-%d %H:%M:%S')
-df.prof.quab$Date <- as.Date(as.character(df.prof.quab$Date), format = '%d-%b-%y')
 df.prof.wach$Date <- as.Date(df.prof.wach$Date)
 
-# Time Format
+# time format
 df.nut.wach$Time <- format(df.nut.wach$Time,"%H:%M:%S")
 df.prof.wach$Time <- format(df.prof.wach$Time,"%H:%M:%S")
 df.prof.wach$DateTime <-as.POSIXct(paste(df.prof.wach$Date, df.prof.wach$Time), format="%Y-%m-%d %H:%M:%S")
 
-# Flag Format - Change a "NA" or "NAN" value to "No Flag"
+# flag format - Change a "NA" or "NAN" value to "No Flag"
 df.trib.transect.wach$FlagCode <- as.character(df.trib.transect.wach$FlagCode)
 df.trib.transect.wach$FlagCode[is.na(df.trib.transect.wach$FlagCode)] <- "No Flag"
 df.trib.transect.wach$FlagCode[is.nan(df.trib.transect.wach$FlagCode)] <- "No Flag"
 df.trib.transect.wach$FlagCode <- factor(df.trib.transect.wach$FlagCode)
 
 
-#### Edit Site Tables
+###########################################################################################################################
+# RESTRUCTURING SITE INFORMATION DATA
+###########################################################################################################################
 
-# Quabbin
-df.quab.ware.site <- df.quab.ware.site %>% rename(Site = SiteID, LocationType = Type)
+### QUABBIN
+
+# delete columns
+df.quab.ware.site <- df.quab.ware.site %>% select(-c(rownames, Description))
+
+# rename columns
+df.quab.ware.site <- df.quab.ware.site %>% rename(Site = SiteID, LocationType = Type, LocationDescription = SiteDescription)
+
+# create columns
 df.quab.ware.site <- df.quab.ware.site %>% mutate(LocationLabel = paste(LocationShortName, Site))
 df.quab.ware.site$LocationElevFt <- NA
-df.quab.ware.site <- df.quab.ware.site %>% rename(LocationDescription = SiteDescription)
-df.quab.ware.site <- df.quab.ware.site %>% select(-Description)
 
+# change "Core" to "Primary Active"
 df.quab.ware.site$LocationCategory <- as.character(df.quab.ware.site$LocationCategory)
 df.quab.ware.site$LocationCategory[df.quab.ware.site$LocationCategory == "Core"] <- "Primary Active"
 
-# Wachusett
+
+### WACHUSETT
+
+# rename columns
 df.trib.tran.wach.site <- df.trib.tran.wach.site %>% rename(Site = LocationMWRA)
 df.nut.prof.wach.site <- df.nut.prof.wach.site %>% rename(Site = LocationMWRA, LocationDescription = StationDescription)
+
+# create columns
 df.nut.prof.wach.site$LocationElevFt <- NA
 df.trib.tran.wach.site$Watershed <- "Wachusett"
 df.nut.prof.wach.site$Watershed <- "Wachusett"
 
-###
+
+###########################################################################################################################
 # Combine WQ with Site info (Gets the Station and Sampling Level for Nutrient Sites)
-df.trib.res.quab <- left_join(df.trib.res.quab, df.quab.ware.site, "Site")  # 
-df.trib.transect.wach <- left_join(df.trib.transect.wach, df.trib.tran.wach.site, "Site")
+###########################################################################################################################
 
-#############################################################################################################################
-# Create final Dataframes for App
+# Quabbin Tributary and Transect and Nutrient
+df.trib.res.quab <- left_join(df.trib.res.quab, df.quab.ware.site, by = "Site")
 
-### WQ Data
+# Quabbin Profile
+df.prof.quab <- left_join(df.prof.quab, df.quab.ware.site, by = "Site")
+
+# Wachusett Tributary and Transect
+df.trib.transect.wach <- left_join(df.trib.transect.wach, df.trib.tran.wach.site, by = "Site")
+
+# Wachusett Nutrient
+df.nut.wach <- left_join(df.nut.wach, df.nut.prof.wach.site, by = c("Site", "Station"))
+
+# Wachusett Profile
+df.prof.wach <- left_join(df.prof.wach, df.nut.prof.wach.site, by = "Site")
+
+
+###########################################################################################################################
+# Final Water Quality Dataframes
+###########################################################################################################################
 
 # Quabbin Tributary
 df.trib.quab <- filter(df.trib.res.quab, LocationType == "Tributary", Watershed == "Quabbin")
@@ -198,9 +208,9 @@ df.nut.quab <- filter(df.trib.res.quab, LocationType == "Nutrient")
 # Wachusett Profile (all set?)
 
 
-### Site Locations
-
-# Split Sites into 5 dataframes
+###########################################################################################################################
+# Final Site/Location Information Dataframes
+###########################################################################################################################
 
 # Quabbin Tributary
 df.trib.quab.site <- df.quab.ware.site %>% filter(Watershed == "Quabbin", LocationType == "Tributary")
@@ -228,12 +238,7 @@ df.nut.wach.site <- df.nut.prof.wach.site %>% filter(!is.null(LocationDepth))
 # Wachusett Profile
 df.prof.wach.site <- df.nut.prof.wach.site %>% filter(is.null(LocationDepth))
 
-
-# All Sites
-# ! Need to update when Sites are squared away
-# Combine All Sites into 1 dataframe
-
-
+# All Sites - # Combine All Sites into 1 dataframe ( Need to update when Sites are squared away)
 df.all.site.temp <- full_join(df.quab.ware.site, 
                               df.trib.tran.wach.site, 
                               by = c("Site",
@@ -244,7 +249,6 @@ df.all.site.temp <- full_join(df.quab.ware.site,
                                      "LocationLabel",
                                      "LocationDescription",
                                      "LocationElevFt"))
-
 df.all.site <- full_join(df.all.site.temp, 
                          df.nut.prof.wach.site, 
                          by = c("Site",
@@ -256,6 +260,7 @@ df.all.site <- full_join(df.all.site.temp,
                                 "LocationLabel",
                                 "LocationDescription",
                                 "LocationElevFt"))
+
 # All Tributaries
 df.trib.all.site <- df.all.site %>% filter(LocationType == "Tributary")
 
