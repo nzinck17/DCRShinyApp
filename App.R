@@ -16,7 +16,10 @@
 # Load Libraries and Script (Sources, Modules, and Functions)
 #####################################################################################################
 
+#### NOTE - Libraries will now be installed and loaded in the LaunchAppGitHub.R script - this can be deleted from app.r
+
 # load libraries
+<<<<<<< HEAD
 library(shiny)
 library(tidyr)
 library(ggplot2)
@@ -29,6 +32,21 @@ library(DT)
 library(akima)
 library(DBI)
 library(odbc)
+=======
+# library(shiny)
+# library(tidyr)
+# library(ggplot2)
+# library(plotly)
+# library(dplyr)
+# library(lubridate)
+# library(leaflet)
+# library(RColorBrewer)
+# library(DT)
+# library(akima)
+# #library(RODBC)
+# library(DBI)
+# library(odbc)
+>>>>>>> 87defdbeb750718a4faa7b33acf22aaf030fe4ba
 
 
 ### Run/Source Scripts that load data
@@ -86,10 +104,10 @@ tabPanel("Home",
   fluidRow(br(), br(), br(), br(), h2("Water Quality Data Management System", align = "center")),
   fluidRow(h3("Department of Conservation and Recreation", align = "center"), br()),
   Home.UI("Home")
-  
+
 ),
-                 
-                 
+
+
 ######################################################
 # PG 2 - Tributary Water Quality Data
 
@@ -121,7 +139,7 @@ tabPanel("Tributary",
 
 ), # end Tributary tabpanel (page)
 
-                 
+
 #############################################################
 # PG 3 - Reservoir
 
@@ -318,16 +336,17 @@ server <- function(input, output, session) {
   callModule(time, "Ware River Trib Time", df = df.trib.ware, df.site = df.trib.ware.site)
   callModule(time, "Wachusett Trib Time", df = df.trib.wach, df.site = df.trib.wach.site)
   callModule(time, "All Trib Time", df = df.trib.all, df.site = df.trib.all.site)
-  
+
   # Regression
   callModule(regress, "Quabbin Trib Regress", df = df.trib.quab, df.site = df.trib.quab.site)
   callModule(regress, "Ware River Trib Regress", df = df.trib.ware, df.site = df.trib.ware.site)
   callModule(regress, "Wachusett Trib Regress", df = df.trib.wach, df.site = df.trib.wach.site)
   callModule(regress, "All Trib Regress", df = df.trib.all, df.site = df.trib.all.site)
-  
+
 #############################################################
 # PG 3 - Reservoir
 
+<<<<<<< HEAD
   # Bacteria
   callModule(time, "Quabbin Bacteria Time", df = df.bact.quab, df.site = df.bact.quab.site)
   callModule(time, "Wachusett Bacteria Time", df = df.bact.wach, df.site = df.bact.wach.site)
@@ -343,12 +362,29 @@ server <- function(input, output, session) {
   callModule(regress.depth, "Wachusett Chemical Regress", df = df.chem.wach, df.site = df.chem.wach.site)
   
   # Profile (physicochemical)
+=======
+  # Transect
+  callModule(time, "Quabbin Transect Time", df = df.tran.quab, df.site = df.tran.quab.site)
+  callModule(time, "Wachusett Transect Time", df = df.tran.wach, df.site = df.tran.wach.site)
+
+  callModule(regress, "Quabbin Transect Regress", df = df.tran.quab, df.site = df.tran.quab.site)
+  callModule(regress, "Wachusett Transect Regress", df = df.tran.wach, df.site = df.tran.wach.site)
+
+  # Nutrient
+  callModule(time.depth, "Quabbin Nutrient Time", df = df.nut.quab, df.site = df.nut.quab.site)
+  callModule(time.depth, "Wachusett Nutrient Time", df = df.nut.wach, df.site = df.nut.wach.site)
+
+  callModule(regress.depth, "Quabbin Nutrient Regress", df = df.nut.quab, df.site = df.nut.quab.site)
+  callModule(regress.depth, "Wachusett Nutrient Regress", df = df.nut.wach, df.site = df.nut.wach.site)
+
+  # Profile
+>>>>>>> 87defdbeb750718a4faa7b33acf22aaf030fe4ba
   callModule(prof.heatmap, "Quabbin Profile Heatmap", df = df.prof.quab)
   callModule(prof.heatmap, "Wachusett Profile Heatmap", df = df.prof.wach)
-  
+
   callModule(prof.line, "Quabbin Profile Line", df = df.prof.quab)
   callModule(prof.line, "Wachusett Profile Line", df = df.prof.wach)
-  
+
   callModule(prof.summary, "Quabbin Profile Summary", df = df.prof.quab)
   callModule(prof.summary, "Wachusett Profile Summary", df = df.prof.wach)
 

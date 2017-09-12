@@ -7,9 +7,9 @@
 
 # File name path from the Shiny App Folder (***Update if name changed****)
 
-filename.quab <- "DBQ=C:/WQDatabase/QuabbinWQdataNZ.mdb"
-filename.wach.wq <- "DBQ=C:/WQDatabase/WaterQualityDB_fe.mdb"
-filename.wach.aquabio <- "DBQ=C:/WQDatabase/AqBioDBWachusett_fe.mdb"
+filename.quab <- "DBQ=C:/WQDatabase/QUABBIN_WQDB_fe.mdb"
+filename.wach.wq <- "DBQ=C:/WQDatabase/WACHUSETT_WQDB_fe.mdb"
+filename.wach.aquabio <- "DBQ=C:/WQDatabase/WACHUSETT_AQBIO_DB_fe.mdb"
 
 
 ##############################################################################################################################
@@ -74,7 +74,15 @@ rm(con)
 # RESTRUCTURING WATER QUALITY DATA
 ###########################################################################################################################
 
+<<<<<<< HEAD
 ### QUABBIN
+=======
+# rename the columns of the Wachusett Trib and Res to match Quabbin
+df.trib.transect.wach <- rename(df.trib.transect.wach, Site = Location, `Result Temp` = Result, Result = FinalResult)
+df.nut.wach <- rename(df.nut.wach, Site = Location, Result = Finalresult, Date = Date_Collected, Time = Collection_Time,
+                      Parameter = Component, Units = Unit_of_Measure)
+df.prof.wach <- rename(df.prof.wach, Date = Pro_Date, Site = Pro_Station, Time = Pro_TimeFormatted, Depthm = Pro_Depth_m)
+>>>>>>> 87defdbeb750718a4faa7b33acf22aaf030fe4ba
 
 # delete columns
 df.trib.res.quab <- df.trib.res.quab %>% select(-rownames)
@@ -144,6 +152,7 @@ df.quab.ware.site$LocationCategory <- as.character(df.quab.ware.site$LocationCat
 df.quab.ware.site$LocationCategory[df.quab.ware.site$LocationCategory == "Core"] <- "Primary Active"
 
 
+<<<<<<< HEAD
 ### WACHUSETT
 
 # rename columns
@@ -159,6 +168,12 @@ df.chem.prof.wach.site$Watershed <- "Wachusett"
 ###########################################################################################################################
 # Combine WQ with Site info (Gets the Station and Sampling Level for Chemical Sites)
 ###########################################################################################################################
+=======
+###
+# Combine WQ with Site info (Gets the Station and Sampling Level for Nutrient Sites)
+df.trib.res.quab <- left_join(df.trib.res.quab, df.quab.ware.site, "Site")  #
+df.trib.transect.wach <- left_join(df.trib.transect.wach, df.trib.tran.wach.site, "Site")
+>>>>>>> 87defdbeb750718a4faa7b33acf22aaf030fe4ba
 
 # Quabbin Tributary and Bacteria and Chemical
 df.trib.res.quab <- left_join(df.trib.res.quab, df.quab.ware.site, by = "Site")
@@ -239,9 +254,14 @@ df.chem.wach.site <- df.chem.prof.wach.site %>% filter(!is.null(LocationDepth))
 # Wachusett Profile
 df.prof.wach.site <- df.chem.prof.wach.site %>% filter(is.null(LocationDepth))
 
+<<<<<<< HEAD
 # All Sites - # Combine All Sites into 1 dataframe ( Need to update when Sites are squared away)
 df.all.site.temp <- full_join(df.quab.ware.site, 
                               df.trib.bact.wach.site, 
+=======
+df.all.site.temp <- full_join(df.quab.ware.site,
+                              df.trib.tran.wach.site,
+>>>>>>> 87defdbeb750718a4faa7b33acf22aaf030fe4ba
                               by = c("Site",
                                      "Watershed",
                                      "LocationType",
@@ -251,8 +271,13 @@ df.all.site.temp <- full_join(df.quab.ware.site,
                                      "LocationDescription",
                                      "LocationElevFt"))
 
+<<<<<<< HEAD
 df.all.site <- full_join(df.all.site.temp, 
                          df.chem.prof.wach.site, 
+=======
+df.all.site <- full_join(df.all.site.temp,
+                         df.nut.prof.wach.site,
+>>>>>>> 87defdbeb750718a4faa7b33acf22aaf030fe4ba
                          by = c("Site",
                                 "Station",
                                 "Watershed",
