@@ -314,7 +314,7 @@ plot.regress <- function(input, output, session, df) {
     
     # Facet for Sites if no grouping for site is selected and number of sites is greater than 1
     if(input$plot.color != "Site" & input$plot.shape != "Site" & length(c(input$site)) > 1){
-      p <- p + facet_wrap(~Site, ncol = ceiling(length(c(input$site))/4))
+      p <- p + facet_wrap(~LocationLabel, ncol = ceiling(length(c(input$site))/4))
     } 
 
 # Add Lines

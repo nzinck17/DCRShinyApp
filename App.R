@@ -132,39 +132,39 @@ tabPanel("Reservoir",
 
    navlistPanel(widths = c(2, 10),
 
-                "Transect",
+                "Bacteria",
                 tabPanel("Time-Series",
-                         fluidRow(column(10, h4("Transect Time-Series Analysis", align = "center")), column(2)),
+                         fluidRow(column(10, h4("Bacteria Time-Series Analysis", align = "center")), column(2)),
                          tabsetPanel(
-                           tabPanel("Quabbin", time.UI("Quabbin Transect Time", df.tran.quab)),
-                           tabPanel("Wachusett", time.UI("Wachusett Transect Time", df.tran.wach))
+                           tabPanel("Quabbin", time.UI("Quabbin Bacteria Time", df.bact.quab)),
+                           tabPanel("Wachusett", time.UI("Wachusett Bacteria Time", df.bact.wach))
                          ) # end tabset Panel
                 ), # end tabpanel
                 tabPanel("Regression",
-                         fluidRow(column(10, h4("Transect Regression Analysis", align = "center")), column(2)),
+                         fluidRow(column(10, h4("Bacteria Regression Analysis", align = "center")), column(2)),
                          tabsetPanel(
-                           tabPanel("Quabbin", regress.UI("Quabbin Transect Regress", df.tran.quab)),
-                           tabPanel("Wachusett", regress.UI("Wachusett Transect Regress", df.tran.wach))
+                           tabPanel("Quabbin", regress.UI("Quabbin Bacteria Regress", df.bact.quab)),
+                           tabPanel("Wachusett", regress.UI("Wachusett Bacteria Regress", df.bact.wach))
                          ) # end tabset panel
                 ), # end tabpanel
 
-                "Nutrient",
+                "Chemistry",
                 tabPanel("Time-Series",
-                         fluidRow(column(10, h4("Nutrient Time-Series Analysis", align = "center")), column(2)),
+                         fluidRow(column(10, h4("Chemical Time-Series Analysis", align = "center")), column(2)),
                          tabsetPanel(
-                           tabPanel("Quabbin", time.depth.UI("Quabbin Nutrient Time", df.nut.quab)),
-                           tabPanel("Wachusett", time.depth.UI("Wachusett Nutrient Time", df.nut.wach))
+                           tabPanel("Quabbin", time.depth.UI("Quabbin Chemical Time", df.chem.quab)),
+                           tabPanel("Wachusett", time.depth.UI("Wachusett Chemical Time", df.chem.wach))
                          )
                 ),
                 tabPanel("Regression",
-                         fluidRow(column(10, h4("Nutrient Regression Analysis", align = "center")), column(2)),
+                         fluidRow(column(10, h4("Chemical Regression Analysis", align = "center")), column(2)),
                          tabsetPanel(
-                           tabPanel("Quabbin", regress.depth.UI("Quabbin Nutrient Regress", df.nut.quab)),
-                           tabPanel("Wachusett", regress.depth.UI("Wachusett Nutrient Regress", df.nut.wach))
+                           tabPanel("Quabbin", regress.depth.UI("Quabbin Chemical Regress", df.chem.quab)),
+                           tabPanel("Wachusett", regress.depth.UI("Wachusett Chemical Regress", df.chem.wach))
                          )
                 ),
 
-                "Profile",
+                "Profile (physicochemical)",
                 tabPanel("Heat Map",
                          fluidRow(column(10, h4("Profile Heatmap", align = "center")), column(2)),
                          tabsetPanel(
@@ -206,11 +206,15 @@ tabPanel("Map Plot",
          navlistPanel(widths = c(2, 10),
                       "Tributaries",
                       tabPanel("Quabbin", map.plot.UI("Quabbin Trib MapPlot", df = df.trib.quab)),
-                      tabPanel("Ware River", map.plot.UI("Ware River Trib MapPlot", df = df.trib.quab)),
-                      tabPanel("Wachusett", map.plot.UI("Wachusett Trib MapPlot", df = df.trib.quab)),
-                      "Reservoir Transect",
-                      tabPanel("Quabbin", map.plot.UI("Quabbin Transect MapPlot", df = df.tran.quab)),
-                      tabPanel("Wachusett", map.plot.UI("Wachusett Transect MapPlot", df = df.tran.quab))
+                      tabPanel("Ware River", map.plot.UI("Ware River Trib MapPlot", df = df.trib.ware)),
+                      tabPanel("Wachusett", map.plot.UI("Wachusett Trib MapPlot", df = df.trib.wach)),
+                      tabPanel("All Tribs", map.plot.UI("All Trib MapPlot", df = df.trib.all)),
+                      "Reservoir Bacteria",
+                      tabPanel("Quabbin", map.plot.UI("Quabbin Bacteria MapPlot", df = df.bact.quab)),
+                      tabPanel("Wachusett", map.plot.UI("Wachusett Bacteria MapPlot", df = df.bact.wach)),
+                      "Reservoir Chemical",
+                      tabPanel("Quabbin", map.plot.UI("Quabbin Chemical MapPlot", df = df.chem.quab)),
+                      tabPanel("Wachusett", map.plot.UI("Wachusett Chemical MapPlot", df = df.chem.wach))
          ) # end navlist
 
 ), # end tabpanel (page)
@@ -289,21 +293,7 @@ tabPanel("Report",
                       )
          ) # end navlist
 
-), # end tabpanel (page)
-
-#######################################################
-# PG 8 - Input Data
-
-# Give the page a title
-tabPanel("Input Data",
-
-         fluidRow(br(), br(), br(), br(), h2("Input Data", align = "center"), br(),
-                  br(), h4("button to make sure all sites in list are accounted for in Site Table"),
-                  br(), h4("button to make sure all Parameters in list are accounted for in Parameter Table")
-                  )
-
-
-)
+) # end tabpanel (page)
 
 #######################################################
 
@@ -338,21 +328,21 @@ server <- function(input, output, session) {
 #############################################################
 # PG 3 - Reservoir
 
-  # Transect
-  callModule(time, "Quabbin Transect Time", df = df.tran.quab, df.site = df.tran.quab.site)
-  callModule(time, "Wachusett Transect Time", df = df.tran.wach, df.site = df.tran.wach.site)
+  # Bacteria
+  callModule(time, "Quabbin Bacteria Time", df = df.bact.quab, df.site = df.bact.quab.site)
+  callModule(time, "Wachusett Bacteria Time", df = df.bact.wach, df.site = df.bact.wach.site)
   
-  callModule(regress, "Quabbin Transect Regress", df = df.tran.quab, df.site = df.tran.quab.site)
-  callModule(regress, "Wachusett Transect Regress", df = df.tran.wach, df.site = df.tran.wach.site)
+  callModule(regress, "Quabbin Bacteria Regress", df = df.bact.quab, df.site = df.bact.quab.site)
+  callModule(regress, "Wachusett Bacteria Regress", df = df.bact.wach, df.site = df.bact.wach.site)
   
-  # Nutrient
-  callModule(time.depth, "Quabbin Nutrient Time", df = df.nut.quab, df.site = df.nut.quab.site)
-  callModule(time.depth, "Wachusett Nutrient Time", df = df.nut.wach, df.site = df.nut.wach.site)
+  # Chemical
+  callModule(time.depth, "Quabbin Chemical Time", df = df.chem.quab, df.site = df.chem.quab.site)
+  callModule(time.depth, "Wachusett Chemical Time", df = df.chem.wach, df.site = df.chem.wach.site)
   
-  callModule(regress.depth, "Quabbin Nutrient Regress", df = df.nut.quab, df.site = df.nut.quab.site)
-  callModule(regress.depth, "Wachusett Nutrient Regress", df = df.nut.wach, df.site = df.nut.wach.site)
+  callModule(regress.depth, "Quabbin Chemical Regress", df = df.chem.quab, df.site = df.chem.quab.site)
+  callModule(regress.depth, "Wachusett Chemical Regress", df = df.chem.wach, df.site = df.chem.wach.site)
   
-  # Profile
+  # Profile (physicochemical)
   callModule(prof.heatmap, "Quabbin Profile Heatmap", df = df.prof.quab)
   callModule(prof.heatmap, "Wachusett Profile Heatmap", df = df.prof.wach)
   
@@ -367,15 +357,22 @@ server <- function(input, output, session) {
 
 ####################################################################
 # PG 8 - Map Plot
-
+  
+  # Trib
   callModule(map.plot, "Quabbin Trib MapPlot", df = df.trib.quab, df.site = df.trib.quab.site)
   callModule(map.plot, "Ware River Trib MapPlot", df = df.trib.ware, df.site = df.trib.ware.site)
   callModule(map.plot, "Wachusett Trib MapPlot", df = df.trib.wach, df.site = df.trib.wach.site)
-  callModule(map.plot, "Quabbin Transect MapPlot", df = df.tran.quab, df.site = df.tran.quab.site)
-  callModule(map.plot, "Wachusett Transect MapPlot", df = df.tran.wach, df.site = df.tran.wach.site)
-
-
-######################################################
+  callModule(map.plot, "All Trib MapPlot", df = df.trib.all, df.site = df.trib.all.site)
+  
+  # Bacteria
+  callModule(map.plot, "Quabbin Bacteria MapPlot", df = df.bact.quab, df.site = df.bact.quab.site)
+  callModule(map.plot, "Wachusett Bacteria MapPlot", df = df.bact.wach, df.site = df.bact.wach.site)
+  
+  # Chemical
+  callModule(map.plot, "Quabbin Chemical MapPlot", df = df.chem.quab, df.site = df.chem.quab.site)
+  callModule(map.plot, "Wachusett Chemical MapPlot", df = df.chem.wach, df.site = df.chem.wach.site)
+  
+####################################################################
 
 # PG 5 - Hydrology/Meteorology/Statistics
 
