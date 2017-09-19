@@ -94,7 +94,7 @@ df.prof.quab$Date <- as.Date(as.character(df.prof.quab$Date), format = '%d-%b-%y
 # rename columns
 df.trib.bact.wach <- rename(df.trib.bact.wach, Site = Location, `Result Temp` = Result, Result = FinalResult)
 df.chem.wach <- rename(df.chem.wach, Site = Location, Result = Finalresult, Date = Date_Collected, Time = Collection_Time, 
-                      Parameter = Component, Units = Unit_of_Measure)
+                      Parameter = Component, Units = Unit_of_Measure, FlagCode = Flagcode)
 df.prof.wach <- rename(df.prof.wach, Date = Pro_Date, Site = Pro_Station, Time = Pro_TimeFormatted, Depthm = Pro_Depth_m)
 
 # reformat the Wachusett Profile data to "Tidy" data format ("Long" instead of "Wide")
@@ -160,7 +160,7 @@ df.chem.prof.wach.site$Watershed <- "Wachusett"
 # Combine WQ with Site info (Gets the Station and Sampling Level for Chemical Sites)
 ###########################################################################################################################
 
-# Quabbin Tributary and Bacteria and Chemical
+# Quabbin Tributary and Chemical
 df.trib.res.quab <- left_join(df.trib.res.quab, df.quab.ware.site, by = "Site")
 
 # Quabbin Profile
@@ -177,36 +177,77 @@ df.prof.wach <- left_join(df.prof.wach, df.chem.prof.wach.site, by = "Site")
 
 
 ###########################################################################################################################
+# List of Column names to be shown in Trib and Res Module tables and Default Selected in Export Module
+###########################################################################################################################
+
+# Quabbin, Ware, and All Tributary
+col.trib.quab.ware <- c("LocationLabel", "Date", "Parameter", "Result", "Units", "Site", "LocationCategory")
+
+# Wachusett Tributary
+col.trib.wach <- c("LocationLabel", "Date", "Parameter", "Result", "Units","FlagCode", "StormSample", "Site", "LocationCategory")
+
+# Quabbin (Res) Bacteria
+col.bact.quab <- c("LocationLabel", "Date", "Sampling_Level", "Parameter", "Result", "Units", "Site", "Station", "LocationCategory")
+
+# Wachusett Res Bacteria
+col.bact.wach <- c("LocationLabel", "Date", "Parameter", "Result", "Units", "FlagCode", "StormSample", "Site", "LocationCategory")
+
+# Quabbin (Res) Chemical
+col.chem.quab <- c("LocationLabel", "Date", "Sampling_Level", "Parameter", "Result", "Units", "Site", "Station", "LocationCategory")
+
+# Wachusett Res Chemical
+col.chem.wach <- c("LocationLabel", "Date", "Sampling_Level", "Parameter", "Result", "Units", "FlagCode", "Site", "Station", "LocationCategory")
+
+# Quabbin (Res) Profile
+col.prof.quab <- c("LocationLabel", "Date", "Depthm", "Parameter", "Result", "Units", "Site", "Station", "LocationCategory")
+
+# Wachusett Res Profile
+col.prof.wach <- c("LocationLabel", "Date", "Depthm", "Parameter", "Result", "Site", "Station", "LocationCategory") # need units??
+
+
+###########################################################################################################################
 # Final Water Quality Dataframes
 ###########################################################################################################################
 
 # Quabbin Tributary
-df.trib.quab <- filter(df.trib.res.quab, LocationType == "Tributary", Watershed == "Quabbin") #%>%
-  #select()
+df.trib.quab.exp <- df.trib.res.quab %>% filter(LocationType == "Tributary", Watershed == "Quabbin")
+df.trib.quab <- df.trib.quab.exp %>% select(col.trib.quab.ware)
 
 # Ware River Tributary
-df.trib.ware <- filter(df.trib.res.quab, LocationType == "Tributary", Watershed == "Ware River")
+df.trib.ware.exp <- df.trib.res.quab %>% filter(LocationType == "Tributary", Watershed == "Ware River")
+df.trib.ware <- df.trib.ware.exp %>% select(col.trib.quab.ware)
 
 # Wachusett Tributary
-df.trib.wach <- filter(df.trib.bact.wach, LocationType == "Tributary")
+df.trib.wach.exp <- df.trib.bact.wach %>% filter(LocationType == "Tributary")
+df.trib.wach <- df.trib.wach.exp %>% select(col.trib.wach)
 
 # All Tributaries
-df.trib.all <- bind_rows(df.trib.quab, df.trib.ware, df.trib.wach)
+df.trib.all.exp <- bind_rows(df.trib.quab, df.trib.ware, df.trib.wach)
+df.trib.all <- df.trib.all.exp %>%  select(col.trib.quab.ware)
 
 # Quabbin Bacteria
-df.bact.quab <- filter(df.trib.res.quab, LocationType == "Transect")
+df.bact.quab.exp <- df.trib.res.quab %>% filter(LocationType == "Nutrient")
+df.bact.quab <- df.bact.quab.exp %>%  select(col.bact.quab)
 
 # Wachusett Bacteria
-df.bact.wach <- filter(df.trib.bact.wach, LocationType == "Transect")
+df.bact.wach.exp <- df.trib.bact.wach %>% filter(LocationType == "Transect") 
+df.bact.wach <- df.bact.wach.exp %>% select(col.bact.wach)
 
 # Quabbin Chemical
-df.chem.quab <- filter(df.trib.res.quab, LocationType == "Nutrient")
+df.chem.quab.exp <- df.trib.res.quab %>% filter(LocationType == "Nutrient")
+df.chem.quab <- df.chem.quab.exp %>% select(col.chem.quab)
 
 # Wachusett Chemical (all set?)
+df.chem.wach.exp <- df.chem.wach
+df.chem.wach <- df.chem.wach.exp  %>% select(col.chem.wach)
 
 # Quabbin Profile (all set?)
+df.prof.quab.exp <- df.prof.quab
+df.prof.quab <- df.prof.quab.exp %>% select(col.prof.quab)
 
 # Wachusett Profile (all set?)
+df.prof.wach.exp <- df.prof.wach
+df.prof.wach <- df.prof.wach.exp  %>% select(col.prof.wach)
 
 
 ###########################################################################################################################
