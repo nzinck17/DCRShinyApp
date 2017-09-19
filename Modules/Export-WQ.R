@@ -36,8 +36,8 @@ export.wq.UI <- function(id, df, col) {
         column(3,
                # Text - Number of Samples or "Select a site"
                wellPanel(
-                 h4(textOutput(ns("text.num.text")), align = "center"),
-                 h3(textOutput(ns("text.num")), align = "center")
+                 h5(textOutput(ns("text.num.text")), align = "center"),
+                 h4(textOutput(ns("text.num")), align = "center")
                ), # end Well Panel
                # Site Map
                wellPanel(
@@ -45,31 +45,59 @@ export.wq.UI <- function(id, df, col) {
                ), # end Well Panel
                # Date Selection
                wellPanel(
+                 # Date Range
                  dateRangeInput(ns("date"), "Date Range:", 
                                 start = df %>% .$Date %>% min(na.rm=TRUE), 
                                 end = df %>% .$Date %>% max(na.rm=TRUE),  
                                 min = df %>% .$Date %>% min(na.rm=TRUE),
                                 max = df %>% .$Date %>% max(na.rm=TRUE),
-                                startview = "year")
+                                startview = "year"),
+                 # Month
+                 checkboxGroupInput(ns("month"), "Month:", 
+                                    choices = c("All Months",
+                                                January = 1,
+                                                February = 2,
+                                                March = 3,
+                                                April = 4,
+                                                May = 5,
+                                                June = 6,
+                                                July = 7,
+                                                August = 8,
+                                                September = 9,
+                                                October = 10,
+                                                November = 11,
+                                                December = 12), 
+                                    selected = "All Months")
                ) # end Well Panel
         ), # end Column
-        column(3,
+        column(1,
+               wellPanel(
+                 # Year
+                 checkboxGroupInput(ns("year"), "Year:", 
+                                    choices = c("All Years", rev(year(seq(as.Date("1990-1-1"), Sys.Date(), "years")))), 
+                                    selected = "All Years")
+               ) # end Well Panel
+        ), # end Column
+        column(2,
                # Parameter Selection
                wellPanel(
                  uiOutput(ns("param.ui")),
                  uiOutput(ns("range.ui"))
-               ), # end Well Panel
-               # Parameter Selection
+               ) # end Well Panel
+        ), # end column
+        column(1,
+               # Flag Selection
                wellPanel(
-               checkboxGroupInput(ns("flag"), "Flags:",
-                                  choices = df$FlagCode %>% factor() %>% levels())
+                 checkboxGroupInput(ns("flag"), "Flags:",
+                                    choices = df$FlagCode %>% factor() %>% levels())
                ), # end Well Panel
+               # storm Sample Selection
                wellPanel(
                  checkboxGroupInput(ns("storm"), "Storm Sample:",
                                     choices = df$StormSample %>% factor() %>% levels())
                ) # end Well Panel
         ), # end column
-        column(3,
+        column(2,
                # Column Selection
                wellPanel(
                  checkboxGroupInput(ns("column"), "Columns:",
@@ -206,7 +234,7 @@ export.wq <- function(input, output, session, df, df.site, col) {
     # Recent parameters first and then old parameters
     param.choices <- c(param.choices.new, param.choices.old)
     
-    selectInput(ns("param"), "Parameter: ",
+    checkboxGroupInput(ns("param"), "Parameter: ",
                 choices=c(param.choices))
     
   })
@@ -239,15 +267,26 @@ export.wq <- function(input, output, session, df, df.site, col) {
     
     req(site.list(), input$param, input$range, input$date) # See General Note _
     
-    df %>% 
+    # Filters
+    df.temp <- df %>% 
       filter(LocationLabel %in% site.list(), 
              Parameter %in% input$param, 
              Result > input$range[1], Result < input$range[2],
              Date > input$date[1], Date < input$date[2],
              FlagCode %in% input$flag,
              StormSample %in% input$storm, 
-             !is.na(Result)) %>%
-      select(input$column)
+             !is.na(Result))
+      
+    # Filter by Year and Month
+    if(input$year != "All Years"){
+      df.temp <- df.temp %>% filter(year(Date) == input$year)
+    }
+    if (input$month != "All Months"){
+      df.temp <- df.temp %>% filter(month(Date) == input$month)
+    }
+    
+    # Column Selection
+    df.temp %>% select(input$column)
   })
   
   
