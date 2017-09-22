@@ -33,15 +33,17 @@ export.wq.UI <- function(id, df, col) {
                  uiOutput(ns("site.nonprim.ui"))
                ) # end Well Panel
         ), # end Column
-        column(3,
+        column(2,
                # Text - Number of Samples or "Select a site"
                wellPanel(
+                 h5(textOutput(ns("text.no.site"))),
+                 h5(textOutput(ns("text.no.param"))),
+                 h5(textOutput(ns("text.no.month"))),
+                 h5(textOutput(ns("text.no.year"))),
+                 h5(textOutput(ns("text.no.flag"))),
+                 h5(textOutput(ns("text.no.storm"))),
                  h5(textOutput(ns("text.num.text")), align = "center"),
                  h4(textOutput(ns("text.num")), align = "center")
-               ), # end Well Panel
-               # Site Map
-               wellPanel(
-                 sitemap.UI(ns("Site Map"))
                ), # end Well Panel
                # Date Selection
                wellPanel(
@@ -51,58 +53,42 @@ export.wq.UI <- function(id, df, col) {
                                 end = df %>% .$Date %>% max(na.rm=TRUE),  
                                 min = df %>% .$Date %>% min(na.rm=TRUE),
                                 max = df %>% .$Date %>% max(na.rm=TRUE),
-                                startview = "year"),
+                                startview = "year")
+               ), # end Well Panel
+               wellPanel(
                  # Month
-                 checkboxGroupInput(ns("month"), "Month:", 
-                                    choices = c("All Months",
-                                                January = 1,
-                                                February = 2,
-                                                March = 3,
-                                                April = 4,
-                                                May = 5,
-                                                June = 6,
-                                                July = 7,
-                                                August = 8,
-                                                September = 9,
-                                                October = 10,
-                                                November = 11,
-                                                December = 12), 
-                                    selected = "All Months")
+                 checkboxSelectAll.UI(ns("month"), label = "Month:", choices = c(month.name))
                ) # end Well Panel
         ), # end Column
         column(1,
                wellPanel(
                  # Year
-                 checkboxGroupInput(ns("year"), "Year:", 
-                                    choices = c("All Years", rev(year(seq(as.Date("1990-1-1"), Sys.Date(), "years")))), 
-                                    selected = "All Years")
+                 checkboxSelectAll.UI(ns("year"), label = "Year:", 
+                                   choices = c(rev(year(seq(as.Date("1990-1-1"), Sys.Date(), "years")))))
                ) # end Well Panel
         ), # end Column
         column(2,
                # Parameter Selection
                wellPanel(
                  uiOutput(ns("param.ui")),
+                 br(),
                  uiOutput(ns("range.ui"))
                ) # end Well Panel
         ), # end column
-        column(1,
+        column(2,
                # Flag Selection
                wellPanel(
-                 checkboxGroupInput(ns("flag"), "Flags:",
-                                    choices = df$FlagCode %>% factor() %>% levels())
+                 checkboxSelectAll.UI(ns("flag"), "Flags:", choices = df$FlagCode %>% factor() %>% levels())
                ), # end Well Panel
                # storm Sample Selection
                wellPanel(
-                 checkboxGroupInput(ns("storm"), "Storm Sample:",
-                                    choices = df$StormSample %>% factor() %>% levels())
+                 checkboxSelectAll.UI(ns("storm"), "Storm Sample:", choices = df$StormSample %>% factor() %>% levels())
                ) # end Well Panel
         ), # end column
         column(2,
                # Column Selection
                wellPanel(
-                 checkboxGroupInput(ns("column"), "Columns:",
-                                    choices = names(df),
-                                    selected = col)
+                 checkboxSelectAll.UI(ns("column"), "Table Columns:", choices = names(df), selected = col)
                )
         ) # end column
       ) # end fluidrow     
@@ -127,82 +113,67 @@ export.wq.UI <- function(id, df, col) {
 export.wq <- function(input, output, session, df, df.site, col) { 
   
 
-  # Site primary
+
+  # Site - Primary
+  
+  site.primary <- df %>% filter(LocationCategory == "Primary Active") %>%
+    .$LocationLabel %>% factor() %>% levels()
   
   output$site.primary.ui <- renderUI({
-    
     ns <- session$ns # see General Note 1
-    
-    # Parameters which have data at any Site (in the mofule's df) within 5 years.
-    site.primary <- df %>%
-      filter(LocationCategory == "Primary Active") %>%
-      .$LocationLabel %>%
-      factor() %>%
-      levels()
-    
-    # Check box input
-    checkboxGroupInput(ns("site.primary"), "Primary Active Sites:",
-                       choices = site.primary)
-    
-    
-    
-  })  
+    checkboxSelectAll.UI(ns("site.primary"), "Primary Active Sites:", choices = site.primary)
+  })
+  
+  callModule(checkboxSelectAll, "site.primary", choices = site.primary)
 
-# Site Categories UI (RendeUI becuase move Primary Active to front)
+  
+  # Site - Non Primary Categories
+  
+  # Change LocationCateogory NA to "NA" to show up in App
+  df$LocationCategory <- as.character(df$LocationCategory)
+  df$LocationCategory[is.na(df$LocationCategory)] <- "NA"
+  
+  site.categories <- df %>% filter(LocationCategory != "Primary Active") %>%
+    .$LocationCategory %>% factor() %>% levels()
   
   output$site.nonprim.cat.ui <- renderUI({
-    
     ns <- session$ns # see General Note 1
-    
-    # Change LocationCateogory NA to "NA" to show up in App
-    df$LocationCategory <- as.character(df$LocationCategory)
-    df$LocationCategory[is.na(df$LocationCategory)] <- "NA"
-    
-    # Parameters which have data at any Site (in the mofule's df) within 5 years.
-    site.categories <- df %>%
-      filter(LocationCategory != "Primary Active") %>%
-      .$LocationCategory %>%
-      factor() %>%
-      levels()
-    
-    # Site Categories
-    checkboxGroupInput(ns("site.nonprim.cat"), "Show Other Categories:",
-                       choices = site.categories)
-    
+    checkboxSelectAll.UI(ns("site.nonprim.cat"), "Show Other Categories:", choices = site.categories)
   })
   
+  callModule(checkboxSelectAll, "site.nonprim.cat", choices = site.categories)
   
   
-  # Site Non Primary
-  output$site.nonprim.ui <- renderUI({
+  # Site - NonPrimary Sites
+  
+  site.select <- reactive({
+    req(input$'site.nonprim.cat-checkbox') # See General Note 5
     
-    req(input$site.nonprim.cat) # See General Note 5
-    
-    ns <- session$ns # see General Note 1
-    
-    site.select <- df %>%
-      filter(LocationCategory %in% input$site.nonprim.cat) %>%
+    df %>%
+      filter(LocationCategory %in% input$'site.nonprim.cat-checkbox') %>%
       .$LocationLabel %>%
       factor() %>%
       levels()
-    
-    # Sites
-    checkboxGroupInput(ns("site.nonprim"), "Sites:",
-                       choices = site.select)
-    
   })
   
+  output$site.nonprim.ui <- renderUI({
+    #req(input$site.nonprim.cat) # See General Note 5
+    ns <- session$ns # see General Note 1
+    checkboxSelectAll.UI(ns("site.nonprim"), "Sites:", choices = site.select())
+  })
   
-  # Combine Site Input
+  callModule(checkboxSelectAll, "site.nonprim", choices = site.select())
+  
+  
+  # Site - Combine to Vector
   
   site.list <- reactive({
-    
-    c(input$site.primary, input$site.nonprim)
-    
+    c(input$'site.primary-checkbox', input$'site.nonprim-checkbox')
   })
   
   
-  # Non Historical Parameters (when a Parameter has not been used in over 5 years). See General Note 6
+  
+  # Parameter - Non Historical (when a Parameter has been used  in the last 5 years). See General Note 6
   
   parameters.non.historical <- df %>%
     filter(Date > Sys.Date()-years(5), Date < Sys.Date()) %>%
@@ -210,34 +181,29 @@ export.wq <- function(input, output, session, df, df.site, col) {
     factor() %>%
     levels()
   
-
-  # Parameter Selection UI
+  # Parameters which have data at any Site (in the mofule's df) within 5 years.
+  param.choices.new <- df %>%
+    filter(Parameter %in% parameters.non.historical) %>%
+    .$Parameter %>%
+    factor() %>%
+    levels()
   
+  # Parameters which do NOT have data at any Site (in the mofule's df) within 5 years.
+  param.choices.old <- df %>%
+    filter(!(Parameter %in% parameters.non.historical)) %>%
+    .$Parameter %>%
+    factor() %>%
+    levels()
+
+  param.choices <- c(param.choices.new, param.choices.old)
+  
+  # Parameter - Selection UI
   output$param.ui <- renderUI({
-    
     ns <- session$ns # see General Note 1
-    
-    # Parameters which have data at any Site (in the mofule's df) within 5 years.
-    param.choices.new <- df %>%
-      filter(Parameter %in% parameters.non.historical) %>%
-      .$Parameter %>%
-      factor() %>%
-      levels()
-    
-    # Parameters which do NOT have data at any Site (in the mofule's df) within 5 years.
-    param.choices.old <- df %>%
-      filter(!(Parameter %in% parameters.non.historical)) %>%
-      .$Parameter %>%
-      factor() %>%
-      levels()
-    
-    # Recent parameters first and then old parameters
-    param.choices <- c(param.choices.new, param.choices.old)
-    
-    checkboxGroupInput(ns("param"), "Parameter: ",
-                choices=c(param.choices))
-    
+    checkboxSelectAll.UI(ns("param"), "Parameter: ", choices=c(param.choices))
   })
+  
+  callModule(checkboxSelectAll, "param", choices = param.choices, colwidth = 2)
   
   
   # Parameter Value Range Bar UI
@@ -247,7 +213,7 @@ export.wq <- function(input, output, session, df, df.site, col) {
     ns <- session$ns # see General Note 1
     
     result <- df %>%
-      filter(Parameter %in% input$param) %>%
+      filter(Parameter %in% input$'param-checkbox') %>%
       .$Result
     
     param.min <- result %>% min(na.rm=TRUE)
@@ -260,44 +226,76 @@ export.wq <- function(input, output, session, df, df.site, col) {
     
   })
   
+  callModule(checkboxSelectAll, "month", choices = c(month.name), colwidth = 2)
+  callModule(checkboxSelectAll, "year", choices = c(rev(year(seq(as.Date("1990-1-1"), Sys.Date(), "years")))), colwidth = 1)
+  callModule(checkboxSelectAll, "flag", choices = df$FlagCode %>% factor() %>% levels(), colwidth = 1)
+  callModule(checkboxSelectAll, "storm", choices = df$StormSample %>% factor() %>% levels(), colwidth = 1)
+  callModule(checkboxSelectAll, "column", choices = names(df), selected = col, colwidth = 2)
+  
   
 # Reactive Dataframe - filter for selected site, param, value range, date, and remove rows with NA for Result
   
   df.react <- reactive({
     
-    req(site.list(), input$param, input$range, input$date) # See General Note _
+    req(site.list(), input$'param-checkbox', input$'flag-checkbox', input$'storm-checkbox',
+        input$'month-checkbox', input$'year-checkbox', input$'column-checkbox') # See General Note _
     
     # Filters
     df.temp <- df %>% 
       filter(LocationLabel %in% site.list(), 
-             Parameter %in% input$param, 
+             Parameter %in% input$'param-checkbox', 
              Result > input$range[1], Result < input$range[2],
              Date > input$date[1], Date < input$date[2],
-             FlagCode %in% input$flag,
-             StormSample %in% input$storm, 
+             as.character(month(Date, label = TRUE, abbr = FALSE)) %in% input$'month-checkbox',
+             year(Date) %in% input$'year-checkbox',
+             FlagCode %in% input$'flag-checkbox',
+             StormSample %in% input$'storm-checkbox',
              !is.na(Result))
-      
-    # Filter by Year and Month
-    if(input$year != "All Years"){
-      df.temp <- df.temp %>% filter(year(Date) == input$year)
-    }
-    if (input$month != "All Months"){
-      df.temp <- df.temp %>% filter(month(Date) == input$month)
-    }
     
     # Column Selection
-    df.temp %>% select(input$column)
+    df.temp %>% select(input$'column-checkbox')
+  })
+  
+    
+  # Texts - Please Select
+  
+  output$text.no.site <- renderText({
+    req(is.null(site.list()))
+    "- Please Select Sites"
+  })
+  
+  output$text.no.param <- renderText({
+    req(is.null(input$'param-checkbox'))
+    "- Please Select Parameters"
+  })
+  
+  output$text.no.month <- renderText({
+    req(is.null(input$'month-checkbox'))
+    "- Please Select Months"
+  })
+  
+  output$text.no.year <- renderText({
+    req(is.null(input$'year-checkbox'))
+    "- Please Select Years"
+  })
+  
+  output$text.no.flag <- renderText({
+    req(is.null(input$'flag-checkbox'))
+    "- Please Select Flag Types"
+  })
+  
+  output$text.no.storm <- renderText({
+    req(is.null(input$'storm-checkbox'))
+    "- Please Select Storm Sample Types"
   })
   
   
   # Text - Number of Samples
   
   output$text.num.text <- renderText({
-    req(site.list()) # See General Note 1
+    req(df.react())
     "Number of Samples in Selected Data"
   })
-  
-  # Text - Number of Samples
   
   output$text.num <- renderText({
     req(df.react()) # See General Note 1
@@ -309,10 +307,6 @@ export.wq <- function(input, output, session, df, df.site, col) {
   
   output$table <- renderDataTable(df.react())
   
-  
-# Site Map
-  
-  callModule(sitemap, "Site Map", df.site = df.site, site.list = site.list)
   
 } # end Server Function
 
