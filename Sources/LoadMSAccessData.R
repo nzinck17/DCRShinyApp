@@ -64,6 +64,10 @@ con<- dbConnect(odbc::odbc(),
 df.chem.wach <- dbReadTable(con, "tbl_Nutrients")
 df.prof.wach <- dbReadTable(con, "tbl_Profiles")
 df.chem.prof.wach.site <- dbReadTable(con, "tblLocations")
+df.secchi.wach <- dbReadTable(con, "tblSecchi") # Wachusett Secchi
+df.phyto.wach <- dbReadTable(con, "tbl_Phyto") # Wachusett Phytoplankton
+df.phyto_thresh.wach <- dbReadTable(con, "tbl_PhytoThresholds") # Wachusett Phytoplankton thresholds
+
 
 # Disconnect from db and remove connection obj
 dbDisconnect(con)
@@ -93,7 +97,7 @@ df.prof.quab$Date <- as.Date(as.character(df.prof.quab$Date), format = '%d-%b-%y
 
 # rename columns
 df.trib.bact.wach <- rename(df.trib.bact.wach, Site = Location, `Result Temp` = Result, Result = FinalResult)
-df.chem.wach <- rename(df.chem.wach, Site = Location, Result = Finalresult, Date = Date_Collected, Time = Collection_Time, 
+df.chem.wach <- rename(df.chem.wach, Site = Location, Result = Finalresult, Date = Date_Collected, Time = Collection_Time,
                       Parameter = Component, Units = Unit_of_Measure, FlagCode = Flagcode)
 df.prof.wach <- rename(df.prof.wach, Date = Pro_Date, Site = Pro_Station, Time = Pro_TimeFormatted, Depthm = Pro_Depth_m)
 
@@ -108,6 +112,8 @@ df.prof.wach$Result <- as.numeric(as.character(df.prof.wach$Result))
 # date format - Date Class. (Could maybe be set withing DB)
 df.trib.bact.wach$SampleDateTime <- format(df.trib.bact.wach$SampleDateTime, tz ="America/New_York", usetz=TRUE)
 df.trib.bact.wach$Date <- as.Date(as.character(df.trib.bact.wach$SampleDateTime),format ='%Y-%m-%d %H:%M:%S')
+df.phyto.wach$Phyt_Date <- as.Date(format(df.phyto.wach$Phyt_Date, tz ="America/New_York", usetz=TRUE))
+df.secchi.wach$Date <- as.Date(format(df.secchi.wach$Date, tz ="America/New_York", usetz=TRUE))
 df.chem.wach$Date <- as.Date(as.character(df.chem.wach$Date),format ='%Y-%m-%d %H:%M:%S')
 df.prof.wach$Date <- as.Date(df.prof.wach$Date)
 
@@ -115,6 +121,7 @@ df.prof.wach$Date <- as.Date(df.prof.wach$Date)
 df.chem.wach$Time <- format(df.chem.wach$Time,"%H:%M:%S")
 df.prof.wach$Time <- format(df.prof.wach$Time,"%H:%M:%S")
 df.prof.wach$DateTime <-as.POSIXct(paste(df.prof.wach$Date, df.prof.wach$Time), format="%Y-%m-%d %H:%M:%S")
+df.secchi.wach$SampleTime <- format(df.secchi.wach$SampleTime, "%H:%M")
 
 # flag format - Change a "NA" or "NAN" value to "No Flag"
 df.trib.bact.wach$FlagCode <- as.character(df.trib.bact.wach$FlagCode)
@@ -122,6 +129,15 @@ df.trib.bact.wach$FlagCode[is.na(df.trib.bact.wach$FlagCode)] <- "No Flag"
 df.trib.bact.wach$FlagCode[is.nan(df.trib.bact.wach$FlagCode)] <- "No Flag"
 df.trib.bact.wach$FlagCode <- factor(df.trib.bact.wach$FlagCode)
 
+# Additional formatting for Phyto data
+#Purge unwanted columns of data, transpose to long format, change data formats
+df.phyto.wach <- select(df.phyto.wach,-Phyt_ID,-Microscope,-Magnification,-Method,-ImportDate,-DataSource, -Analyst, -UniqueID) %>%
+  gather("taxa","count",5:80, na.rm =T)
+df.phyto.wach$taxa <- as.factor(df.phyto.wach$taxa)
+df.phyto.wach$Phyt_Station <- as.factor(df.phyto.wach$Phyt_Station)
+
+# Additional formatting for Phyto data
+df.secchi.wach <- df.secchi.wach[,c(2:5)] # Remove unwated columns
 
 ###########################################################################################################################
 # RESTRUCTURING SITE INFORMATION DATA
@@ -230,7 +246,7 @@ df.bact.quab.exp <- df.trib.res.quab %>% filter(LocationType == "Nutrient")
 df.bact.quab <- df.bact.quab.exp %>%  select(col.bact.quab)
 
 # Wachusett Bacteria
-df.bact.wach.exp <- df.trib.bact.wach %>% filter(LocationType == "Transect") 
+df.bact.wach.exp <- df.trib.bact.wach %>% filter(LocationType == "Transect")
 df.bact.wach <- df.bact.wach.exp %>% select(col.bact.wach)
 
 # Quabbin Chemical
@@ -281,7 +297,7 @@ df.chem.wach.site <- df.chem.prof.wach.site %>% filter(!is.null(LocationDepth))
 df.prof.wach.site <- df.chem.prof.wach.site %>% filter(is.null(LocationDepth))
 
 # All Sites - # Combine All Sites into 1 dataframe ( Need to update when Sites are squared away)
-df.all.site.temp <- full_join(df.quab.ware.site, 
+df.all.site.temp <- full_join(df.quab.ware.site,
                               df.trib.bact.wach.site,
                               by = c("Site",
                                      "Watershed",
@@ -292,8 +308,8 @@ df.all.site.temp <- full_join(df.quab.ware.site,
                                      "LocationDescription",
                                      "LocationElevFt"))
 
-df.all.site <- full_join(df.all.site.temp, 
-                         df.chem.prof.wach.site, 
+df.all.site <- full_join(df.all.site.temp,
+                         df.chem.prof.wach.site,
                          by = c("Site",
                                 "Station",
                                 "Watershed",
