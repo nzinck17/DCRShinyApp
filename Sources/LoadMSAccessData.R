@@ -110,7 +110,8 @@ df.chem.wach$Result <- as.numeric(as.character(df.chem.wach$Result))
 df.prof.wach$Result <- as.numeric(as.character(df.prof.wach$Result))
 
 # date format - Date Class. (Could maybe be set withing DB)
-df.trib.bact.wach$SampleDateTime <- format(df.trib.bact.wach$SampleDateTime, tz ="America/New_York", usetz=TRUE)
+df.trib.bact.wach$SampleDateTime <- format(df.trib.bact.wach$SampleDateTime, tz ="America/New_York", usetz=TRUE) %>%
+  as.POSIXct()
 df.trib.bact.wach$Date <- as.Date(as.character(df.trib.bact.wach$SampleDateTime),format ='%Y-%m-%d %H:%M:%S')
 df.phyto.wach$Phyt_Date <- as.Date(format(df.phyto.wach$Phyt_Date, tz ="America/New_York", usetz=TRUE))
 df.secchi.wach$Date <- as.Date(format(df.secchi.wach$Date, tz ="America/New_York", usetz=TRUE))
@@ -200,7 +201,7 @@ df.prof.wach <- left_join(df.prof.wach, df.chem.prof.wach.site, by = "Site")
 col.trib.quab.ware <- c("LocationLabel", "Date", "Parameter", "Result", "Units", "Site", "LocationCategory")
 
 # Wachusett Tributary
-col.trib.wach <- c("LocationLabel", "Date", "Parameter", "Result", "Units","FlagCode", "StormSample", "Site", "LocationCategory")
+col.trib.wach <- c("LocationLabel", "SampleDateTime", "Date", "Parameter", "Result", "Units","FlagCode", "StormSample", "Site", "LocationCategory")
 
 # Quabbin (Res) Bacteria
 col.bact.quab <- c("LocationLabel", "Date", "Sampling_Level", "Parameter", "Result", "Units", "Site", "Station", "LocationCategory")
