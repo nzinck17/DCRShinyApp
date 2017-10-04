@@ -36,7 +36,11 @@ sitemap <- function(input, output, session, df.site, site.list) {
   
   df.site.react <- reactive({
     df.temp <- df.site %>% filter(!is.na(LocationLat), !is.na(LocationLong))
-    df.temp$Selected <- ifelse(df.temp$LocationLabel %in% site.list(), "yes", "no")
+    if(!is.null(site.list)){
+      df.temp$Selected <- ifelse(df.temp$LocationLabel %in% site.list(), "yes", "no")
+    } else {
+      df.temp$Selected <- "no"
+    }
     df.temp
   })
   
