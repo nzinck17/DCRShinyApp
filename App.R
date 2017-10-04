@@ -131,7 +131,6 @@ tabPanel("Reservoir",
    fluidRow(br(), br(), br(), br(), h2("Reservoir Water Quality Data", align = "center"), br()),
 
    navlistPanel(widths = c(2, 10),
-
                 "Bacteria",
                 tabPanel("Time-Series",
                          fluidRow(column(10, h4("Bacteria Time-Series Analysis", align = "center")), column(2)),
@@ -185,11 +184,14 @@ tabPanel("Reservoir",
                            tabPanel("Quabbin", prof.summary.UI("mod.prof.quab.sum", df.prof.quab)),
                            tabPanel("Wachusett", prof.summary.UI("mod.prof.wach.sum", df.prof.wach))
                          )
-                ),
+                # ),
+                # tabPanel("Biological",
+                #          fluidRow(column(10, h4("Phytoplankton Plots", align = "center")), column(2)),
+                #          tabsetPanel(
+                #            tabPanel("Wachusett", phyto.plots.UI("mod.phyto.wach.line", df.phyto.wach))
+                #          )
+                )
 
-                "AquaBio",
-                tabPanel("Heatmap"),
-                tabPanel("Line Plot")
    ) # end navlist
 
  ),  # end Tabpanel (page)
@@ -242,10 +244,10 @@ tabPanel("Forestry",
 # Export
 
 tabPanel("Export Data",
-         
+
          # Title
          fluidRow(br(), br(), br(), br(), h2("Filter and Export Data", align = "center"), br()),
-         
+
          navlistPanel(widths = c(2, 10),
                       "Water Quality Data",
                       tabPanel("Tributary",
@@ -388,17 +390,17 @@ server <- function(input, output, session) {
   # Bacteria
   callModule(time, "mod.bact.quab.time", df = df.bact.quab, df.site = df.bact.quab.site)
   callModule(time, "mod.bact.wach.time", df = df.bact.wach, df.site = df.bact.wach.site)
-  
+
   callModule(regress, "mod.bact.quab.regr", df = df.bact.quab, df.site = df.bact.quab.site)
   callModule(regress, "mod.bact.wach.regr", df = df.bact.wach, df.site = df.bact.wach.site)
-  
+
   # Chemical
   callModule(time.depth, "mod.chem.quab.time", df = df.chem.quab, df.site = df.chem.quab.site)
   callModule(time.depth, "mod.chem.wach.time", df = df.chem.wach, df.site = df.chem.wach.site)
-  
+
   callModule(regress.depth, "mod.chem.quab.regr", df = df.chem.quab, df.site = df.chem.quab.site)
   callModule(regress.depth, "mod.chem.wach.regr", df = df.chem.wach, df.site = df.chem.wach.site)
-  
+
   # Profile (physicochemical)
   callModule(prof.heatmap, "mod.prof.quab.heat", df = df.prof.quab)
   callModule(prof.heatmap, "mod.prof.wach.heat", df = df.prof.wach)
@@ -414,28 +416,28 @@ server <- function(input, output, session) {
 
 ####################################################################
 # Map Plot
-  
+
   # Trib
   callModule(map.plot, "mod.trib.quab.map", df = df.trib.quab, df.site = df.trib.quab.site)
   callModule(map.plot, "mod.trib.ware.map", df = df.trib.ware, df.site = df.trib.ware.site)
   callModule(map.plot, "mod.trib.wach.map", df = df.trib.wach, df.site = df.trib.wach.site)
   callModule(map.plot, "mod.trib.all.map", df = df.trib.all, df.site = df.trib.all.site)
-  
+
   # Bacteria
   callModule(map.plot, "mod.bact.quab.map", df = df.bact.quab, df.site = df.bact.quab.site)
   callModule(map.plot, "mod.bact.wach.map", df = df.bact.wach, df.site = df.bact.wach.site)
-  
+
   # Chemical
   callModule(map.plot, "mod.chem.quab.map", df = df.chem.quab, df.site = df.chem.quab.site)
   callModule(map.plot, "mod.chem.wach.map", df = df.chem.wach, df.site = df.chem.wach.site)
-  
+
 ####################################################################
 
 # Hydrology/Meteorology/Statistics
-  
+
 ####################################################################
 # Export
-  
+
   callModule(export.wq, "mod.trib.quab.exp", df = df.trib.quab.exp, df.site = df.trib.quab.site, col = col.trib.quab.ware)
   callModule(export.wq, "mod.trib.ware.exp", df = df.trib.ware.exp, df.site = df.trib.ware.site, col = col.trib.quab.ware)
   callModule(export.wq, "mod.trib.wach.exp", df = df.trib.wach.exp, df.site = df.trib.wach.site, col = col.trib.wach)
@@ -449,7 +451,7 @@ server <- function(input, output, session) {
   callModule(export.wq, "Test 1", df = df.prof.wach.exp, df.site = df.chem.wach.site, col = col.prof.wach) # fix site
   #callModule(export.wq, "Test 2", df = df.prof.wach.exp, df.site = df.chem.wach.site, col = col.prof.wach) # fix site
   #callModule(export.wq, "Test 3", df = df.prof.wach.exp, df.site = df.chem.wach.site, col = col.prof.wach) # fix site
-  
+
   ####################################################################
 # Reports
 
@@ -468,7 +470,7 @@ server <- function(input, output, session) {
   callModule(report.custom, "mod.prof.wach.rep", df = df.prof.wach, df.site = df.res.wach.site)
 
 #######################################################################
-  
+
 # Code to stop app when browser session window closes
 session$onSessionEnded(function() {
       stopApp()
