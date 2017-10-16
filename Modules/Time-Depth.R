@@ -21,7 +21,7 @@
 # User Interface
 ##############################################################################################################################
 
-time.depth.UI <- function(id, df) {
+time.depth.UI <- function(id) {
   
 ns <- NS(id)
 
@@ -29,40 +29,34 @@ tagList(
   wellPanel(
     fluidRow(
       column(3,
-             # Location and Depth Selection with Map
+             # Site Selection
              wellPanel(
-               checkboxGroupInput(ns("station"), "Station:", 
-                                  choices=levels(factor(df$Station)),
-                                  inline = TRUE),
-               checkboxGroupInput(ns("level"), "Sampling Level:", 
-                                  choices=levels(factor(df$Sampling_Level)),
-                                  inline = TRUE),
-               br(),
-               sitemap.UI(ns("Site Map"))
+               uiOutput(ns("station.ui"))
+             ),
+             # Sampling Level
+             wellPanel(
+               uiOutput(ns("level.ui"))
              ) # end Well Panel
-      ),
-      column(1),
+      ), # end Column
       column(3,
-             # Parameter Selection
+             # Text - Number of Samples or "Select a site"
              wellPanel(
-               uiOutput(ns("param.ui")),
-               uiOutput(ns("range.ui"))
-             ), # end Well Panel
-             br(),
-             # Date Selection
-             wellPanel(
-               uiOutput(ns("date.ui"))
-             ), # end Well Panel
-             br(), br(), br(),
-             # Number of Samples
-             wellPanel(
-               h3(textOutput(ns("text.num.null1")), align = "center"),
-               h3(textOutput(ns("text.num.null2")), align = "center"),
+               h3(textOutput(ns("text.station.null")), align = "center"),
+               h3(textOutput(ns("text.level.null")), align = "center"),
+               h3(textOutput(ns("text.param.null")), align = "center"),
                h4(textOutput(ns("text.num.text")), align = "center"),
                h3(textOutput(ns("text.num")), align = "center")
-             ) # end well Panel
+             ), # end Well Panel
+             wellPanel(
+               sitemap.UI(ns("site.map"))
+             ) # end Well Panel
       ), # end Column
-      column(1),
+      column(3,
+             uiOutput(ns("param.ui")),
+             br(),
+             # Date Selection
+             uiOutput(ns("date.ui"))
+      ), # end column
       column(3,
              # Meteoro/Hydro Filter 1
              wellPanel(
@@ -117,7 +111,7 @@ tagList(
     
     # Plot tab
     tabPanel("Plot", 
-             plot.time.depth.UI(ns("Plot"))
+             plot.time.depth.UI(ns("plot"))
     ),
     
     # Table Tab
@@ -149,175 +143,158 @@ tagList(
 time.depth <- function(input, output, session, df, df.site) {
   
   
-  # Non Historical Parameters (when a Parameter has not been used in over 5 years). See General Note 6
   
-  parameters.non.historical <- df %>%
-    filter(Date > Sys.Date()-years(5), Date < Sys.Date()) %>%
-    .$Parameter %>%
-    factor() %>%
-    levels()
+  ### Station
+  
+  # Choices
+  station.choices <- df$Station %>% factor() %>% levels()
+  
+  # UI
+  output$station.ui <- renderUI({
+    ns <- session$ns # see General Note 1
+    checkboxSelectAll.UI(ns("station"), "Station:", choices = station.choices) #, inline = TRUE
+  })
+  
+  # Server
+  station <- callModule(checkboxSelectAll, "station", choices = station.choices)
   
   
-  # Parameter Selection UI
   
+  ### Sampling Level
+  
+  # Choices
+  level.choices <- df$Sampling_Level %>% factor() %>% levels()
+  
+  # UI
+  output$level.ui <- renderUI({
+    ns <- session$ns # see General Note 1
+    checkboxSelectAll.UI(ns("level"), "Sampling Level:", choices = level.choices) #, inline = TRUE
+  })
+  
+  # Server
+  level <- callModule(checkboxSelectAll, "level", choices = level.choices)
+
+  
+  
+  ### Site List 
+  site <- reactive({
+    #req(input$station, input$level)
+    req(station(), level())
+    
+    df %>% 
+      #filter(Station %in% input$station,
+      #       Sampling_Level %in% input$level) %>%
+      filter(Station %in% station(),
+             Sampling_Level %in% level()) %>%
+      .$LocationLabel %>%
+      factor() %>%
+      levels()
+  })
+  
+  
+  
+  
+  ### Parameter Selection using ParameterSelect Module
+  
+  # Ui
   output$param.ui <- renderUI({
-    
-    req(input$station, input$level) # See General Note 5
-    
     ns <- session$ns # see General Note 1
-    
-    # Parameters which have data at any Site (in the mofule's df) within 5 years.
-    param.choices.new <- df %>%
-      filter(Station %in% c(input$station),
-             Sampling_Level %in% c(input$level),
-             Parameter %in% parameters.non.historical) %>%
-      .$Parameter %>%
-      factor() %>%
-      levels()
-    
-    # Parameters which do NOT have data at any Site (in the mofule's df) within 5 years.
-    param.choices.old <- df %>%
-      filter(Station %in% c(input$station),
-             Sampling_Level %in% c(input$level),
-             !(Parameter %in% parameters.non.historical)) %>%
-      .$Parameter %>%
-      factor() %>%
-      levels()
-    
-    # Recent Parameters first and then old parameters
-    param.choices <- c(param.choices.new, param.choices.old)
-    
-    selectInput(ns("param"), "Parameter: ",
-                choices=c(param.choices))
-    
+    param.select.UI(ns("param"))
   })
   
- # Reactive Text - Units of Parameter Selected (for Parameter Range Text)
-  
-  param.units <- reactive({ 
-    df %>%
-      filter(Parameter %in% input$param) %>%
-      .$Units %>%
-      factor() %>%
-      levels()
-    
-  })
-  
-#Parameter Value Range UI
-  
-  output$range.ui <- renderUI({
-    
-    req(input$station, input$level) # See General Note 5
-    
-    ns <- session$ns # see General Note 1
-    
-    result <- df %>%
-      filter(Station %in% c(input$station),
-             Sampling_Level %in% c(input$level),
-             Parameter %in% input$param) %>%
-      .$Result
-    
-    param.min <- result %>% min(na.rm=TRUE)
-    
-    param.max <- result %>% max(na.rm=TRUE)
-    
-    sliderInput(ns("range"), label = paste("Range (", param.units(), ")"), 
-                min = param.min, max = param.max,
-                value = c(param.min, param.max))
-    
-  })
+  # Server
+  param <- callModule(param.select, "param", df = df, site = site)
   
   
-# Date Selection UI
   
+  
+  ### Date Range Selection Using DateSelect Module
+  
+  # Ui
   output$date.ui <- renderUI({
-    
-    req(input$station, input$level) # See General Note 5
-    
     ns <- session$ns # see General Note 1
-    
-    Dates <- df %>% 
-      filter(Station %in% c(input$station),
-             Sampling_Level %in% c(input$level)) %>%
-      .$Date
-    
-    Date.min <- Dates %>% min(na.rm=TRUE)
-    Date.max <- Dates %>% max(na.rm=TRUE)
-    
-    # Date Input
-    dateRangeInput(ns("date"), "Date Range:", 
-                   start = Date.min, 
-                   end = Date.max,
-                   min = Date.min,
-                   max = Date.max,
-                   startview = "year")
-    
+    date.select.UI(ns("date"))
   })
   
-# Reactive Dataframe
+  # Server
+  date <- callModule(date.select, "date", df = df, site = site)
+  
+  
+  
+  
+  ### Reactive Dataframe - filter for selected site, param, value range, date, and remove rows with NA for Result
   
   df.react <- reactive({
     
-    req(input$station, input$level, input$param, input$range, input$date) # See General Note 5
+    req(site(), param$type(), param$range.min(), param$range.min(), date$lower(), date$upper()) # See General Note _
     
     df %>% 
-      filter(Station %in% c(input$station),
-             Sampling_Level %in% c(input$level),
-             Parameter %in% c(input$param),
-             Result > input$range[1], Result < input$range[2],
-             Date > input$date[1], Date < input$date[2])
-
+      filter(LocationLabel %in% site(), 
+             Parameter %in% param$type(), 
+             Result > param$range.min(), Result < param$range.max(),
+             Date > date$lower(), Date < date$upper(),
+             !is.na(Result))
   })
   
+  
+  
+  
+  ### Texts 
   
   # Text - Select Station
   
-  output$text.num.null1 <- renderText({
-    req(is.null(input$station)) # See General Note 1
-    "Select a Station"
+  output$text.station.null <- renderText({
+    req(is.null(station())) # See General Note 1
+    "Select Station"
   })
   
-  # Text - Select Depth
+  # Text - Select Sampling Level
   
-  output$text.num.null2 <- renderText({
-    req(is.null(input$level)) # See General Note 1
-    "Select a Depth"
+  output$text.level.null <- renderText({
+    req(is.null(level())) # See General Note 1
+    "Select Sampling Level"
+  })
+  
+  # Text - Select Param
+  
+  output$text.param.null <- renderText({
+    req(is.null(param$type())) # See General Note 1
+    "Select Parameter"
   })
   
   # Text - Number of Samples
   
   output$text.num.text <- renderText({
-    req(input$station, input$level) # See General Note 1
-    "Number of Samples in Selected Data"
+    req(site(), param$type()) # See General Note 1
+    "Number of Samples in Selected Data:"
   })
   
   # Text - Number of Samples
   
   output$text.num <- renderText({
-    req(input$station, input$level) # See General Note 1
+    req(df.react()) # See General Note 1
     df.react() %>% summarise(n()) %>% paste()
   })
   
-# Plot
-
-callModule(plot.time.depth, "Plot", df = df.react)
   
-# Create Table
+  # Plot
+
+  callModule(plot.time.depth, "plot", df = df.react)
+  
+
+# Table
   
   output$table <- renderDataTable(df.react())
   
-# Create Summary
   
-  callModule(summary.depth, "Summary", df = df.react)
+# Summary Statistics
+  
+  callModule(summary.depth, "summary", df = df.react)
   
   
-  # Site Map
-  # Combine Site Input
+# Site Map
   
-  site.list <- reactive({
-    input$site
-  })
+  callModule(sitemap, "site.map", df.site = df.site, site.list = site)
   
-  callModule(sitemap, "Site Map", df.site = df.site, site.list = site.list)
   
 } # end server

@@ -16,7 +16,7 @@
 # User Interface
 ##############################################################################################################################
 
-time.UI <- function(id, df) {
+time.UI <- function(id) {
   
   ns <- NS(id) # see General Note 1
   
@@ -24,37 +24,25 @@ time.UI <- function(id, df) {
     wellPanel(       
       fluidRow(
         column(3,
-               # Site Selection
-               wellPanel(
-                 uiOutput(ns("site.primary.ui"))
-               ),
-               wellPanel(
-                 uiOutput(ns("site.nonprim.cat.ui")),
-                 uiOutput(ns("site.nonprim.ui"))
-               ) # end Well Panel
+               uiOutput(ns("site.ui"))
         ), # end Column
         column(3,
                # Text - Number of Samples or "Select a site"
                wellPanel(
-                 h2(textOutput(ns("text.num.null")), align = "center"),
+                 h3(textOutput(ns("text.site.null")), align = "center"),
+                 h3(textOutput(ns("text.param.null")), align = "center"),
                  h4(textOutput(ns("text.num.text")), align = "center"),
                  h3(textOutput(ns("text.num")), align = "center")
                ), # end Well Panel
                wellPanel(
-                 sitemap.UI(ns("Site Map"))
+                 sitemap.UI(ns("site.map"))
                ) # end Well Panel
         ), # end Column
         column(3,
-               # Parameter Selection
-               wellPanel(
-                 uiOutput(ns("param.ui")),
-                 uiOutput(ns("range.ui"))
-               ), # end Well Panel
+               uiOutput(ns("param.ui")),
                br(),
                # Date Selection
-               wellPanel(
-                 uiOutput(ns("date.ui"))
-               ) # end Well Panel
+               uiOutput(ns("date.ui"))
         ), # end column
         column(3,
                # Meteoro/Hydro Filter 1
@@ -110,7 +98,7 @@ time.UI <- function(id, df) {
       
       # Plot Tab
       tabPanel("Plot",
-               plot.time.UI(ns("Plot Time"))
+               plot.time.UI(ns("plot"))
       ), # end Tab Panel - Plot
       
       # Table Tabpanel
@@ -126,7 +114,7 @@ time.UI <- function(id, df) {
       
       # Summary Tabpanel
       tabPanel("Summary",
-               summary.UI(ns("Summary"))
+               summary.UI(ns("summary"))
       ) # end Tab Panel - Summary
     )  # end tabsetpanel (plots, stats, etc.)
   ) # end taglist
@@ -139,216 +127,80 @@ time.UI <- function(id, df) {
 
 time <- function(input, output, session, df, df.site) {
   
-# Non Historical Parameters (when a Parameter has not been used in over 5 years). See General Note 6
   
-  parameters.non.historical <- df %>%
-    filter(Date > Sys.Date()-years(5), Date < Sys.Date()) %>%
-    .$Parameter %>%
-    factor() %>%
-    levels()
+  # Site Selection using Site Select Module
   
-
-  # Site primary
-  
-  output$site.primary.ui <- renderUI({
-    
+  # Ui
+  output$site.ui <- renderUI({
     ns <- session$ns # see General Note 1
-    
-    # Parameters which have data at any Site (in the mofule's df) within 5 years.
-    site.primary <- df %>%
-      filter(LocationCategory == "Primary Active") %>%
-      .$LocationLabel %>%
-      factor() %>%
-      levels()
-    
-    # Check box input
-    checkboxGroupInput(ns("site.primary"), "Primary Active Sites:",
-                       choices = site.primary)
-    
-    
-    
-  })  
-
-# Site Categories UI (RendeUI becuase move Primary Active to front)
-  
-  output$site.nonprim.cat.ui <- renderUI({
-    
-    ns <- session$ns # see General Note 1
-    
-    # Change LocationCateogory NA to "NA" to show up in App
-    df$LocationCategory <- as.character(df$LocationCategory)
-    df$LocationCategory[is.na(df$LocationCategory)] <- "NA"
-    
-    # Parameters which have data at any Site (in the mofule's df) within 5 years.
-    site.categories <- df %>%
-      filter(LocationCategory != "Primary Active") %>%
-      .$LocationCategory %>%
-      factor() %>%
-      levels()
-    
-    # Site Categories
-    checkboxGroupInput(ns("site.nonprim.cat"), "Show Other Categories:",
-                       choices = site.categories)
-    
+    site.checkbox.UI(ns("site"), df = df)
   })
   
+  # Server
+  site <- callModule(site.checkbox, "site", df = df)
   
   
-  # Site Non Primary
-  output$site.nonprim.ui <- renderUI({
-    
-    req(input$site.nonprim.cat) # See General Note 5
-    
-    ns <- session$ns # see General Note 1
-    
-    site.select <- df %>%
-      filter(LocationCategory %in% input$site.nonprim.cat) %>%
-      .$LocationLabel %>%
-      factor() %>%
-      levels()
-    
-    # Sites
-    checkboxGroupInput(ns("site.nonprim"), "Sites:",
-                       choices = site.select)
-    
-  })
+  # Parameter Selection using ParameterSelect Module
   
-  
-  # Combine Site Input
-  
-  site.list <- reactive({
-    
-    c(input$site.primary, input$site.nonprim)
-    
-  })
-  
-
-  # Parameter Selection UI
-  
+  # Ui
   output$param.ui <- renderUI({
-    
-    req(site.list()) # See General Note 5
-    
     ns <- session$ns # see General Note 1
-    
-    # Parameters which have data at any Site (in the mofule's df) within 5 years.
-    param.choices.new <- df %>%
-      filter(LocationLabel %in% site.list()) %>%
-      filter(Parameter %in% parameters.non.historical) %>%
-      .$Parameter %>%
-      factor() %>%
-      levels()
-    
-    # Parameters which do NOT have data at any Site (in the mofule's df) within 5 years.
-    param.choices.old <- df %>%
-      filter(LocationLabel %in% site.list()) %>%
-      filter(!(Parameter %in% parameters.non.historical)) %>%
-      .$Parameter %>%
-      factor() %>%
-      levels()
-    
-    # Recent Parameters first and then old parameters
-    param.choices <- c(param.choices.new, param.choices.old)
-    
-    selectInput(ns("param"), "Parameter: ",
-                choices=c(param.choices))
-    
+    param.select.UI(ns("param"))
   })
   
-  
-# Units Texts for Selected Parameter
-  
-  param.units <- reactive({
-    
-    req(site.list()) # See General Note _
-    
-    df %>%
-      filter(Parameter %in% input$param) %>%
-      .$Units %>%
-      factor() %>%
-      levels()
-    
-  })
+  # Server
+  param <- callModule(param.select, "param", df = df, site = site)
   
   
-# Parameter Value Range Bar UI
   
-  output$range.ui <- renderUI({
-    
-    req(site.list()) # See General Note _
-    
-    ns <- session$ns # see General Note 1
-    
-    result <- df %>%
-      filter(LocationLabel %in% site.list()) %>%
-      filter(Parameter %in% input$param) %>%
-      .$Result
-    
-    param.min <- result %>% min(na.rm=TRUE)
-    
-    param.max <- result %>% max(na.rm=TRUE)
-    
-    sliderInput(ns("range"), paste("Range (", param.units() , ")"),
-                min = param.min, max = param.max,
-                value = c(param.min, param.max))
-    
-  })
+  # Date Range Selection Using DateSelect Module
   
-  
-# Date Selection UI
-  
+  # Ui
   output$date.ui <- renderUI({
-    
-    req(site.list()) # See General Note _
-    
     ns <- session$ns # see General Note 1
-    
-    Dates <- df %>% 
-      filter(LocationLabel %in% site.list()) %>%
-      .$Date
-    
-    Date.min <- Dates %>% min(na.rm=TRUE)
-    Date.max <- Dates %>% max(na.rm=TRUE)
-    
-    # Date Input
-    dateRangeInput(ns("date"), "Date Range:", 
-                   start = Date.min, 
-                   end = Date.max,  
-                   min = Date.min,
-                   max = Date.max,
-                   startview = "year")
-    
+    date.select.UI(ns("date"))
   })
   
+  # Server
+  date <- callModule(date.select, "date", df = df, site = site)
   
-# Reactive Dataframe - filter for selected site, param, value range, date, and remove rows with NA for Result
+  
+  
+  # Reactive Dataframe - filter for selected site, param, value range, date, and remove rows with NA for Result
   
   df.react <- reactive({
     
-    req(site.list(), input$param, input$range, input$date) # See General Note _
+    req(site(), param$type(), param$range.min(), param$range.min(), date$lower(), date$upper()) # See General Note _
     
     df %>% 
-      filter(LocationLabel %in% site.list(), 
-             Parameter %in% input$param, 
-             Result > input$range[1], Result < input$range[2],
-             Date > input$date[1], Date < input$date[2],
+      filter(LocationLabel %in% site(), 
+             Parameter %in% param$type(), 
+             Result > param$range.min(), Result < param$range.max(),
+             Date > date$lower(), Date < date$upper(),
              !is.na(Result))
   })
   
 
   
-# Text - Select Site
+  # Text - Select Site
   
-  output$text.num.null <- renderText({
-    req(is.null(site.list())) # See General Note 1
-    "Select a Site"
+  output$text.site.null <- renderText({
+    req(is.null(site())) # See General Note 1
+    "Select Site(s)"
+  })
+  
+  # Text - Select Param
+  
+  output$text.param.null <- renderText({
+    req(param$type() == "") # See General Note 1
+    "Select Parameter"
   })
   
   # Text - Number of Samples
   
   output$text.num.text <- renderText({
-    req(site.list()) # See General Note 1
-    "Number of Samples in Selected Data"
+    req(site(), param$type()) # See General Note 1
+    "Number of Samples in Selected Data:"
   })
   
   # Text - Number of Samples
@@ -360,19 +212,22 @@ time <- function(input, output, session, df, df.site) {
   
 # Plot
   
-  callModule(plot.time, "Plot Time", df = df.react)
+  callModule(plot.time, "plot", df = df.react)
   
-# Tables
+  
+# Table
   
   output$table <- renderDataTable(df.react())
   
+  
 # Summary Statistics
 
-  callModule(summary, "Summary", df = df.react)
+  callModule(summary, "summary", df = df.react)
+  
   
 # Site Map
   
-  callModule(sitemap, "Site Map", df.site = df.site, site.list = site.list)
+  callModule(sitemap, "site.map", df.site = df.site, site.list = site)
   
 } # end Server Function
 

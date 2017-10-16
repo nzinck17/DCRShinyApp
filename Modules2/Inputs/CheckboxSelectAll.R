@@ -84,5 +84,7 @@ checkboxSelectAll <- function(input, output, session, choices, selected = NULL, 
     updateCheckboxGroupInput(session = session, inputId = "checkbox", label = NULL, choices = choices)
   })
   
+  return(reactive({input$checkbox}))
+  
 }
 
