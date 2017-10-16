@@ -42,6 +42,7 @@ source("Modules/Report-AWQ.R")
 source("Modules/Report-MWQ.R")
 source("Modules/Report-Custom.R")
 
+<<<<<<< HEAD
 
 ### Load Secondary Modules (Module that goes inside a module)
 
@@ -59,6 +60,36 @@ source("Modules2/Summary-Depth.R")
 source("Modules2/SiteMap.R")
 source("Modules2/CheckboxSelectAll.R")
  ### Load Functions
+=======
+### Load Secondary Modules (Modules used inside a primary module)
+
+# Inputs
+source("Modules2/Inputs/SiteCheckbox.R")
+source("Modules2/Inputs/StationLevelCheckbox.R")
+source("Modules2/Inputs/ParamSelect.R")
+source("Modules2/Inputs/ParamCheckbox.R")
+source("Modules2/Inputs/DateSelect.R")
+source("Modules2/Inputs/CheckboxSelectAll.R")
+
+# Outputs
+source("Modules2/Outputs/Plot-Time.R")
+source("Modules2/Outputs/Plot-Time-Depth.R")
+source("Modules2/Outputs/Plot-Regress.R")
+source("Modules2/Outputs/Plot-Regress-Depth.R")
+source("Modules2/Outputs/Plot-Profline-Custom.R")
+#source("Modules2/Outputs/Plot-Profline-Standard.R")
+#source("Modules2/Outputs/Plot-Heatmap-Custom.R")
+#source("Modules2/Outputs/Plot-Heatmap-Standard.R")
+source("Modules2/Outputs/Summary.R")
+source("Modules2/Outputs/Summary-Depth.R")
+#source("Modules2/Outputs/Summary-Profile.R")
+ 
+# UI
+source("Modules2/UI/SiteMap.R")
+
+
+### Load Functions
+>>>>>>> nick_master/master
 
 source("Functions/GetSeasons.R")
 source("Functions/circleSizeLegend.R")
@@ -94,10 +125,10 @@ tabPanel("Tributary",
                tabPanel("Time-Series",
                         fluidRow(column(10, h4("Tributary Time-Series Analysis", align = "center")), column(2)),
                         tabsetPanel(
-                          tabPanel("Quabbin", time.UI("mod.trib.quab.time", df.trib.quab)),
-                          tabPanel("Ware River", time.UI("mod.trib.ware.time", df.trib.ware)),
-                          tabPanel("Wachusett", time.UI("mod.trib.wach.time", df.trib.wach)),
-                          tabPanel("All Tribs", time.UI("mod.trib.all.time", df.trib.all))
+                          tabPanel("Quabbin", time.UI("mod.trib.quab.time")),
+                          tabPanel("Ware River", time.UI("mod.trib.ware.time")),
+                          tabPanel("Wachusett", time.UI("mod.trib.wach.time")),
+                          tabPanel("All Tribs", time.UI("mod.trib.all.time"))
                         ) # end tabset Panel
                ), # end tabpanel
                tabPanel("Regression",
@@ -127,8 +158,8 @@ tabPanel("Reservoir",
                 tabPanel("Time-Series",
                          fluidRow(column(10, h4("Bacteria Time-Series Analysis", align = "center")), column(2)),
                          tabsetPanel(
-                           tabPanel("Quabbin", time.UI("mod.bact.quab.time", df.bact.quab)),
-                           tabPanel("Wachusett", time.UI("mod.bact.wach.time", df.bact.wach))
+                           tabPanel("Quabbin", time.UI("mod.bact.quab.time")),
+                           tabPanel("Wachusett", time.UI("mod.bact.wach.time"))
                          ) # end tabset Panel
                 ), # end tabpanel
                 tabPanel("Regression",
@@ -143,8 +174,8 @@ tabPanel("Reservoir",
                 tabPanel("Time-Series",
                          fluidRow(column(10, h4("Chemical Time-Series Analysis", align = "center")), column(2)),
                          tabsetPanel(
-                           tabPanel("Quabbin", time.depth.UI("mod.chem.quab.time", df.chem.quab)),
-                           tabPanel("Wachusett", time.depth.UI("mod.chem.wach.time", df.chem.wach))
+                           tabPanel("Quabbin", time.depth.UI("mod.chem.quab.time")),
+                           tabPanel("Wachusett", time.depth.UI("mod.chem.wach.time"))
                          )
                 ),
                 tabPanel("Regression",
