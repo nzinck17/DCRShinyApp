@@ -61,8 +61,10 @@ Phyto.UI <- function(id,df) {
                   downloadButton(ns('save.plot'), "Save Plot")
                   ),
                   column(2,
-                  radioButtons(ns("plot.save.size"), "Plot Size:",
-                                                 choices= c("small", "medium","large"))
+                  numericInput(ns("plot.save.width"), "Plot Width (inches):", 7,
+                               min = 3, max = 17, step = 0.25),
+                  numericInput(ns("plot.save.height"), "Plot Height (inches):", 5,
+                               min = 3, max = 17, step = 0.25)
                   ),
                   column(2,
                   radioButtons(ns("plot.save.type"), "File Type:",
@@ -81,18 +83,29 @@ Phyto.UI <- function(id,df) {
                                              choices = df.phyto.wach %>% .$Station %>% levels() %>% paste(),
                                              multiple = TRUE,
                                              width = '200',
-                                             selected = c("BN3417","CI3409"))
-                          ), # End Col
-                          column(4, # Year
-                                 selectInput(ns("taxayear"), "Year:",
+                                             selected = c("BN3417","CI3409")),
+                                 selectInput(ns("taxayear"), "Year:", # Year
                                              choices = df.phyto.wach %>%  .$Year %>%  unique() %>% sort(decreasing = TRUE),
                                              width = '200',
                                              selected = 1)
-                          ) # End Col
+                          ), # End Col
+                          column(4,
+                                 numericInput(ns("taxaplot.save.width"), "Plot Width (inches):", 7,
+                                              min = 3, max = 17, step = 0.25),
+
+                                 numericInput(ns("taxaplot.save.height"), "Plot Height (inches):", 5,
+                                              min = 3, max = 17, step = 0.25)
+                          ), # End Col
+                          column(4,
+                                 radioButtons(ns("taxaplot.save.type"), "File Type:",
+                                              choices= c("pdf","jpg","png"))
+                          )
                  ), # End fr
                  fluidRow(br()),
-                 fluidRow(column(9, plotOutput(ns("taxaplot1"), width = "100%", height = 400))),
-                 fluidRow(column(9, plotOutput(ns("taxaplot2"), width = "100%", height = 400))),
+                 fluidRow(column(9, plotOutput(ns("taxaplot1"), width = "100%", height = 400)),
+                          column(3, downloadButton(ns('save.plot1'), "Save Plot"))),
+                 fluidRow(column(9, plotOutput(ns("taxaplot2"), width = "100%", height = 400)),
+                          column(3, downloadButton(ns('save.plot2'), "Save Plot"))),
                  fluidRow(column(9, plotOutput(ns("taxaplot3"), width = "100%", height = 400))),
                  fluidRow(column(9, plotOutput(ns("taxaplot4"), width = "100%", height = 400))),
                  fluidRow(column(9, plotOutput(ns("taxaplot5"), width = "100%", height = 400))),
@@ -197,38 +210,43 @@ Phyto <- function(input, output, session, df) {
   #       p
   #       }
   #     })
-  FN <-  reactive({
-    paste0("Phytoplankton-", input$year,"_", format(Sys.time(), "%Y%m%d"),".", input$plot.save.type)
+  p <- p  <- reactive({
+    p <- phytoplot(df = df,
+                 locs = input$site,
+                 vyear = input$year,
+                 epi_min = input$Depth1[1],
+                 epi_max = input$Depth1[2],
+                 em_min = input$Depth2[1],
+                 em_max = input$Depth2[2])
+    p
   })
-     output$PhytoPlot <- renderPlot({
-       p <- phytoplot(df = df,
-                      locs = input$site,
-                      vyear = input$year,
-                      epi_min = input$Depth1[1],
-                      epi_max = input$Depth1[2],
-                      em_min = input$Depth2[1],
-                      em_max = input$Depth2[2])
-       p
-    })
+
+  output$PhytoPlot <- renderPlot({p()})
 
     # Plot Print
      output$save.plot <- downloadHandler(
-       filename <- function() {FN},
+       filename <- function() {
+         paste0("Phytoplankton-", input$year,"_", format(Sys.time(), "%Y-%m-%d"), ".", input$plot.save.type)},
        content = function(file) {
-         file.copy(FN, file, overwrite=TRUE)
+         ggplot2::ggsave(file, plot = p(), device = input$plot.save.type, width = input$plot.save.width, height = input$plot.save.height, dpi = 300)
+         contentType = 'image/png'
        }
      )
 ### Taxa Plots
      # Total_Diatoms 128 dodgerblue
-     output$taxaplot1 <- renderPlot({
-       p <- taxaplot(df = df,locs = input$taxasite, vyear = input$taxayear, taxa = "Total_Diatoms", color = "dodgerblue")
-       p
-     })
-     # Asterionella 430 lightskyblue
-     output$taxaplot2 <- renderPlot({
-       p <- taxaplot(df = df,locs = input$taxasite, vyear = input$taxayear, taxa = "Asterionella", color = "lightskyblue")
-       p
+     p1 <- reactive({
+       p1 <- taxaplot(df = df,locs = input$taxasite, vyear = input$taxayear, taxa = "Total_Diatoms", color = "dodgerblue")
+     p1
        })
+     output$taxaplot1 <- renderPlot({p1()})
+
+      # Asterionella 430 lightskyblue
+     p2 <- reactive({
+       p2 <- taxaplot(df = df,locs = input$taxasite, vyear = input$taxayear, taxa = "Asterionella", color = "lightskyblue")
+       p2
+     })
+       output$taxaplot2 <- renderPlot({p2()})
+
      # Cyclotella 441 lightsteelblue3
      output$taxaplot3 <- renderPlot({
        p <- taxaplot(df = df,locs = input$taxasite, vyear = input$taxayear, taxa = "Cyclotella", color = "lightsteelblue3")
@@ -289,6 +307,25 @@ Phyto <- function(input, output, session, df) {
        p <- taxaplot(df = df,locs = input$taxasite, vyear = input$taxa14year, taxa = input$taxa14, color = "slategrey")
        p
      })
+     # Save Taxa Plot
+     output$save.plot1 <- downloadHandler(
+       filename <- function() {
+         paste0("Total_Diatoms-", input$taxayear,"_", format(Sys.time(), "%Y-%m-%d"), ".", input$plot.save.type)},
+       content = function(file) {
+         ggplot2::ggsave(file, plot = p1(), device = input$taxaplot.save.type,
+                         width = input$taxaplot.save.width, height = input$taxaplot.save.height, dpi = 300)
+         contentType = 'image/png'
+       }
+     )
+     output$save.plot2 <- downloadHandler(
+       filename <- function() {
+         paste0("Asterionella-", input$taxayear,"_", format(Sys.time(), "%Y-%m-%d"), ".", input$plot.save.type)},
+       content = function(file) {
+         ggplot2::ggsave(file, plot = p2(), device = input$taxaplot.save.type,
+                         width = input$taxaplot.save.width, height = input$taxaplot.save.height, dpi = 300)
+         contentType = 'image/png'
+       }
+     )
 ### Historical Plot
       output$histplot <- renderPlot({
        p <- historicplot(df = df,
