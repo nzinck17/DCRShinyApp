@@ -42,25 +42,6 @@ source("Modules/Report-AWQ.R")
 source("Modules/Report-MWQ.R")
 source("Modules/Report-Custom.R")
 
-<<<<<<< HEAD
-
-### Load Secondary Modules (Module that goes inside a module)
-
-source("Modules2/Plot-Time.R")
-source("Modules2/Plot-Time-Depth.R")
-source("Modules2/Plot-Regress.R")
-source("Modules2/Plot-Regress-Depth.R")
-source("Modules2/Plot-Profline-Custom.R")
-#source("Modules2/Plot-Profline-Standard.R")
-#source("Modules2/Plot-Profline-Custom.R")
-#source("Modules2/Plot-Profline-Standard.R")
-source("Modules2/Summary.R")
-source("Modules2/Summary-Depth.R")
-#source("Modules2/Summary-Profile.R")
-source("Modules2/SiteMap.R")
-source("Modules2/CheckboxSelectAll.R")
- ### Load Functions
-=======
 ### Load Secondary Modules (Modules used inside a primary module)
 
 # Inputs
@@ -83,13 +64,12 @@ source("Modules2/Outputs/Plot-Profline-Custom.R")
 source("Modules2/Outputs/Summary.R")
 source("Modules2/Outputs/Summary-Depth.R")
 #source("Modules2/Outputs/Summary-Profile.R")
- 
+
 # UI
 source("Modules2/UI/SiteMap.R")
 
 
 ### Load Functions
->>>>>>> nick_master/master
 
 source("Functions/GetSeasons.R")
 source("Functions/circleSizeLegend.R")

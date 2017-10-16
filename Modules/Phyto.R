@@ -60,10 +60,10 @@ Phyto.UI <- function(id,df) {
                   column(2,
                   downloadButton(ns('save.plot'), "Save Plot")
                   ),
-                  # column(2,
-                  # radioButtons(ns("plot.save.size"), "Plot Size:",
-                  #                                choices= c("small", "medium","large"))
-                  # ),
+                  column(2,
+                  radioButtons(ns("plot.save.size"), "Plot Size:",
+                                                 choices= c("small", "medium","large"))
+                  ),
                   column(2,
                   radioButtons(ns("plot.save.type"), "File Type:",
                                                  choices= c("pdf","jpg","png"))
@@ -180,11 +180,11 @@ Phyto.UI <- function(id,df) {
 
 Phyto <- function(input, output, session, df) {
 
-
-
-  #   ps <- reactive({
+  # p  <- reactive({
   #
-  #   # Save Options
+  #
+  #     # Save Options
+  #
   #     # Size dependent? Change size for saving?
   #     p <- p + theme(plot.margin = unit(c(0.2, 0.2, 0.2, 0.5), "in"))
   #
@@ -194,10 +194,12 @@ Phyto <- function(input, output, session, df) {
   #     }
   #     if("minor gridlines" %in% input$plot.save.grid){
   #       p <- p + theme(panel.grid.minor = element_line())
-  #     }
-  #   p
-  # })
-  # FN <-  paste0("Phytoplankton-", input$year,"_", format(Sys.time(), "%Y%m%d"),".", input$plot.save.type)
+  #       p
+  #       }
+  #     })
+  FN <-  reactive({
+    paste0("Phytoplankton-", input$year,"_", format(Sys.time(), "%Y%m%d"),".", input$plot.save.type)
+  })
      output$PhytoPlot <- renderPlot({
        p <- phytoplot(df = df,
                       locs = input$site,
@@ -206,20 +208,17 @@ Phyto <- function(input, output, session, df) {
                       epi_max = input$Depth1[2],
                       em_min = input$Depth2[1],
                       em_max = input$Depth2[2])
-
-       p <- p + theme(plot.margin = unit(c(0.2, 0.2, 0.2, 0.5), "in"))
-
-       # # Gridlines for saving options
-       # if("major gridlines" %in% input$plot.save.grid){
-       #   p <- p + theme(panel.grid.major = element_line())
-       # }
-       # if("minor gridlines" %in% input$plot.save.grid){
-       #   p <- p + theme(panel.grid.minor = element_line())
-       # }
        p
-       #ggsave(FN, p, device = input$plot.save.type)
     })
 
+    # Plot Print
+     output$save.plot <- downloadHandler(
+       filename <- function() {FN},
+       content = function(file) {
+         file.copy(FN, file, overwrite=TRUE)
+       }
+     )
+### Taxa Plots
      # Total_Diatoms 128 dodgerblue
      output$taxaplot1 <- renderPlot({
        p <- taxaplot(df = df,locs = input$taxasite, vyear = input$taxayear, taxa = "Total_Diatoms", color = "dodgerblue")
@@ -290,8 +289,7 @@ Phyto <- function(input, output, session, df) {
        p <- taxaplot(df = df,locs = input$taxasite, vyear = input$taxa14year, taxa = input$taxa14, color = "slategrey")
        p
      })
-    observe({print(input$yg1[1])})
-
+### Historical Plot
       output$histplot <- renderPlot({
        p <- historicplot(df = df,
                       taxa = input$histtaxa,
@@ -310,12 +308,7 @@ Phyto <- function(input, output, session, df) {
        p
      })
 
-    # output$save.plot <- downloadHandler(
-    #   filename <- function() {FN},
-    #   content = function(file) {
-    #     file.copy(FN, file, overwrite=TRUE)
-    #   }
-    # )
+
   } # End Phyto Server function
 
 
