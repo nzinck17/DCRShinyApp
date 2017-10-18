@@ -286,9 +286,9 @@ var3 <- df_yg3[stat3]
     trigmon <- df.thresh$EarlyMonitoringTrigger[match(paste0(taxa), df.thresh$Taxa)]
     trigtreat <- df.thresh$TreatmentConsideration[match(paste0(taxa), df.thresh$Taxa)]
     p <- p + geom_hline(yintercept = trigmon, linetype=2 ) +
-      annotate("text", min(df2$Date),trigmon - (0.02 * max(df2$Result)), label = "Early Monitoring Threshold", hjust = "left") +
+      annotate("text", min(df_yr$date),trigmon - (0.02 * max(var, var1, var2, var3)), label = "Early Monitoring Threshold", hjust = "left") +
       geom_hline(yintercept = trigtreat, linetype=5) +
-      annotate("text", min(df2$Date), trigtreat - (0.02 * max(df2$Result)), label = "Treatment Consideration Threshold", hjust = "left")
+      annotate("text", min(df_yr$date), trigtreat - (0.02 * max(var, var1, var2, var3)), label = "Treatment Consideration Threshold", hjust = "left")
   }
     p
 }
