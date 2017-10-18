@@ -181,7 +181,7 @@ p
 # Table Export
 
 
-historicplot <- function(df, taxa, locs, vyear, yg1min, yg1max, yg2min, yg2max, yg3min, yg3max, stat, stat1, stat2, stat3) {
+historicplot <- function(df, taxa, locs, vyear, yg1min, yg1max, yg2min, yg2max, yg3min, yg3max, stat, stat1, stat2, stat3, depthmin, depthmax) {
   # #Function Arguments for data selection
   # df <- df.phyto.wach
   # taxa <- "Anabaena" # Entire list - Alphabetical (single choice)
@@ -193,6 +193,8 @@ historicplot <- function(df, taxa, locs, vyear, yg1min, yg1max, yg2min, yg2max, 
   # yg2max <- 2016
   # yg3min <- 1988
   # yg3max <- 2016
+  # depthmin <- 4
+  # depthmax <- 25
   # # Function Arguments for Plot
   # stat <- "ave_val"
   # stat1 <- "ave_val"
@@ -217,7 +219,7 @@ historicplot <- function(df, taxa, locs, vyear, yg1min, yg1max, yg2min, yg2max, 
   colors <- c("#F49B00", "black", "#7F7F7F", "#77933C")
 
   # Parent data set
-  df <- df[df$Taxa %in% taxa & df$Station %in% locs,]
+  df <- df[df$Taxa %in% taxa & df$Station %in% locs & df$Depthm >= depthmin & df$Depthm <= depthmax,]
   df$plotdate <- NA
   df$plotdate <- as.Date(paste0(vyear,"-",month(df$Date),"-15"), format = '%Y-%m-%d')
 
@@ -278,10 +280,19 @@ var3 <- df_yg3[stat3]
           panel.grid.major.y = element_line(size=.1, color="#808080"), # explicitly set the horizontal lines (or they will disappear too)
           legend.position="bottom",
           legend.title=element_blank())
-  p
+
+  if(taxa %in% taxathreshlist) {
+    trigmon <- df.thresh$EarlyMonitoringTrigger[match(paste0(taxa), df.thresh$Taxa)]
+    trigtreat <- df.thresh$TreatmentConsideration[match(paste0(taxa), df.thresh$Taxa)]
+    p <- p + geom_hline(yintercept = trigmon, linetype=2 ) +
+      annotate("text", min(df2$Date),trigmon - (0.02 * max(df2$Result)), label = "Early Monitoring Threshold", hjust = "left") +
+      geom_hline(yintercept = trigtreat, linetype=5) +
+      annotate("text", min(df2$Date), trigtreat - (0.02 * max(df2$Result)), label = "Treatment Consideration Threshold", hjust = "left")
+  }
+    p
 }
 
-# historicplot(df, taxa, locs, vyear, yg1min, yg1max, yg2min, yg2max, yg3min, yg3max, stat, stat1, stat2, stat3)
+# historicplot(df, taxa, locs, vyear, yg1min, yg1max, yg2min, yg2max, yg3min, yg3max, stat, stat1, stat2, stat3, depthmin, depthmax)
 
 
 ######################################################################
