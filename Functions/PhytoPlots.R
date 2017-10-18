@@ -209,7 +209,7 @@ historicplot <- function(df, taxa, locs, vyear, yg1min, yg1max, yg2min, yg2max, 
   ylabel <- paste0(gsub("_", " ", taxa)," Density (ASUs/ml)")
   xmin <- as.Date(paste0(as.numeric(vyear),"-01-01"), format = '%Y-%m-%d')
   xmax <- as.Date(paste0(as.numeric(vyear),"-12-31"), format = '%Y-%m-%d')
-
+  taxathreshlist <- c("Anabaena","Synura", "Chrysosphaerella", "Uroglenopsis","Dinobryon")
   #Define legend labels and colors
   yg0_leg <- paste0(vyear, " ", taxalabel, " Values")
   yg1_leg <- paste0("Years (",yg1min,"-",yg1max,")")
