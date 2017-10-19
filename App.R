@@ -16,7 +16,9 @@
 # Load Libraries and Script (Sources, Modules, and Functions)
 #####################################################################################################
 
-#### NOTE - Libraries will now be installed and loaded in the LaunchAppGitHub.R script - this can be deleted from app.r
+#### NOTE - ipak function is defined in the LaunchAppGithubScript and shiny package is loaded
+packages <- c("rmarkdown", "knitr", "tidyverse", "lubridate", "plotly", "leaflet", "RColorBrewer", "DT", "akima", "odbc", "DBI", "scales")
+ipak(packages)
 
 ### Run/Source Scripts that load data
 
