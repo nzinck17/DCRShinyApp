@@ -133,7 +133,7 @@ df.trib.bact.wach$FlagCode <- factor(df.trib.bact.wach$FlagCode)
 # Additional formatting for Phyto data
 #Purge unwanted columns of data, transpose to long format, change data formats
 df.phyto.wach <- select(df.phyto.wach,-Phyt_ID,-Microscope,-Magnification,-Method,-ImportDate,-DataSource, -Analyst, -UniqueID) %>%
-  gather("taxa","count",5:80, na.rm =T) %>%
+  gather("taxa","count",5:82, na.rm =T) %>%
   dplyr::rename(Station = Phyt_Station, Year = Phyt_Year, Date = Phyt_Date, Depthm = Phyt_Depth_m, Taxa = taxa, Result = count) %>%
   select(Station, Year, Date, Depthm, Taxa, Result) %>%
   filter(Result >=0)
