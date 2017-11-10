@@ -16,10 +16,11 @@
 # Load Libraries and Script (Sources, Modules, and Functions)
 #####################################################################################################
 
-#### NOTE - ipak function is defined in the LaunchAppGithubScript and shiny package is loaded
-packages <- c("rmarkdown", "knitr", "tidyverse", "lubridate", "plotly", "leaflet", "RColorBrewer", "DT", "akima", "odbc", "DBI", "scales")
-ipak(packages)
 
+#### NOTE - Shiny must be installed and loaded in the LaunchAppGitHub.R script - any other packages requred should be listed below
+packages <- c("rmarkdown", "knitr", "tidyverse", "lubridate", "plotly", "leaflet",
+               "RColorBrewer", "DT", "akima", "odbc", "DBI", "scales", "stringr", "cowplot")
+ipak(packages)
 ### Run/Source Scripts that load data
 
 source("Sources/LoadMSAccessData.R")
@@ -30,6 +31,7 @@ source("Sources/Settings.R")
 source("Modules/Home.R")
 source("Modules/Time.R")
 source("Modules/Regress.R")
+source("Modules/Phyto.R")
 source("Modules/Time-Depth.R")
 source("Modules/Regress-Depth.R")
 source("Modules/Profile-Heatmap.R")
@@ -63,7 +65,7 @@ source("Modules2/Outputs/Plot-Profline-Custom.R")
 source("Modules2/Outputs/Summary.R")
 source("Modules2/Outputs/Summary-Depth.R")
 #source("Modules2/Outputs/Summary-Profile.R")
- 
+
 # UI
 source("Modules2/UI/SiteMap.R")
 
@@ -72,7 +74,7 @@ source("Modules2/UI/SiteMap.R")
 
 source("Functions/GetSeasons.R")
 source("Functions/circleSizeLegend.R")
-
+source("Functions/PhytoPlots.R")
 ###################################################################################
 ##################################  User Interface  ###############################
 ###################################################################################
@@ -186,12 +188,13 @@ tabPanel("Reservoir",
                            tabPanel("Quabbin", prof.summary.UI("mod.prof.quab.sum", df.prof.quab)),
                            tabPanel("Wachusett", prof.summary.UI("mod.prof.wach.sum", df.prof.wach))
                          )
-                # ),
-                # tabPanel("Biological",
-                #          fluidRow(column(10, h4("Phytoplankton Plots", align = "center")), column(2)),
-                #          tabsetPanel(
-                #            tabPanel("Wachusett", phyto.plots.UI("mod.phyto.wach.line", df.phyto.wach))
-                #          )
+                ),
+                "Biological",
+                tabPanel("Phytoplankton",
+                         fluidRow(column(10, h4("Phytoplankton Plots and Data", align = "center")), column(2)),
+                         tabsetPanel(
+                           tabPanel("Wachusett", Phyto.UI("mod.phyto.wach.plots", df.phyto.wach))
+                         )
                 )
 
    ) # end navlist
@@ -414,7 +417,8 @@ server <- function(input, output, session) {
   callModule(prof.summary, "mod.prof.wach.sum", df = df.prof.wach)
 
   # AquaBio
-
+  callModule(Phyto, "mod.phyto.wach.plots", df = df.phyto.wach)
+  #callModule(phyto.summary, "mod.phyto.wach.plots", df = df.phyto.wach)
 
 ####################################################################
 # Map Plot

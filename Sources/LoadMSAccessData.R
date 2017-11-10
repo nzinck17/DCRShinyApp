@@ -52,7 +52,7 @@ dbDisconnect(con)
 rm(con)
 
 
-### Wachusett Profile
+### Wachusett Reservoir (Profile, Phytoplankton, Physiochemical)
 
 # Connect to db
 con<- dbConnect(odbc::odbc(),
@@ -96,7 +96,7 @@ df.prof.quab$Date <- as.Date(as.character(df.prof.quab$Date), format = '%d-%b-%y
 ### WACHUSETT
 
 # rename columns
-df.trib.bact.wach <- rename(df.trib.bact.wach, Site = Location, `Result Temp` = Result, Result = FinalResult)
+df.trib.bact.wach <- rename(df.trib.bact.wach, Site = Location, `Result Temp` = ResultReported, Result = FinalResult)
 df.chem.wach <- rename(df.chem.wach, Site = Location, Result = Finalresult, Date = Date_Collected, Time = Collection_Time,
                       Parameter = Component, Units = Unit_of_Measure, FlagCode = Flagcode)
 df.prof.wach <- rename(df.prof.wach, Date = Pro_Date, Site = Pro_Station, Time = Pro_TimeFormatted, Depthm = Pro_Depth_m)
@@ -133,9 +133,13 @@ df.trib.bact.wach$FlagCode <- factor(df.trib.bact.wach$FlagCode)
 # Additional formatting for Phyto data
 #Purge unwanted columns of data, transpose to long format, change data formats
 df.phyto.wach <- select(df.phyto.wach,-Phyt_ID,-Microscope,-Magnification,-Method,-ImportDate,-DataSource, -Analyst, -UniqueID) %>%
-  gather("taxa","count",5:80, na.rm =T)
-df.phyto.wach$taxa <- as.factor(df.phyto.wach$taxa)
-df.phyto.wach$Phyt_Station <- as.factor(df.phyto.wach$Phyt_Station)
+  gather("taxa","count",5:82, na.rm =T) %>%
+  dplyr::rename(Station = Phyt_Station, Year = Phyt_Year, Date = Phyt_Date, Depthm = Phyt_Depth_m, Taxa = taxa, Result = count) %>%
+  select(Station, Year, Date, Depthm, Taxa, Result) %>%
+  filter(Result >=0)
+
+df.phyto.wach$Taxa <- as.factor(df.phyto.wach$Taxa)
+df.phyto.wach$Station <- as.factor(df.phyto.wach$Station)
 
 # Additional formatting for Phyto data
 df.secchi.wach <- df.secchi.wach[,c(2:5)] # Remove unwated columns
@@ -221,7 +225,6 @@ col.prof.quab <- c("LocationLabel", "Date", "Depthm", "Parameter", "Result", "Un
 # Wachusett Res Profile
 col.prof.wach <- c("LocationLabel", "Date", "Depthm", "Parameter", "Result", "Site", "Station", "LocationCategory") # need units??
 
-
 ###########################################################################################################################
 # Final Water Quality Dataframes
 ###########################################################################################################################
@@ -266,6 +269,9 @@ df.prof.quab <- df.prof.quab.exp %>% select(col.prof.quab)
 df.prof.wach.exp <- df.prof.wach
 df.prof.wach <- df.prof.wach.exp  %>% select(col.prof.wach)
 
+# Wachusett Phytoplankton
+
+df.phyto.wach <- df.phyto.wach
 
 ###########################################################################################################################
 # Final Site/Location Information Dataframes
@@ -296,6 +302,10 @@ df.chem.wach.site <- df.chem.prof.wach.site %>% filter(!is.null(LocationDepth))
 
 # Wachusett Profile
 df.prof.wach.site <- df.chem.prof.wach.site %>% filter(is.null(LocationDepth))
+
+# Wachusett Phytoplankton
+
+# Just use match function where needed - like in pick lists and chart labels/titles rather than append site data to each record
 
 # All Sites - # Combine All Sites into 1 dataframe ( Need to update when Sites are squared away)
 df.all.site.temp <- full_join(df.quab.ware.site,
