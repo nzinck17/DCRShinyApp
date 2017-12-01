@@ -97,8 +97,7 @@ df.prof.quab$Date <- as.Date(as.character(df.prof.quab$Date), format = '%d-%b-%y
 
 # rename columns
 df.trib.bact.wach <- rename(df.trib.bact.wach, Site = Location, `Result Temp` = ResultReported, Result = FinalResult)
-df.chem.wach <- rename(df.chem.wach, Site = Location, Result = Finalresult, Date = Date_Collected, Time = Collection_Time,
-                      Parameter = Component, Units = Unit_of_Measure, FlagCode = Flagcode)
+df.chem.wach <- rename(df.chem.wach, Site = Location, `Result Temp` = ResultReported, Result = FinalResult)
 df.prof.wach <- rename(df.prof.wach, Date = Pro_Date, Site = Pro_Station, Time = Pro_TimeFormatted, Depthm = Pro_Depth_m)
 
 # reformat the Wachusett Profile data to "Tidy" data format ("Long" instead of "Wide")
@@ -115,11 +114,11 @@ df.trib.bact.wach$SampleDateTime <- format(df.trib.bact.wach$SampleDateTime, tz 
 df.trib.bact.wach$Date <- as.Date(as.character(df.trib.bact.wach$SampleDateTime),format ='%Y-%m-%d %H:%M:%S')
 df.phyto.wach$Phyt_Date <- as.Date(format(df.phyto.wach$Phyt_Date, tz ="America/New_York", usetz=TRUE))
 df.secchi.wach$Date <- as.Date(format(df.secchi.wach$Date, tz ="America/New_York", usetz=TRUE))
-df.chem.wach$Date <- as.Date(as.character(df.chem.wach$Date),format ='%Y-%m-%d %H:%M:%S')
+df.chem.wach$Date <- as.Date(as.character(df.chem.wach$SampleDateTime),format ='%Y-%m-%d %H:%M:%S')
 df.prof.wach$Date <- as.Date(df.prof.wach$Date)
 
 # time format
-df.chem.wach$Time <- format(df.chem.wach$Time,"%H:%M:%S")
+#df.chem.wach$Time <- format(df.chem.wach$Time,"%H:%M:%S") No longer needed because df now has combined date-time stamp
 df.prof.wach$Time <- format(df.prof.wach$Time,"%H:%M:%S")
 df.prof.wach$DateTime <-as.POSIXct(paste(df.prof.wach$Date, df.prof.wach$Time), format="%Y-%m-%d %H:%M:%S")
 df.secchi.wach$SampleTime <- format(df.secchi.wach$SampleTime, "%H:%M")
@@ -191,7 +190,7 @@ df.prof.quab <- left_join(df.prof.quab, df.quab.ware.site, by = "Site")
 df.trib.bact.wach <- left_join(df.trib.bact.wach, df.trib.bact.wach.site, by = "Site")
 
 # Wachusett Chemical
-df.chem.wach <- left_join(df.chem.wach, df.chem.prof.wach.site, by = c("Site", "Station"))
+df.chem.wach <- left_join(df.chem.wach, df.chem.prof.wach.site, by = "Site")
 
 # Wachusett Profile
 df.prof.wach <- left_join(df.prof.wach, df.chem.prof.wach.site, by = "Site")
@@ -217,7 +216,7 @@ col.bact.wach <- c("LocationLabel", "Date", "Parameter", "Result", "Units", "Fla
 col.chem.quab <- c("LocationLabel", "Date", "Sampling_Level", "Parameter", "Result", "Units", "Site", "Station", "LocationCategory")
 
 # Wachusett Res Chemical
-col.chem.wach <- c("LocationLabel", "Date", "Sampling_Level", "Parameter", "Result", "Units", "FlagCode", "Site", "Station", "LocationCategory")
+col.chem.wach <- c("LocationLabel", "Date", "LocationDepth", "Parameter", "Result", "Units", "FlagCode", "Site", "Station", "LocationCategory")
 
 # Quabbin (Res) Profile
 col.prof.quab <- c("LocationLabel", "Date", "Depthm", "Parameter", "Result", "Units", "Site", "Station", "LocationCategory")
