@@ -85,79 +85,7 @@ tagList(
                                )# end Conditional Panel
                              )# end Well Panel
                       )
-                    ),# end fluid row
-                    hr(),
-                    br(),
-                    fluidRow(
-                      column(4,
-                             wellPanel(
-                               # MET/HYDRO FILTER 1
-                               strong("Meteoro/Hydro Filter 1"),
-                               br(), br(),
-                               radioButtons(ns("met.option.1"), label = NULL, choices = c("off", "on"), inline = TRUE),
-                               selectInput(ns("met.param.1"), label = NULL, choices = c("Wind Speed", 
-                                                                                        "Wind Direction", 
-                                                                                        "Precipitation - 24 hrs",
-                                                                                        "Precipitation - 48 hrs",
-                                                                                        "Temperature",
-                                                                                        "Cloud Cover",
-                                                                                        "Flow - Quabbin Aquaduct",
-                                                                                        "Flow - East Branch Swift",
-                                                                                        "Flow - West Branch Swift",
-                                                                                        "Flow - Quinapoxet",
-                                                                                        "Flow - Stillwater"),
-                                           selected = "Wind Speed"),
-                               sliderInput(ns("met.value.1"), "Value Range:", min = 0, max = 12, value = c(0,12), step = 0.5)
-                             )# end Well Panel
-                      ),# end Column
-                      column(4,
-                             # MET/HYDRO FILTER 2
-                             wellPanel(
-                               strong("Meteoro/Hydro Filter 2"),
-                               br(), br(),
-                               radioButtons(ns("met.option.2"), label = NULL, 
-                                            choices = c("off", "on"), inline = TRUE),
-                               selectInput(ns("met.param.2"), label = NULL, 
-                                           choices = c("Wind Speed", 
-                                                       "Wind Direction", 
-                                                       "Precipitation - 24 hrs",
-                                                       "Precipitation - 48 hrs",
-                                                       "Temperature",
-                                                       "Cloud Cover",
-                                                       "Flow - Quabbin Aquaduct",
-                                                       "Flow - East Branch Swift",
-                                                       "Flow - West Branch Swift",
-                                                       "Flow - Quinapoxet",
-                                                       "Flow - Stillwater"),
-                                           selected = "Precipitation - 24 hrs"),
-                               sliderInput(ns("met.value.2"), "Value Range:", min = 0, max = 12, value = c(0,12), step = 0.5)
-                             )# end Well Panel
-                      ),# end Column
-                      column(4,
-                             # MET/HYDRO FILTER 3
-                             wellPanel(
-                               strong("Meteoro/Hydro Filter 3"),
-                               br(), br(),
-                               radioButtons(ns("met.option.3"), label = NULL, 
-                                            choices = c("off", "on"), 
-                                            inline = TRUE),
-                               selectInput(ns("met.param.3"), label = NULL, 
-                                           choices = c("Wind Speed", 
-                                                       "Wind Direction", 
-                                                       "Precipitation - 24 hrs",
-                                                       "Precipitation - 48 hrs",
-                                                       "Temperature",
-                                                       "Cloud Cover",
-                                                       "Flow - Quabbin Aquaduct",
-                                                       "Flow - East Branch Swift",
-                                                       "Flow - West Branch Swift",
-                                                       "Flow - Quinapoxet",
-                                                       "Flow - Stillwater"),
-                                           selected = "Precipitation - 24 hrs"),
-                               sliderInput(ns("met.value.3"), "Value Range:", min = 0, max = 12, value = c(0,12), step = 0.5)
-                             )# end Well Panel
-                      )# end Column
-                    )# end Fluid Row
+                    )# end fluid row
              )# end Column
            )# end Fluid Row
          ), # end Well panel
@@ -512,3 +440,4 @@ regress <- function(input, output, session, df, df.site) {
   callModule(sitemap, "Site Map", df.site = df.site, site.list = site.list)
   
 } # end Server Function
+

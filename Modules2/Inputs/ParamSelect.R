@@ -32,16 +32,23 @@ param.select.UI <- function(id) {
 # Server Function
 ##############################################################################################################################
 
+# Note that Arguments "df"  and "site" need to be reactive expressions, not resolved values. 
+# Thus do not use () in callModule argument for reactives
+# For non reactives wrap with "reactive" to make into a reactive expression.
+
 param.select <- function(input, output, session, df, site) { 
   
 
   # Non Historical Parameters (when a Parameter has not been used in over 5 years). See General Note 6
 
-  parameters.non.historical <- df %>%
-    filter(Date > Sys.Date()-years(5), Date < Sys.Date()) %>%
-    .$Parameter %>%
-    factor() %>%
-    levels()
+  parameters.non.historical <- reactive({
+    df() %>%
+      filter(Date > Sys.Date()-years(5), Date < Sys.Date()) %>%
+      .$Parameter %>%
+      factor() %>%
+      levels()
+  })
+
   
   
   # Parameter Choice List
@@ -51,17 +58,17 @@ param.select <- function(input, output, session, df, site) {
     if(!is.null(site())){
       
     # Parameters which have data at any Site (in the mofule's df) within 5 years.
-    param.new.choices <- df %>%
+    param.new.choices <- df() %>%
       filter(LocationLabel %in% c(site()),
-             Parameter %in% parameters.non.historical) %>%
+             Parameter %in% parameters.non.historical()) %>%
       .$Parameter %>%
       factor() %>%
       levels()
     
     # Parameters which do NOT have data at any Site (in the mofule's df) within 5 years.
-    param.old.choices <- df %>%
+    param.old.choices <- df() %>%
       filter(LocationLabel %in% c(site()),
-             !(Parameter %in% parameters.non.historical)) %>%
+             !(Parameter %in% parameters.non.historical())) %>%
       .$Parameter %>%
       factor() %>%
       levels()
@@ -79,10 +86,12 @@ param.select <- function(input, output, session, df, site) {
     
   # Parameter Selection UI
   
+  
   output$type.ui <- renderUI({
     ns <- session$ns # see General Note 1
-    selectInput(ns("type"), "Parameter: ", choices=c(param.choices()))
+    selectInput(ns("type"), "Parameter:", choices=c(param.choices()), multiple = TRUE)
   })
+  
   
   
   # To fill back in previously selected
@@ -116,7 +125,7 @@ param.select <- function(input, output, session, df, site) {
   
   units <- reactive({
     
-    df %>%
+    df() %>%
       filter(Parameter %in% input$type) %>%
       .$Units %>%
       factor() %>%
@@ -134,7 +143,7 @@ param.select <- function(input, output, session, df, site) {
     
     if(!is.null(site())){
       
-      result <- df %>%
+      result <- df() %>%
         filter(LocationLabel %in% c(site()),
                Parameter %in% input$type) %>%
         .$Result

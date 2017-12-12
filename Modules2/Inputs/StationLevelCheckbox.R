@@ -34,53 +34,87 @@ station.level.checkbox.UI <- function(id) {
 # Server Function
 ##############################################################################################################################
 
-station.level.checkbox <- function(input, output, session, df) { 
-  
+# Note that Argument "df"  needs to be a reactive expression, not a resolved value. 
+# Thus do not use () in callModule argument for reactives
+# For non reactives wrap with "reactive" to make into a reactive expression.
 
+station.level.checkbox <- function(input, output, session, df, selectall = FALSE, colwidth = 3) { 
+  
 
   ### Station
   
   # Choices
-  station.choices <- df$Station %>% factor() %>% levels()
+  station.choices <- reactive({
+    df()$Station %>% factor() %>% levels()
+  })
+  
+  selected1 <- reactive({
+    if(selectall == FALSE){
+      NULL
+    }else{
+      station.choices()
+    }
+  })
   
   # UI
   output$station.ui <- renderUI({
     ns <- session$ns # see General Note 1
-    checkboxSelectAll.UI(ns("station"), "Station:", choices = station.choices)
+    checkboxSelectAll.UI(ns("station"))
   })
   
   # Server
-  station.selected <- callModule(checkboxSelectAll, "station", choices = station.choices)
+  station.selected <- callModule(checkboxSelectAll, "station",
+                                 label = "Station:",
+                                 choices = station.choices,
+                                 selected = selected1,
+                                 colwidth = colwidth)
 
   
   
   ### Sampling Level
   
   # Choices
-  level.choices <- df$Sampling_Level %>% factor() %>% levels()
+  level.choices <- reactive({
+    df()$Sampling_Level %>% factor() %>% levels()
+  })
+    
+  selected2 <- reactive({
+    if(selectall == FALSE){
+      NULL
+    }else{
+      level.choices()
+    }
+  })
   
   # UI
   output$level.ui <- renderUI({
     ns <- session$ns # see General Note 1
-    checkboxSelectAll.UI(ns("level"), "Sampling Level:", choices = level.choices)
+    checkboxSelectAll.UI(ns("level"))
   })
   
   # Server
-  level.selected <- callModule(checkboxSelectAll, "level", choices = level.choices)
+  level.selected <- callModule(checkboxSelectAll, "level",
+                               label = "Sampling Level:",
+                               choices = level.choices,
+                               selected = selected2,
+                               colwidth = colwidth)
   
   
   # Create Site (location Labels) Choices from selected Stations and Levels
   site.selected <- reactive({
     
-    df %>%
-      filter(Station %in% input$station,
-             Sampling_Level %in% input$level) %>%
+    req(station.selected(), level.selected())
+    
+    df() %>%
+      filter(Station %in% station.selected(),
+             Sampling_Level %in% level.selected()) %>%
       .$LocationLabel %>%
       factor() %>%
       levels()
+    
   })
 
-  return(reactive({c(site.selected())}))
+  return(reactive({site.selected()}))
 
 } # end Server Function
 

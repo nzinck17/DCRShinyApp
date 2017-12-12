@@ -16,7 +16,7 @@
 # User Interface
 ##############################################################################################################################
 
-export.wq.UI <- function(id) {
+filter.wq.UI <- function(id) {
   
   ns <- NS(id) # see General Note 1
   
@@ -24,15 +24,6 @@ export.wq.UI <- function(id) {
     wellPanel(
       fluidRow(
         column(4,
-               # Text - Number of Samples or "Select a site"
-               wellPanel(
-                 h5(textOutput(ns("text.no.month"))),
-                 h5(textOutput(ns("text.no.year"))),
-                 h5(textOutput(ns("text.no.flag"))),
-                 h5(textOutput(ns("text.no.storm"))),
-                 h5(textOutput(ns("text.num.text")), align = "center"),
-                 h4(textOutput(ns("text.num")), align = "center")
-               ), # end Well Panel
                # Date Selection
                wellPanel(
                  # Date Range
@@ -45,7 +36,7 @@ export.wq.UI <- function(id) {
                ), # end Well Panel
                wellPanel(
                  # Month
-                 selectInputSelectAll.UI(ns("month"))
+                 checkboxSelectAll.UI(ns("month"))
                ), # end Well Panel
                wellPanel(
                  # Year
@@ -60,6 +51,13 @@ export.wq.UI <- function(id) {
                # storm Sample Selection
                wellPanel(
                  checkboxSelectAll.UI(ns("storm"))
+               ), # end Well Panel
+               # Text - Number of Samples or "Select a site"
+               wellPanel(
+                 h5(textOutput(ns("text.no.month"))),
+                 h5(textOutput(ns("text.no.year"))),
+                 h5(textOutput(ns("text.no.flag"))),
+                 h5(textOutput(ns("text.no.storm")))
                ) # end Well Panel
         ), # end column
         column(4,
@@ -119,9 +117,23 @@ export.wq.UI <- function(id) {
 ##############################################################################################################################
 
 # This module does not take any reactive expressions. Changes will have to be made to accmodate reactive expressions
+# dfs is a list of dataframes
 
-export.wq <- function(input, output, session, dfs, col) { 
+filter.wq <- function(input, output, session, dfs, col) { 
 
+  
+  
+  ### Month Selection
+  
+  # server
+  month.input <- callModule(checkboxSelectAll, "month",
+                            label = "Months:",
+                            choices = reactive({month.name}), 
+                            selected = reactive({month.name}), 
+                            colwidth = 3,
+                            hidden = TRUE)
+  
+  
   
   ### Year Selection
   
@@ -131,48 +143,10 @@ export.wq <- function(input, output, session, dfs, col) {
   # Server
   year.input <- callModule(selectInputSelectAll, "year", 
                            label = "Years:", 
-                           choices = reactive(year.choices), 
-                           selected = reactive(year.choices), 
-                           colwidth = 3)
-  
-  
-  
-  ### Month Selection
-  
-  # server
-  month.input <- callModule(selectInputSelectAll, "month",
-                            label = "Months:",
-                            choices = reactive(month.name), 
-                            selected = reactive(month.name), 
-                            colwidth = 3)
-  
-  
-  
-  ### Flag Selection
-  
-  # Choices
-  flag.choices <- dfs[1]$FlagCode %>% factor() %>% levels()
-  
-  # Server
-  flag <- callModule(selectInputSelectAll, "flag",
-                     label = "Flags:",
-                     choices = reactive(flag.choices), 
-                     selected = reactive(flag.choices), 
-                     colwidth = 3)
-  
-  
-  
-  
-  ### Storm Selection
-  
-  # Choices
-  storm.choices <- dfs[1]$StormSample %>% factor() %>% levels()
-  
-  # Server
-  storm <- callModule(checkboxSelectAll, "storm",
-                      label = "Storm Sample:",
-                      choices = reactive(storm.choices), 
-                      selected = reactive(storm.choices))
+                           choices = reactive({year.choices}), 
+                           selected = reactive({year.choices}), 
+                           colwidth = 3,
+                           hidden = TRUE)
   
   
   
@@ -180,21 +154,52 @@ export.wq <- function(input, output, session, dfs, col) {
   
   
   
-  ### Reactive Dataframe - filter for selected site, param, value range, date, and remove rows with NA for Result
+  ### Flag Selection
+
+  # Choices
+  flag.choices <- dfs[[1]]$FlagCode %>% factor() %>% levels()
+
+  # Server
+  flag <- callModule(selectInputSelectAll, "flag",
+                     label = "Flags:",
+                     choices = reactive({flag.choices}),
+                     selected = reactive({flag.choices}),
+                     colwidth = 3,
+                     hidden = TRUE)
+
+
+
+
+  ### Storm Selection
+
+  # Choices
+  storm.choices <- dfs[[1]]$StormSample %>% factor() %>% levels()
+
+  # Server
+  storm <- callModule(checkboxSelectAll, "storm",
+                      label = "Storm Sample:",
+                      choices = reactive({storm.choices}),
+                      selected = reactive({storm.choices}),
+                      hidden = TRUE)
   
-  dfs.react <- reactive({
+  
+  
+
+  
+  
+  
+  ### Reactive List of (non-reactive) Dataframes - filter for selected site, param, value range, date, and remove rows with NA for Result
+  
+  df.react.list <- reactive({
     
-    req(input$date, month.input(), year.input(), flag(), storm()) # See General Note _
+    req(input$date, month.input(), year.input()) #, flag(), storm() # See General Note _
     
-    # Filters
-    dfs %>% 
-      lapply %>% 
-      filter(Date > input$date[1], Date < input$date[2],
-             as.character(month(Date, label = TRUE, abbr = FALSE)) %in% month.input(),
-             year(Date) %in% year.input(),
-             FlagCode %in% flag(),
-             StormSample %in% storm(),
-             !is.na(Result))
+    dfs %>% lapply(. %>% filter(Date > input$date[1], Date < input$date[2],
+                                as.character(month(Date, label = TRUE, abbr = FALSE)) %in% month.input(),
+                                year(Date) %in% year.input(),
+                                #FlagCode %in% flag(),
+                                #StormSample %in% storm(),
+                                !is.na(Result)))
     
   })
   
@@ -216,17 +221,19 @@ export.wq <- function(input, output, session, dfs, col) {
     req(is.null(flag()))
     "- Please Select Flag Types"
   })
-  
+
   output$text.no.storm <- renderText({
     req(is.null(storm()))
     "- Please Select Storm Sample Types"
   })
 
 
+  ### Return List of Reactive Dataframes
+  # a Reactive List Expression is converted to a (Non-reactive) List of Reactive Expressions
   
-  ### Return Dataframe from Module
-  
-  return(dfs.react)
+  return(list(reactive({df.react.list()[[1]]}),
+              reactive({df.react.list()[[2]]}),
+              reactive({df.react.list()[[3]]})))
   
   
 

@@ -1,5 +1,5 @@
 ##############################################################################################################################
-#     Title: CheckboxSelectAll.R
+#     Title: SelectInputSelectAll.R
 #     Type: Module2 for DCR Shiny App
 #     Description: Parameter selection with Historical at end and Select All feature
 #     Written by: Nick Zinck, Spring 2017
@@ -13,17 +13,16 @@
 # User Interface
 ##############################################################################################################################
 
-checkboxSelectAll.UI <- function(id) {
+selectInputSelectAll.UI <- function(id) {
   
   ns <- NS(id) # see General Note 1
   
   tagList(
-    uiOutput(ns("checkbox.ui")),
+    uiOutput(ns("selectinput.ui")),
     uiOutput(ns("actionbuttons"))
   )
 }
-  
-
+    
 ##############################################################################################################################
 # Server Function
 ##############################################################################################################################
@@ -32,33 +31,34 @@ checkboxSelectAll.UI <- function(id) {
 # Thus do not use () in callModule argument for reactives
 # For non reactives wrap with "reactive" to make into a reactive expression.
 
-checkboxSelectAll <- function(input, output, session, label, choices, selected = reactive(NULL), colwidth = 3, hidden = FALSE) { 
+selectInputSelectAll <- function(input, output, session, label, choices, selected = reactive(NULL), colwidth = 3, hidden = FALSE) { 
   
-  output$checkbox.ui <- renderUI({
+  
+  output$selectinput.ui <- renderUI({
     ns <- session$ns # see General Note 1
-    checkboxGroupInput(inputId = ns("checkbox"), label = label, choices = choices(), selected = selected())
+    selectInput(inputId = ns("selectinput"), label = label, choices = choices(), selected = selected(), multiple = TRUE)
   })
   
+  ns <- session$ns # see General Note 1
   
   ### Update the Checkbox basaed on Action Buttons
   observeEvent(input$select.all, {
-    updateCheckboxGroupInput(session = session, inputId = "checkbox", label = NULL, choices = choices(), selected = choices())
+    updateSelectInput(session = session, inputId = "selectinput", label = NULL, choices = choices(), selected = choices())
   })
   
   observeEvent(input$select.def, {
-    updateCheckboxGroupInput(session = session, inputId = "checkbox", label = NULL, choices = choices(), selected = selected())
+    updateSelectInput(session = session, inputId = "selectinput", label = NULL, choices = choices(), selected = selected())
   })
   
   observeEvent(input$unselect.all, {
-    updateCheckboxGroupInput(session = session, inputId = "checkbox", label = NULL, choices = choices())
+    updateSelectInput(session = session, inputId = "selectinput", label = NULL, choices = choices())
   })
   
   
   # Create Action Buttons to Select All/ Unselect All/ Select Default
   output$actionbuttons <- renderUI({
-    ns <- session$ns # see General Note 1
     # If selected is not NULL or ALL
-    if(is.null(selected()) | length(choices()) == length(selected())) { 
+    if(is.null(selected()) | length(choices()) == length(selected())) {
       # Size Buttons according to column width (input)
       if(colwidth >= 3){
         tagList(
@@ -78,7 +78,7 @@ checkboxSelectAll <- function(input, output, session, label, choices, selected =
       }
       # If Default Selection - Add a third button
     } else {
-      if(colwidth >= 4){
+      if(colwidth >= 3){
         tagList(
           fluidRow(actionButton(inputId = ns("select.all"), label = "Select All", width = "32%"),
                    actionButton(inputId = ns("select.def"), label = "Select Default", width = "32%"), 
@@ -94,13 +94,16 @@ checkboxSelectAll <- function(input, output, session, label, choices, selected =
     }
   })
   
-  # Getoptions(SuspendedWhenHidden = FALSE) to checkbox.ui so when input are on serperate tabs, uiOUtput (by renderUI) does not suspend
+
+  # Getoptions(SuspendedWhenHidden = FALSE) to selectinput.ui so when input are on serperate tabs, uiOUtput (by renderUI) does not suspend
   # this is used in Filter Tab becuase this is hidden when other tabs are open yet use this info
   if(hidden == TRUE){
-    outputOptions(output, "checkbox.ui", suspendWhenHidden = FALSE)
+    outputOptions(output, "selectinput.ui", suspendWhenHidden = FALSE)
   }
   
-  return(reactive({input$checkbox}))
+  
+  
+  return(reactive({input$selectinput}))
   
 }
 

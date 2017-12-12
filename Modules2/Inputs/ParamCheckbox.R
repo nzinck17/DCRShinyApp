@@ -33,43 +33,72 @@ param.checkbox.UI <- function(id) {
 # Server Function
 ##############################################################################################################################
 
-param.checkbox <- function(input, output, session, df) { 
+# Note that Argument "df"  needs to be a reactive expression, not a resolved value. 
+# Thus do not use () in callModule argument for reactives
+# For non reactives wrap with "reactive" to make into a reactive expression.
+
+param.checkbox <- function(input, output, session, df, selectall = FALSE, colwidth = 3) { 
   
 
   # Non Historical (when a Parameter has been used  in the last 5 years). See General Note 6
-  parameters.non.historical <- df %>%
-    filter(Date > Sys.Date()-years(5), Date < Sys.Date()) %>%
-    .$Parameter %>%
-    factor() %>%
-    levels()
+  parameters.non.historical <- reactive({
+    df() %>%
+      filter(Date > Sys.Date()-years(5), Date < Sys.Date()) %>%
+      .$Parameter %>%
+      factor() %>%
+      levels()
+  })
+
   
   
   # Parameters which have data at any Site (in the mofule's df) within 5 years.
-  param.new.choices <- df %>%
-    filter(Parameter %in% parameters.non.historical) %>%
-    .$Parameter %>%
-    factor() %>%
-    levels()
+  param.new.choices <- reactive({
+    df() %>%
+      filter(Parameter %in% parameters.non.historical()) %>%
+      .$Parameter %>%
+      factor() %>%
+      levels()
+  })
+
   
   
   # Parameters which do NOT have data at any Site (in the mofule's df) within 5 years.
-  param.old.choices <- df %>%
-    filter(!(Parameter %in% parameters.non.historical)) %>%
-    .$Parameter %>%
-    factor() %>%
-    levels()
+  param.old.choices <- reactive({
+    df() %>%
+      filter(!(Parameter %in% parameters.non.historical())) %>%
+      .$Parameter %>%
+      factor() %>%
+      levels()
+  })
+
   
   # Combine new and old
-  param.choices <- c(param.new.choices, param.old.choices)
+  param.choices <- reactive({
+    c(param.new.choices(), param.old.choices())
+  })
+  
+  
+  # Select All to Start?
+  selected <- reactive({
+    if(selectall == FALSE){
+      NULL
+    }else{
+      param.choices()
+    }
+  })
   
   
   # Parameter - Selection UI
   output$type.ui <- renderUI({
     ns <- session$ns # see General Note 1
-    checkboxSelectAll.UI(ns("type"), "Parameter: ", choices=c(param.choices))
+    checkboxSelectAll.UI(ns("type"))
   })
   
-  type <- callModule(checkboxSelectAll, "type", choices = param.choices, colwidth = 2)
+  type <- callModule(checkboxSelectAll, "type",
+                     label = "Parameters:",
+                     choices = param.choices,
+                     selected = selected,
+                     colwidth = colwidth)
   
   
   # Parameter Value Range Bar UI
@@ -78,7 +107,7 @@ param.checkbox <- function(input, output, session, df) {
     
     ns <- session$ns # see General Note 1
     
-    result <- df %>%
+    result <- df() %>%
       filter(Parameter %in% type()) %>%
       .$Result
     

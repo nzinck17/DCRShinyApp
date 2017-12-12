@@ -11,7 +11,6 @@ filename.quab <- "DBQ=C:/WQDatabase/QUABBIN_WQDB_fe.mdb"
 filename.wach.wq <- "DBQ=C:/WQDatabase/WACHUSETT_WQDB_fe.mdb"
 filename.wach.aquabio <- "DBQ=C:/WQDatabase/WACHUSETT_AQBIO_DB_fe.mdb"
 
-
 ##############################################################################################################################
 # GET DATA FROM DATABASE *(Connect to database, fetch tables, and close connection)
 ##############################################################################################################################
@@ -44,6 +43,7 @@ con <- dbConnect(odbc::odbc(),
 
 # Read Tables
 df.trib.bact.wach <- dbReadTable(con, "tblWQALLDATA")
+#df.trib.bact.wach <- dbGetQuery(con, paste("SELECT", wq.col.list, "FROM tblWQALLDATA"))
 df.trib.bact.wach.site <- dbReadTable(con, "tblLocations")
 df.trib.bact.wach.param <- dbReadTable(con, "tblParameters")
 
@@ -121,7 +121,7 @@ df.prof.wach$Date <- as.Date(df.prof.wach$Date)
 #df.chem.wach$Time <- format(df.chem.wach$Time,"%H:%M:%S") No longer needed because df now has combined date-time stamp
 df.prof.wach$Time <- format(df.prof.wach$Time,"%H:%M:%S")
 df.prof.wach$DateTime <-as.POSIXct(paste(df.prof.wach$Date, df.prof.wach$Time), format="%Y-%m-%d %H:%M:%S")
-df.secchi.wach$SampleTime <- format(df.secchi.wach$SampleTime, "%H:%M")
+#df.secchi.wach$SampleTime <- format(df.secchi.wach$SampleTime, "%H:%M")
 
 # flag format - Change a "NA" or "NAN" value to "No Flag"
 df.trib.bact.wach$FlagCode <- as.character(df.trib.bact.wach$FlagCode)
@@ -132,10 +132,10 @@ df.trib.bact.wach$FlagCode <- factor(df.trib.bact.wach$FlagCode)
 # Additional formatting for Phyto data
 #Purge unwanted columns of data, transpose to long format, change data formats
 df.phyto.wach <- select(df.phyto.wach,-Phyt_ID,-Microscope,-Magnification,-Method,-ImportDate,-DataSource, -Analyst, -UniqueID) %>%
-  gather("taxa","count",5:82, na.rm =T) %>%
-  dplyr::rename(Station = Phyt_Station, Year = Phyt_Year, Date = Phyt_Date, Depthm = Phyt_Depth_m, Taxa = taxa, Result = count) %>%
-  select(Station, Year, Date, Depthm, Taxa, Result) %>%
-  filter(Result >=0)
+ gather("taxa","count",5:82, na.rm =T) %>%
+ dplyr::rename(Station = Phyt_Station, Year = Phyt_Year, Date = Phyt_Date, Depthm = Phyt_Depth_m, Taxa = taxa, Result = count) %>%
+ select(Station, Year, Date, Depthm, Taxa, Result) %>%
+ filter(Result >=0)
 
 df.phyto.wach$Taxa <- as.factor(df.phyto.wach$Taxa)
 df.phyto.wach$Station <- as.factor(df.phyto.wach$Station)
@@ -195,10 +195,12 @@ df.chem.wach <- left_join(df.chem.wach, df.chem.prof.wach.site, by = "Site")
 # Wachusett Profile
 df.prof.wach <- left_join(df.prof.wach, df.chem.prof.wach.site, by = "Site")
 
-
 ###########################################################################################################################
 # List of Column names to be shown in Trib and Res Module tables and Default Selected in Export Module
 ###########################################################################################################################
+
+# Trib and Res Columns to read into the App (right now for Wachusett but eventually for Quabbin too)
+#wq.col.list <- "ID, UniqueID, Location, SampleDateTime, Parameter, Units, FinalResult, StormSample, StormSampleN, DetectionLimit, FlagCode"
 
 # Quabbin, Ware, and All Tributary
 col.trib.quab.ware <- c("LocationLabel", "Date", "Parameter", "Result", "Units", "Site", "LocationCategory")
@@ -269,8 +271,7 @@ df.prof.wach.exp <- df.prof.wach
 df.prof.wach <- df.prof.wach.exp  %>% select(col.prof.wach)
 
 # Wachusett Phytoplankton
-
-df.phyto.wach <- df.phyto.wach
+#df.phyto.wach <- df.phyto.wach
 
 ###########################################################################################################################
 # Final Site/Location Information Dataframes
@@ -295,12 +296,12 @@ df.bact.wach.site <- df.trib.bact.wach.site %>% filter(LocationType == "Transect
 df.chem.quab.site <- df.quab.ware.site %>% filter(LocationType == "Nutrient")
 
 # Wachusett Chemical (Maybe in Site Table change location LocationType to Chemical or )
-df.chem.wach.site <- df.chem.prof.wach.site %>% filter(!is.null(LocationDepth))
+df.chem.wach.site <- df.chem.prof.wach.site %>% filter(!is.na(LocationDepth))
 
 # Quabbin Profile (Need to find Sites)
 
 # Wachusett Profile
-df.prof.wach.site <- df.chem.prof.wach.site %>% filter(is.null(LocationDepth))
+df.prof.wach.site <- df.chem.prof.wach.site %>% filter(is.na(LocationDepth))
 
 # Wachusett Phytoplankton
 

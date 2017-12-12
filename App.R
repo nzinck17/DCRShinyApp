@@ -18,13 +18,13 @@
 
 
 #### NOTE - Shiny must be installed and loaded in the LaunchAppGitHub.R script - any other packages requred should be listed below
-packages <- c("rmarkdown", "knitr", "tidyverse", "lubridate", "plotly", "leaflet",
-               "RColorBrewer", "DT", "akima", "odbc", "DBI", "scales", "stringr", "cowplot")
+packages <- c("rmarkdown", "knitr", "tidyverse", "lubridate", "plotly", "leaflet", "RColorBrewer", 
+              "DT", "akima", "odbc", "DBI", "scales", "stringr", "cowplot", "gridExtra", "grid")
 ipak(packages)
 ### Run/Source Scripts that load data
 
 source("Sources/LoadMSAccessData.R")
-source("Sources/Settings.R")
+#source("Sources/Settings.R")
 
 ### Load Primary Modules
 
@@ -38,7 +38,7 @@ source("Modules/Profile-Heatmap.R")
 source("Modules/Profile-Line.R")
 source("Modules/Profile-Summary.R")
 source("Modules/MapPlot.R")
-source("Modules/Export-WQ.R")
+source("Modules/Filter-WQ.R")
 source("Modules/Report-AWQ.R")
 source("Modules/Report-MWQ.R")
 source("Modules/Report-Custom.R")
@@ -52,9 +52,10 @@ source("Modules2/Inputs/ParamSelect.R")
 source("Modules2/Inputs/ParamCheckbox.R")
 source("Modules2/Inputs/DateSelect.R")
 source("Modules2/Inputs/CheckboxSelectAll.R")
+source("Modules2/Inputs/SelectInputSelectAll.R")
 
 # Outputs
-source("Modules2/Outputs/Plot-Time.R")
+source("Modules2/Outputs/Plot-Time-Mod.R")
 source("Modules2/Outputs/Plot-Time-Depth.R")
 source("Modules2/Outputs/Plot-Regress.R")
 source("Modules2/Outputs/Plot-Regress-Depth.R")
@@ -74,7 +75,9 @@ source("Modules2/UI/SiteMap.R")
 
 source("Functions/GetSeasons.R")
 source("Functions/circleSizeLegend.R")
+source("Functions/Plots/Plot-Time-Func.R")
 source("Functions/PhytoPlots.R")
+
 ###################################################################################
 ##################################  User Interface  ###############################
 ###################################################################################
@@ -94,6 +97,47 @@ tabPanel("Home",
 ),
 
 
+####################################################################
+# Filte
+
+tabPanel("Filter",
+         
+         # Title
+         fluidRow(br(), br(), br(), br(), h2("Filter Data", align = "center"), br()),
+         
+         navlistPanel(widths = c(2, 10),
+                      "Water Quality Data",
+                      tabPanel("Tributary",
+                               fluidRow(column(10, h4("Filter and Export for Tributary WQ Data", align = "center")), column(2)),
+                               filter.wq.UI("mod.trib.filter")
+                      ),
+                      tabPanel("Bacteria (Res)",
+                               fluidRow(column(10, h4("Filter and Export for Reservoir Bacteria WQ Data", align = "center")), column(2)),
+                               filter.wq.UI("mod.bact.filter")
+                      ),
+                      tabPanel("Chemical (Res)",
+                               fluidRow(column(10, h4("Filter and Export for Reservoir Chemical WQ Data", align = "center")), column(2)),
+                               filter.wq.UI("mod.chem.filter")
+                      ),
+                      tabPanel("Profile (Res)",
+                               fluidRow(column(10, h4("Filter and Export for Reservoir Profile WQ Data", align = "center")), column(2)),
+                               filter.wq.UI("mod.prof.filter")
+                      ),
+                      "Hydro and Met",
+                      tabPanel("Hydro/Met Data",
+                               fluidRow(column(10, h4("Filter and Export for Hydro and Met Data", align = "center")), column(2))
+                      ),
+                      "Sampling Info",
+                      tabPanel("Site Locations",
+                               fluidRow(column(10, h4("Filter and Export for Site Location Data", align = "center")), column(2))
+                      ),
+                      tabPanel("Parameters",
+                               fluidRow(column(10, h4("Filter and Export for Parameter Data", align = "center")), column(2))
+                      )
+         ) # end navlist
+),
+
+
 ######################################################
 # Tributary Water Quality Data
 
@@ -108,8 +152,8 @@ tabPanel("Tributary",
                         tabsetPanel(
                           tabPanel("Quabbin", time.UI("mod.trib.quab.time")),
                           tabPanel("Ware River", time.UI("mod.trib.ware.time")),
-                          tabPanel("Wachusett", time.UI("mod.trib.wach.time")),
-                          tabPanel("All Tribs", time.UI("mod.trib.all.time"))
+                          tabPanel("Wachusett", time.UI("mod.trib.wach.time"))#,
+                          #tabPanel("All Tribs", time.UI("mod.trib.all.time"))
                         ) # end tabset Panel
                ), # end tabpanel
                tabPanel("Regression",
@@ -117,8 +161,8 @@ tabPanel("Tributary",
                         tabsetPanel(
                           tabPanel("Quabbin", regress.UI("mod.trib.quab.regr", df.trib.quab)),
                           tabPanel("Ware River", regress.UI("mod.trib.ware.regr", df.trib.ware)),
-                          tabPanel("Wachusett", regress.UI("mod.trib.wach.regr", df.trib.wach)),
-                          tabPanel("All Tribs", regress.UI("mod.trib.all.regr", df.trib.all))
+                          tabPanel("Wachusett", regress.UI("mod.trib.wach.regr", df.trib.wach))#,
+                          #tabPanel("All Tribs", regress.UI("mod.trib.all.regr", df.trib.all))
                         ) # end tabset Panel
                ) # end tabpanel
   ) # end navlist panel
@@ -227,7 +271,7 @@ tabPanel("Map Plot",
 ), # end tabpanel (page)
 
 
-####################################################################
+###################################################################
 # Hydrology/Meteorology
 
 tabPanel("Met/Hydro",
@@ -243,59 +287,6 @@ tabPanel("Forestry",
 
          # Title
          fluidRow(br(), br(), br(), br(), h2("Forestry Data", align = "center"), br())
-),
-
-####################################################################
-# Export
-
-tabPanel("Export Data",
-
-         # Title
-         fluidRow(br(), br(), br(), br(), h2("Filter and Export Data", align = "center"), br()),
-
-         navlistPanel(widths = c(2, 10),
-                      "Water Quality Data",
-                      tabPanel("Tributary",
-                               fluidRow(column(10, h4("Filter and Export for Tributary WQ Data", align = "center")), column(2)),
-                               tabsetPanel(
-                                 tabPanel("Quabbin", export.wq.UI("mod.trib.quab.exp", df.trib.quab.exp, col.trib.quab.ware)),
-                                 tabPanel("Ware River", export.wq.UI("mod.trib.ware.exp", df.trib.ware.exp, col.trib.quab.ware)),
-                                 tabPanel("Wachusett", export.wq.UI("mod.trib.wach.exp", df.trib.wach.exp, col.trib.wach))
-                               ) # end tabset Panel
-                      ),
-                      tabPanel("Bacteria (Res)",
-                               fluidRow(column(10, h4("Filter and Export for Reservoir Bacteria WQ Data", align = "center")), column(2)),
-                               tabsetPanel(
-                                 tabPanel("Quabbin", export.wq.UI("mod.bact.quab.exp", df.bact.quab.exp, col = col.bact.quab)),
-                                 tabPanel("Wachusett", export.wq.UI("mod.bact.wach.exp", df.bact.wach.exp, col = col.bact.wach))
-                               ) # end tabset Panel
-                      ),
-                      tabPanel("Chemical (Res)",
-                               fluidRow(column(10, h4("Filter and Export for Reservoir Chemical WQ Data", align = "center")), column(2)),
-                               tabsetPanel(
-                                 tabPanel("Quabbin", export.wq.UI("mod.chem.quab.exp", df.chem.quab.exp, col = col.chem.quab)),
-                                 tabPanel("Wachusett", export.wq.UI("mod.chem.wach.exp", df.chem.wach.exp, col = col.chem.wach))
-                               ) # end tabset Panel
-                      ),
-                      tabPanel("Profile (Res)",
-                               fluidRow(column(10, h4("Filter and Export for Reservoir Profile WQ Data", align = "center")), column(2)),
-                               tabsetPanel(
-                                 tabPanel("Quabbin", export.wq.UI("mod.prof.quab.exp", df.prof.quab.exp, col = col.prof.quab)),
-                                 tabPanel("Wachusett", export.wq.UI("mod.prof.wach.exp", df.prof.wach.exp, col = col.prof.wach))
-                               ) # end tabset Panel
-                      ),
-                      "Hydro and Met",
-                      tabPanel("Hydro/Met Data",
-                               fluidRow(column(10, h4("Filter and Export for Hydro and Met Data", align = "center")), column(2))
-                      ),
-                      "Sampling Info",
-                      tabPanel("Site Locations",
-                               fluidRow(column(10, h4("Filter and Export for Site Location Data", align = "center")), column(2))
-                      ),
-                      tabPanel("Parameters",
-                               fluidRow(column(10, h4("Filter and Export for Parameter Data", align = "center")), column(2))
-                      )
-         ) # end navlist
 ),
 
 
@@ -374,34 +365,43 @@ server <- function(input, output, session) {
 
   callModule(Home, "Home", df.site = df.all.site)
 
+###################################################################
+# Filter
+  
+  df.trib.filtered <- callModule(filter.wq, "mod.trib.filter", dfs = list(df.trib.wach, df.trib.quab, df.trib.ware))
+  df.bact.filtered <- callModule(filter.wq, "mod.bact.filter", dfs = list(df.bact.wach, df.bact.quab))
+  df.chem.filtered <- callModule(filter.wq, "mod.chem.filter", dfs = list(df.chem.quab, df.chem.wach))
+  df.prof.filtered <- callModule(filter.wq, "mod.prof.filter", dfs = list(df.prof.quab, df.prof.wach))  # fix site
+
+         
 ######################################################
 # Tributary
 
   # Time Series
-  callModule(time, "mod.trib.quab.time", df = df.trib.quab, df.site = df.trib.quab.site)
-  callModule(time, "mod.trib.ware.time", df = df.trib.ware, df.site = df.trib.ware.site)
-  callModule(time, "mod.trib.wach.time", df = df.trib.wach, df.site = df.trib.wach.site)
-  callModule(time, "mod.trib.all.time", df = df.trib.all, df.site = df.trib.all.site)
+  callModule(time, "mod.trib.quab.time", df.full = df.trib.quab, df.filtered = df.trib.filtered[[2]], df.site = df.trib.quab.site)
+  callModule(time, "mod.trib.ware.time", df.full = df.trib.ware, df.filtered = df.trib.filtered[[3]], df.site = df.trib.ware.site)
+  callModule(time, "mod.trib.wach.time", df.full = df.trib.wach, df.filtered = df.trib.filtered[[1]], df.site = df.trib.wach.site)
+  #callModule(time, "mod.trib.all.time", df = df.trib.all, df.site = df.trib.all.site)
 
   # Regression
   callModule(regress, "mod.trib.quab.regr", df = df.trib.quab, df.site = df.trib.quab.site)
   callModule(regress, "mod.trib.ware.regr", df = df.trib.ware, df.site = df.trib.ware.site)
   callModule(regress, "mod.trib.wach.regr", df = df.trib.wach, df.site = df.trib.wach.site)
-  callModule(regress, "mod.trib.all.regr", df = df.trib.all, df.site = df.trib.all.site)
+  #callModule(regress, "mod.trib.all.regr", df = df.trib.all, df.site = df.trib.all.site)
 
 #############################################################
 # Reservoir
 
   # Bacteria
-  callModule(time, "mod.bact.quab.time", df = df.bact.quab, df.site = df.bact.quab.site)
-  callModule(time, "mod.bact.wach.time", df = df.bact.wach, df.site = df.bact.wach.site)
+  callModule(time, "mod.bact.quab.time", df.full = df.bact.quab, df.filtered = df.bact.filtered[[2]], df.site = df.bact.quab.site)
+  callModule(time, "mod.bact.wach.time", df.full = df.bact.wach, df.filtered = df.bact.filtered[[1]], df.site = df.bact.wach.site)
 
   callModule(regress, "mod.bact.quab.regr", df = df.bact.quab, df.site = df.bact.quab.site)
   callModule(regress, "mod.bact.wach.regr", df = df.bact.wach, df.site = df.bact.wach.site)
 
   # Chemical
-  callModule(time.depth, "mod.chem.quab.time", df = df.chem.quab, df.site = df.chem.quab.site)
-  callModule(time.depth, "mod.chem.wach.time", df = df.chem.wach, df.site = df.chem.wach.site)
+  callModule(time.depth, "mod.chem.quab.time", df.full = df.chem.quab, df.filtered = df.chem.filtered[[1]], df.site = df.chem.quab.site)
+  callModule(time.depth, "mod.chem.wach.time", df.full = df.chem.wach, df.filtered = df.chem.filtered[[2]], df.site = df.chem.wach.site)
 
   callModule(regress.depth, "mod.chem.quab.regr", df = df.chem.quab, df.site = df.chem.quab.site)
   callModule(regress.depth, "mod.chem.wach.regr", df = df.chem.wach, df.site = df.chem.wach.site)
@@ -438,27 +438,9 @@ server <- function(input, output, session) {
   callModule(map.plot, "mod.chem.wach.map", df = df.chem.wach, df.site = df.chem.wach.site)
 
 ####################################################################
-
 # Hydrology/Meteorology/Statistics
 
 ####################################################################
-# Export
-
-  callModule(export.wq, "mod.trib.quab.exp", df = df.trib.quab.exp, df.site = df.trib.quab.site, col = col.trib.quab.ware)
-  callModule(export.wq, "mod.trib.ware.exp", df = df.trib.ware.exp, df.site = df.trib.ware.site, col = col.trib.quab.ware)
-  callModule(export.wq, "mod.trib.wach.exp", df = df.trib.wach.exp, df.site = df.trib.wach.site, col = col.trib.wach)
-  callModule(export.wq, "mod.bact.quab.exp", df = df.bact.quab.exp, df.site = df.bact.quab.site, col = col.bact.quab)
-  callModule(export.wq, "mod.bact.wach.exp", df = df.bact.wach.exp, df.site = df.bact.wach.site, col = col.bact.wach)
-  callModule(export.wq, "mod.chem.quab.exp", df = df.chem.quab.exp, df.site = df.chem.quab.site, col = col.chem.quab)
-  callModule(export.wq, "mod.chem.wach.exp", df = df.chem.wach.exp, df.site = df.chem.wach.site, col = col.chem.wach)
-  callModule(export.wq, "mod.prof.quab.exp", df = df.prof.quab.exp, df.site = df.chem.quab.site, col = col.prof.quab) # fix site
-  callModule(export.wq, "mod.prof.wach.exp", df = df.prof.wach.exp, df.site = df.chem.wach.site, col = col.prof.wach) # fix site
-
-  callModule(export.wq, "Test 1", df = df.prof.wach.exp, df.site = df.chem.wach.site, col = col.prof.wach) # fix site
-  #callModule(export.wq, "Test 2", df = df.prof.wach.exp, df.site = df.chem.wach.site, col = col.prof.wach) # fix site
-  #callModule(export.wq, "Test 3", df = df.prof.wach.exp, df.site = df.chem.wach.site, col = col.prof.wach) # fix site
-
-  ####################################################################
 # Reports
 
   callModule(report.awq, "mod.quab.awq", df.trib = df.trib.quab, df.res = df.res.quab, df.prof = df.prof.quab, df.site = df.quab.site)
