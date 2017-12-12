@@ -24,71 +24,26 @@ time.UI <- function(id) {
     wellPanel(       
       fluidRow(
         column(3,
-               uiOutput(ns("site.ui"))
-        ), # end Column
-        column(3,
-               # Text - Number of Samples or "Select a site"
-               wellPanel(
-                 h3(textOutput(ns("text.site.null")), align = "center"),
-                 h3(textOutput(ns("text.param.null")), align = "center"),
-                 h4(textOutput(ns("text.num.text")), align = "center"),
-                 h3(textOutput(ns("text.num")), align = "center")
-               ), # end Well Panel
+               radioButtons(ns("dfchoice"), "Full or Filtered Data:", 
+                            choices = c("full", "filtered"),
+                            inline = TRUE),
+               conditionalPanel(
+                 condition = paste0("input['", ns("dfchoice"), "'] == 'filtered'"), 
+                 p('This Dataset has been filtered and therefore some observations (data points) may be excluded.\n See "Filtered tab"')
+               ),
+               uiOutput(ns("text.select")),
                wellPanel(
                  sitemap.UI(ns("site.map"))
                ) # end Well Panel
+        ), # end Column
+        column(6,
+               uiOutput(ns("site.ui"))
         ), # end Column
         column(3,
                uiOutput(ns("param.ui")),
                br(),
                # Date Selection
                uiOutput(ns("date.ui"))
-        ), # end column
-        column(3,
-               # Meteoro/Hydro Filter 1
-               wellPanel(
-                 strong("Meteoro/Hydro Filter 1"), # Bold Text
-                 br(), br(),
-                 radioButtons(ns("met.option.1"), label = NULL, 
-                              choices = c("off", "on", "group"), 
-                              inline = TRUE),
-                 selectInput(ns("met.param.1"), label = NULL, 
-                             choices = c("Wind Speed", 
-                                         "Wind Direction", 
-                                         "Precipitation - 24 hrs",
-                                         "Precipitation - 48 hrs",
-                                         "Temperature",
-                                         "Cloud Cover",
-                                         "Flow - Quabbin Aquaduct",
-                                         "Flow - East Branch Swift",
-                                         "Flow - West Branch Swift",
-                                         "Flow - Quinapoxet",
-                                         "Flow - Stillwater"),
-                             selected = "Wind Speed"),
-                 sliderInput(ns("met.value.1"), "Value Range:", min = 0, max = 12, value = c(0,12), step = 0.5)
-               ), # end Well Panel
-               # Meteoro/Hydro Filter 2
-               wellPanel(
-                 strong("Meteoro/Hydro Filter 2"), # Bold Text
-                 br(), br(),
-                 radioButtons(ns("met.option.2"), label = NULL, 
-                              choices = c("off", "on", "group"), 
-                              inline = TRUE),
-                 selectInput(ns("met.param.2"), label = NULL, 
-                             choices = c("Wind Speed", 
-                                         "Wind Direction", 
-                                         "Precipitation - 24 hrs",
-                                         "Precipitation - 48 hrs",
-                                         "Temperature",
-                                         "Cloud Cover",
-                                         "Flow - Quabbin Aquaduct",
-                                         "Flow - East Branch Swift",
-                                         "Flow - West Branch Swift",
-                                         "Flow - Quinapoxet",
-                                         "Flow - Stillwater"),
-                             selected = "Precipitation - 24 hrs"),
-                 sliderInput(ns("met.value.2"), "Value Range:", min = 0, max = 12, value = c(0,12), step = 0.5)
-               ) # end Well Panel
         ) # end column
       ) # end fluidrow     
     ), # end well panel
@@ -104,8 +59,13 @@ time.UI <- function(id) {
       # Table Tabpanel
       tabPanel("Table",
                fluidRow(br(),
-                        br(),
-                        actionButton(ns("table.print"), "Print Table")
+                        column(3,
+                               downloadButton(ns("downloadData"), "Download table as csv")
+                        ),
+                        column(9,
+                               uiOutput(ns("column_ui"))
+                        ),
+                        br()
                ), # end Fluid Row
                fluidRow(
                  dataTableOutput(ns("table"))
@@ -116,7 +76,7 @@ time.UI <- function(id) {
       tabPanel("Summary",
                summary.UI(ns("summary"))
       ) # end Tab Panel - Summary
-    )  # end tabsetpanel (plots, stats, etc.)
+    ) # end tabsetpanel (plots, stats, etc.)
   ) # end taglist
 } # end UI function
 
@@ -125,26 +85,38 @@ time.UI <- function(id) {
 # Server Function
 ##############################################################################################################################
 
-time <- function(input, output, session, df, df.site) {
+# Note that Argument "df.filtered"  needs to be a reactive expression, not a resolved value. 
+# Thus do not use () in callModule argument for reactives
+# For non reactives wrap with "reactive" to make into a reactive expression.
+
+time <- function(input, output, session, df.full, df.filtered, df.site) {
   
+  ns <- session$ns # see General Note 1
   
-  # Site Selection using Site Select Module
+  ### Dataframe filtered or full based on Selection
+  df <- reactive({
+    if(input$dfchoice == "filtered"){
+      df.filtered()
+    }else{
+      df.full
+    }
+  })
+  
+  ### Site Selection using Site Select Module
   
   # Ui
   output$site.ui <- renderUI({
-    ns <- session$ns # see General Note 1
-    site.checkbox.UI(ns("site"), df = df)
+    site.checkbox.UI(ns("site"))
   })
   
   # Server
   site <- callModule(site.checkbox, "site", df = df)
   
   
-  # Parameter Selection using ParameterSelect Module
+  ### Parameter Selection using ParameterSelect Module
   
   # Ui
   output$param.ui <- renderUI({
-    ns <- session$ns # see General Note 1
     param.select.UI(ns("param"))
   })
   
@@ -153,11 +125,10 @@ time <- function(input, output, session, df, df.site) {
   
   
   
-  # Date Range Selection Using DateSelect Module
+  ### Date Range Selection Using DateSelect Module
   
   # Ui
   output$date.ui <- renderUI({
-    ns <- session$ns # see General Note 1
     date.select.UI(ns("date"))
   })
   
@@ -166,13 +137,13 @@ time <- function(input, output, session, df, df.site) {
   
   
   
-  # Reactive Dataframe - filter for selected site, param, value range, date, and remove rows with NA for Result
+  ### Reactive Dataframe - filter for selected site, param, value range, date, and remove rows with NA for Result
   
   df.react <- reactive({
     
     req(site(), param$type(), param$range.min(), param$range.min(), date$lower(), date$upper()) # See General Note _
     
-    df %>% 
+    df() %>% 
       filter(LocationLabel %in% site(), 
              Parameter %in% param$type(), 
              Result > param$range.min(), Result < param$range.max(),
@@ -180,54 +151,98 @@ time <- function(input, output, session, df, df.site) {
              !is.na(Result))
   })
   
+  
+  ### Column Selection for table output
+  
+  output$column_ui <- renderUI({
+    checkboxGroupInput(ns("column"), "Table Columns:", 
+                       choices = names(df.react()), 
+                       selected = names(df.react()),
+                       inline = TRUE)
+  })
+  
+  # Column Selection
+  df.react.table <- reactive({
+    df.react() %>% select(c(input$column))
+  })
 
   
-  # Text - Select Site
+  ### Texts
   
+  # Text Output
+  output$text.select <- renderUI({
+    # Text - Number of Samples or "Select a site"
+    wellPanel(
+      h5(textOutput(ns("text.site.null")), align = "center"),
+      h5(textOutput(ns("text.param.null")), align = "center"),
+      h5(textOutput(ns("text.date.null")), align = "center"),
+      h5(textOutput(ns("text.num.text")), align = "center"),
+      strong(textOutput(ns("text.num")), align = "center")
+    ) # end Well Panel
+  })
+  
+  # Text - Select Site
   output$text.site.null <- renderText({
     req(is.null(site())) # See General Note 1
     "Select Site(s)"
   })
   
   # Text - Select Param
-  
   output$text.param.null <- renderText({
     req(param$type() == "") # See General Note 1
     "Select Parameter"
   })
   
-  # Text - Number of Samples
+  # Text - Select Param
+  output$text.date.null <- renderText({
+    req(any(is.null(date$lower()), is.null(date$upper()))) # See General Note 1
+    "Select Lower Date Range"
+  })
   
+  # Text - Number of Samples - Words
   output$text.num.text <- renderText({
     req(site(), param$type()) # See General Note 1
     "Number of Samples in Selected Data:"
   })
   
-  # Text - Number of Samples
-  
+  # Text - Number of Samples - Number
   output$text.num <- renderText({
     req(df.react()) # See General Note 1
     df.react() %>% summarise(n()) %>% paste()
   })
   
-# Plot
+  
+  
+  ### Plot
   
   callModule(plot.time, "plot", df = df.react)
   
   
-# Table
+  ### Table
   
-  output$table <- renderDataTable(df.react())
+  output$table <- renderDataTable(df.react.table())
   
   
-# Summary Statistics
+  ### Summary Statistics
 
   callModule(summary, "summary", df = df.react)
   
   
-# Site Map
+  ### Site Map
   
   callModule(sitemap, "site.map", df.site = df.site, site.list = site)
+  
+  
+  ### Downloadable csv of selected dataset
+  
+  output$downloadData <- downloadHandler(
+    filename = function() {
+      paste("DCRExportedWQData", ".csv", sep = "")
+    },
+    content = function(file) {
+      write_csv(df.react.table(), file)
+    }
+  )
   
 } # end Server Function
 

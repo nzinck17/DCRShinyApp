@@ -31,26 +31,29 @@ date.select.UI <- function(id) {
 # Server Function
 ##############################################################################################################################
 
-date.select <- function(input, output, session, df, site) { 
-  
+# Note that Argumetns "df" and "site" need to be reactive expressions, not resolved values. 
+# Thus do not use () in callModule argument for reactives
+# For non reactives wrap with "reactive" to make into a reactive expression.
+
+date.select <- function(input, output, session, df, site, hidden = FALSE) { 
 
   # Min and Max Dates for Sites Selected
   
   Date.min <- reactive({
     if(!is.null(site())){
-      df %>% filter(LocationLabel %in% c(site())) %>%
+      df() %>% filter(LocationLabel %in% c(site())) %>%
         .$Date %>% min(na.rm=TRUE)
     } else {
-      df %>% .$Date %>% min(na.rm=TRUE)
+      df() %>% .$Date %>% min(na.rm=TRUE)
     }
   })
   
   Date.max <- reactive({
     if(!is.null(site())){
-      df %>% filter(LocationLabel %in% c(site())) %>%
+      df() %>% filter(LocationLabel %in% c(site())) %>%
         .$Date %>% max(na.rm=TRUE)
     } else {
-      df %>% .$Date %>% max(na.rm=TRUE)
+      df() %>% .$Date %>% max(na.rm=TRUE)
     }
   })
   
@@ -83,7 +86,7 @@ date.select <- function(input, output, session, df, site) {
     })
     
     # If Site list is changed but not empty then generate a Select Input with the... 
-    # parameters for that site and autoselect previous selected parameter 
+    # date range for that site(s) and autoselect previous selected date range
     if(!is.null(site())){
       
       updateDateRangeInput(session, inputId = "date", label = "Date Range:", 
@@ -92,7 +95,7 @@ date.select <- function(input, output, session, df, site) {
                       min=Date.min(),
                       max=Date.max())
     
-      # If site list is empty than make a parameter list of just the previously listed item to save it.
+      # If site list is empty than make a date range of the previously selected date range to save it.
     } else {
       updateDateRangeInput(session, inputId = "date", label = "Date Range:", 
                       start = save.selected.lower,
@@ -109,7 +112,6 @@ date.select <- function(input, output, session, df, site) {
               upper = reactive({input$date[2]})))
   
 
-  
   
 } # end Server Function
 
