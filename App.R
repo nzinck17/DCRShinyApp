@@ -19,7 +19,7 @@
 
 #### NOTE - Shiny must be installed and loaded in the LaunchAppGitHub.R script - any other packages requred should be listed below
 packages <- c("rmarkdown", "knitr", "tidyverse", "lubridate", "plotly", "leaflet", "RColorBrewer", 
-              "DT", "akima", "odbc", "DBI", "scales", "stringr", "cowplot", "gridExtra", "grid")
+              "DT", "akima", "odbc", "DBI", "scales", "stringr", "cowplot", "shinythemes")
 ipak(packages)
 ### Run/Source Scripts that load data
 
@@ -39,6 +39,7 @@ source("Modules/Profile-Line.R")
 source("Modules/Profile-Summary.R")
 source("Modules/MapPlot.R")
 source("Modules/Filter-WQ.R")
+source("Modules/Metadata.R")
 source("Modules/Report-AWQ.R")
 source("Modules/Report-MWQ.R")
 source("Modules/Report-Custom.R")
@@ -82,7 +83,7 @@ source("Functions/PhytoPlots.R")
 ##################################  User Interface  ###############################
 ###################################################################################
 
-ui <- navbarPage("DCR", position = "fixed-top", inverse = TRUE, collapsible = TRUE,
+ui <- navbarPage("DCR", position = "fixed-top", inverse = TRUE, collapsible = TRUE, theme = shinytheme("cerulean"), #
 
 ######################################################
 # Home Page
@@ -98,7 +99,7 @@ tabPanel("Home",
 
 
 ####################################################################
-# Filte
+# Filter
 
 tabPanel("Filter",
          
@@ -126,13 +127,6 @@ tabPanel("Filter",
                       "Hydro and Met",
                       tabPanel("Hydro/Met Data",
                                fluidRow(column(10, h4("Filter and Export for Hydro and Met Data", align = "center")), column(2))
-                      ),
-                      "Sampling Info",
-                      tabPanel("Site Locations",
-                               fluidRow(column(10, h4("Filter and Export for Site Location Data", align = "center")), column(2))
-                      ),
-                      tabPanel("Parameters",
-                               fluidRow(column(10, h4("Filter and Export for Parameter Data", align = "center")), column(2))
                       )
          ) # end navlist
 ),
@@ -164,6 +158,13 @@ tabPanel("Tributary",
                           tabPanel("Wachusett", regress.UI("mod.trib.wach.regr", df.trib.wach))#,
                           #tabPanel("All Tribs", regress.UI("mod.trib.all.regr", df.trib.all))
                         ) # end tabset Panel
+               ), # end tabpanel
+               tabPanel("MetaData",
+                        fluidRow(column(10, h4("Tributary MetaData", align = "center")), column(2)),
+                        tabsetPanel(
+                          tabPanel("Quabbin & Ware", metadata.UI("mod.trib.quab.meta")),
+                          tabPanel("Wachusett", metadata.UI("mod.trib.wach.meta"))
+                        ) # end tabset Panel
                ) # end tabpanel
   ) # end navlist panel
 
@@ -183,16 +184,20 @@ tabPanel("Reservoir",
                 tabPanel("Time-Series",
                          fluidRow(column(10, h4("Bacteria Time-Series Analysis", align = "center")), column(2)),
                          tabsetPanel(
-                           tabPanel("Quabbin", time.UI("mod.bact.quab.time")),
                            tabPanel("Wachusett", time.UI("mod.bact.wach.time"))
                          ) # end tabset Panel
                 ), # end tabpanel
                 tabPanel("Regression",
                          fluidRow(column(10, h4("Bacteria Regression Analysis", align = "center")), column(2)),
                          tabsetPanel(
-                           tabPanel("Quabbin", regress.UI("mod.bact.quab.regr", df.bact.quab)),
                            tabPanel("Wachusett", regress.UI("mod.bact.wach.regr", df.bact.wach))
                          ) # end tabset panel
+                ), # end tabpanel
+                tabPanel("MetaData",
+                         fluidRow(column(10, h4("Tributary MetaData", align = "center")), column(2)),
+                         tabsetPanel(
+                           tabPanel("Wachusett", metadata.UI("mod.bact.wach.meta"))
+                         ) # end tabset Panel
                 ), # end tabpanel
 
                 "Chemistry",
@@ -210,6 +215,13 @@ tabPanel("Reservoir",
                            tabPanel("Wachusett", regress.depth.UI("mod.chem.wach.regr", df.chem.wach))
                          )
                 ),
+                tabPanel("Metadata",
+                         fluidRow(column(10, h4("Chemical MetaData", align = "center")), column(2)),
+                         tabsetPanel(
+                           tabPanel("Quabbin", metadata.UI("mod.chem.quab.meta")),
+                           tabPanel("Wachusett", metadata.UI("mod.chem.wach.meta"))
+                         ) # end tabset Panel
+                ), # end tabpanel
 
                 "Profile (physicochemical)",
                 tabPanel("Heat Map",
@@ -233,6 +245,15 @@ tabPanel("Reservoir",
                            tabPanel("Wachusett", prof.summary.UI("mod.prof.wach.sum", df.prof.wach))
                          )
                 ),
+                tabPanel("Metadata",
+                         fluidRow(column(10, h4("Profile MetaData", align = "center")), column(2)),
+                         tabsetPanel(
+                           tabPanel("Quabbin", metadata.UI("mod.prof.quab.meta")),
+                           tabPanel("Wachusett", metadata.UI("mod.prof.wach.meta"))
+                         ) # end tabset Panel
+                ), # end tabpanel
+                
+                
                 "Biological",
                 tabPanel("Phytoplankton",
                          fluidRow(column(10, h4("Phytoplankton Plots and Data", align = "center")), column(2)),
@@ -261,7 +282,6 @@ tabPanel("Map Plot",
                       tabPanel("Wachusett", map.plot.UI("mod.trib.wach.map", df = df.trib.wach)),
                       tabPanel("All Tribs", map.plot.UI("mod.trib.all.map", df = df.trib.all)),
                       "Reservoir Bacteria",
-                      tabPanel("Quabbin", map.plot.UI("mod.bact.quab.map", df = df.bact.quab)),
                       tabPanel("Wachusett", map.plot.UI("mod.bact.wach.map", df = df.bact.wach)),
                       "Reservoir Chemical",
                       tabPanel("Quabbin", map.plot.UI("mod.chem.quab.map", df = df.chem.quab)),
@@ -288,7 +308,6 @@ tabPanel("Forestry",
          # Title
          fluidRow(br(), br(), br(), br(), h2("Forestry Data", align = "center"), br())
 ),
-
 
 #########################################################
 # Reports
@@ -325,7 +344,6 @@ tabPanel("Report",
                       tabPanel("Bacteria (Res)",
                                fluidRow(column(10, h4("Reservoir Bacteria Custom Reports", align = "center")), column(2)),
                                tabsetPanel(
-                                 tabPanel("Quabbin", report.custom.UI("mod.bact.quab.rep", df.bact.quab)),
                                  tabPanel("Wachusett", report.custom.UI("mod.bact.wach.rep", df.bact.wach))
                                )
                       ),
@@ -369,8 +387,8 @@ server <- function(input, output, session) {
 # Filter
   
   df.trib.filtered <- callModule(filter.wq, "mod.trib.filter", dfs = list(df.trib.wach, df.trib.quab, df.trib.ware))
-  df.bact.filtered <- callModule(filter.wq, "mod.bact.filter", dfs = list(df.bact.wach, df.bact.quab))
-  df.chem.filtered <- callModule(filter.wq, "mod.chem.filter", dfs = list(df.chem.quab, df.chem.wach))
+  df.bact.filtered <- callModule(filter.wq, "mod.bact.filter", dfs = list(df.bact.wach))
+  df.chem.filtered <- callModule(filter.wq, "mod.chem.filter", dfs = list(df.chem.wach, df.chem.quab))
   df.prof.filtered <- callModule(filter.wq, "mod.prof.filter", dfs = list(df.prof.quab, df.prof.wach))  # fix site
 
          
@@ -388,24 +406,31 @@ server <- function(input, output, session) {
   callModule(regress, "mod.trib.ware.regr", df = df.trib.ware, df.site = df.trib.ware.site)
   callModule(regress, "mod.trib.wach.regr", df = df.trib.wach, df.site = df.trib.wach.site)
   #callModule(regress, "mod.trib.all.regr", df = df.trib.all, df.site = df.trib.all.site)
+  
+  # Metadata
+  callModule(metadata, "mod.trib.quab.meta", df.site = df.trib.quab.site, df.param = df.trib.quab.site, df.flag = df.trib.quab.site)
+  callModule(metadata, "mod.trib.wach.meta", df.site = df.trib.wach.site, df.param = df.trib.wach.site, df.flag = df.trib.wach.site)
 
 #############################################################
 # Reservoir
 
   # Bacteria
-  callModule(time, "mod.bact.quab.time", df.full = df.bact.quab, df.filtered = df.bact.filtered[[2]], df.site = df.bact.quab.site)
   callModule(time, "mod.bact.wach.time", df.full = df.bact.wach, df.filtered = df.bact.filtered[[1]], df.site = df.bact.wach.site)
 
-  callModule(regress, "mod.bact.quab.regr", df = df.bact.quab, df.site = df.bact.quab.site)
   callModule(regress, "mod.bact.wach.regr", df = df.bact.wach, df.site = df.bact.wach.site)
 
+  callModule(metadata, "mod.bact.wach.meta", df.site = df.bact.wach.site, df.param = df.bact.wach.site, df.flag = df.bact.wach.site)
+  
   # Chemical
-  callModule(time.depth, "mod.chem.quab.time", df.full = df.chem.quab, df.filtered = df.chem.filtered[[1]], df.site = df.chem.quab.site)
-  callModule(time.depth, "mod.chem.wach.time", df.full = df.chem.wach, df.filtered = df.chem.filtered[[2]], df.site = df.chem.wach.site)
+  callModule(time.depth, "mod.chem.quab.time", df.full = df.chem.quab, df.filtered = df.chem.filtered[[2]], df.site = df.chem.quab.site)
+  callModule(time.depth, "mod.chem.wach.time", df.full = df.chem.wach, df.filtered = df.chem.filtered[[1]], df.site = df.chem.wach.site)
 
   callModule(regress.depth, "mod.chem.quab.regr", df = df.chem.quab, df.site = df.chem.quab.site)
   callModule(regress.depth, "mod.chem.wach.regr", df = df.chem.wach, df.site = df.chem.wach.site)
 
+  callModule(metadata, "mod.chem.quab.meta", df.site = df.chem.quab.site, df.param = df.chem.quab.site, df.flag = df.chem.quab.site)
+  callModule(metadata, "mod.chem.wach.meta", df.site = df.chem.wach.site, df.param = df.chem.wach.site, df.flag = df.chem.wach.site)
+  
   # Profile (physicochemical)
   callModule(prof.heatmap, "mod.prof.quab.heat", df = df.prof.quab)
   callModule(prof.heatmap, "mod.prof.wach.heat", df = df.prof.wach)
@@ -416,6 +441,9 @@ server <- function(input, output, session) {
   callModule(prof.summary, "mod.prof.quab.sum", df = df.prof.quab)
   callModule(prof.summary, "mod.prof.wach.sum", df = df.prof.wach)
 
+  callModule(metadata, "mod.prof.quab.meta", df.site = df.prof.quab.site, df.param = df.prof.quab.site, df.flag = df.prof.quab.site)
+  callModule(metadata, "mod.prof.wach.meta", df.site = df.prof.wach.site, df.param = df.prof.wach.site, df.flag = df.prof.wach.site)
+  
   # AquaBio
   callModule(Phyto, "mod.phyto.wach.plots", df = df.phyto.wach)
   #callModule(phyto.summary, "mod.phyto.wach.plots", df = df.phyto.wach)
@@ -424,18 +452,17 @@ server <- function(input, output, session) {
 # Map Plot
 
   # Trib
-  callModule(map.plot, "mod.trib.quab.map", df = df.trib.quab, df.site = df.trib.quab.site)
-  callModule(map.plot, "mod.trib.ware.map", df = df.trib.ware, df.site = df.trib.ware.site)
-  callModule(map.plot, "mod.trib.wach.map", df = df.trib.wach, df.site = df.trib.wach.site)
-  callModule(map.plot, "mod.trib.all.map", df = df.trib.all, df.site = df.trib.all.site)
+  callModule(map.plot, "mod.trib.quab.map", df.full = df.trib.quab, df.filtered = df.trib.filtered[[2]], df.site = df.trib.quab.site)
+  callModule(map.plot, "mod.trib.ware.map", df.full = df.trib.ware, df.filtered = df.trib.filtered[[3]], df.site = df.trib.ware.site)
+  callModule(map.plot, "mod.trib.wach.map", df.full = df.trib.wach, df.filtered = df.trib.filtered[[1]], df.site = df.trib.wach.site)
+  callModule(map.plot, "mod.trib.all.map", df.full = df.trib.all, df.site = df.trib.all.site)
 
   # Bacteria
-  callModule(map.plot, "mod.bact.quab.map", df = df.bact.quab, df.site = df.bact.quab.site)
-  callModule(map.plot, "mod.bact.wach.map", df = df.bact.wach, df.site = df.bact.wach.site)
+  callModule(map.plot, "mod.bact.wach.map", df.full = df.bact.wach, df.filtered = df.trib.filtered[[1]], df.site = df.bact.wach.site)
 
   # Chemical
-  callModule(map.plot, "mod.chem.quab.map", df = df.chem.quab, df.site = df.chem.quab.site)
-  callModule(map.plot, "mod.chem.wach.map", df = df.chem.wach, df.site = df.chem.wach.site)
+  callModule(map.plot, "mod.chem.quab.map", df.full = df.chem.quab, df.filtered = df.trib.filtered[[2]], df.site = df.chem.quab.site)
+  callModule(map.plot, "mod.chem.wach.map", df.full = df.chem.wach, df.filtered = df.trib.filtered[[1]], df.site = df.chem.wach.site)
 
 ####################################################################
 # Hydrology/Meteorology/Statistics
@@ -443,19 +470,18 @@ server <- function(input, output, session) {
 ####################################################################
 # Reports
 
-  callModule(report.awq, "mod.quab.awq", df.trib = df.trib.quab, df.res = df.res.quab, df.prof = df.prof.quab, df.site = df.quab.site)
-  callModule(report.awq, "mod.wach.awq", df.trib = df.trib.wach, df.res = df.res.wach, df.prof = df.prof.wach, df.site = df.wach.site)
-  callModule(report.mwq, "mod.quab.mwq", df.trib = df.trib.quab, df.res = df.res.quab, df.prof = df.prof.quab, df.site = df.quab.site)
-  callModule(report.mwq, "mod.wach.mwq", df.trib = df.trib.wach, df.res = df.res.wach, df.prof = df.prof.wach, df.site = df.wach.site)
+  callModule(report.awq, "mod.quab.awq", df.trib = df.trib.quab, df.chem = df.chem.quab, df.prof = df.prof.quab, df.site = df.quab.site)
+  callModule(report.awq, "mod.wach.awq", df.trib = df.trib.wach, df.chem = df.chem.wach, df.prof = df.prof.wach, df.site = df.wach.site)
+  callModule(report.mwq, "mod.quab.mwq", df.trib = df.trib.quab, df.chem = df.chem.quab, df.prof = df.prof.quab, df.site = df.quab.site)
+  callModule(report.mwq, "mod.wach.mwq", df.trib = df.trib.wach, df.chem = df.chem.wach, df.prof = df.prof.wach, df.site = df.wach.site)
   callModule(report.custom, "mod.trib.quab.rep", df = df.trib.quab, df.site = df.trib.quab.site)
   callModule(report.custom, "mod.trib.ware.rep", df = df.trib.ware, df.site = df.trib.ware.site)
-  callModule(report.custom, "mod.trib.wach.rep", df = df.trib.quab, df.site = df.trib.quab.site)
-  callModule(report.custom, "mod.bact.quab.rep", df = df.res.quab, df.site = df.bact.quab.site)
-  callModule(report.custom, "mod.bact.wach.rep", df = df.res.quab, df.site = df.bact.quab.site)
-  callModule(report.custom, "mod.chem.quab.rep", df = df.res.quab, df.site = df.chem.quab.site)
-  callModule(report.custom, "mod.chem.wach.rep", df = df.res.quab, df.site = df.chem.quab.site)
-  callModule(report.custom, "mod.prof.quab.rep", df = df.prof.quab, df.site = df.res.quab.site)
-  callModule(report.custom, "mod.prof.wach.rep", df = df.prof.wach, df.site = df.res.wach.site)
+  callModule(report.custom, "mod.trib.wach.rep", df = df.trib.wach, df.site = df.trib.wach.site)
+  callModule(report.custom, "mod.bact.wach.rep", df = df.bact.wach, df.site = df.bact.wach.site)
+  callModule(report.custom, "mod.chem.quab.rep", df = df.chem.quab, df.site = df.chem.quab.site)
+  callModule(report.custom, "mod.chem.wach.rep", df = df.chem.wach, df.site = df.chem.wach.site)
+  callModule(report.custom, "mod.prof.quab.rep", df = df.prof.quab, df.site = df.prof.quab.site)
+  callModule(report.custom, "mod.prof.wach.rep", df = df.prof.wach, df.site = df.prof.wach.site)
 
 #######################################################################
 

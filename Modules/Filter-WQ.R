@@ -131,7 +131,8 @@ filter.wq <- function(input, output, session, dfs, col) {
                             choices = reactive({month.name}), 
                             selected = reactive({month.name}), 
                             colwidth = 3,
-                            hidden = TRUE)
+                            hidden = TRUE,
+                            inline = TRUE)
   
   
   

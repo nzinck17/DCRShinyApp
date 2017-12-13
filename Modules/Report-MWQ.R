@@ -59,7 +59,7 @@ report.mwq.UI <- function(id, df) {
 # Server Function
 ##############################################################################################################################
 
-report.mwq <- function(input, output, session, df.trib, df.res, df.profile, df.site) {  
+report.mwq <- function(input, output, session, df.trib, df.chem, df.profile, df.site) {  
   
   output$report <- downloadHandler(
     filename = "report.pdf",

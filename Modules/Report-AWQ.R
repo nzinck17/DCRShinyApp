@@ -44,7 +44,7 @@ report.awq.UI <- function(id, df) {
 # Server Function
 ##############################################################################################################################
 
-report.awq <- function(input, output, session, df.trib, df.res, df.profile, df.site) {  
+report.awq <- function(input, output, session, df.trib, df.chem, df.profile, df.site) {  
       
   output$report <- downloadHandler(
         filename = "report.pdf",

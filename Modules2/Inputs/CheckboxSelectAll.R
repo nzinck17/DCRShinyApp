@@ -32,11 +32,12 @@ checkboxSelectAll.UI <- function(id) {
 # Thus do not use () in callModule argument for reactives
 # For non reactives wrap with "reactive" to make into a reactive expression.
 
-checkboxSelectAll <- function(input, output, session, label, choices, selected = reactive(NULL), colwidth = 3, hidden = FALSE) { 
+checkboxSelectAll <- function(input, output, session, label, choices, selected = reactive(NULL), 
+                              colwidth = 3, hidden = FALSE, inline = FALSE) { 
   
   output$checkbox.ui <- renderUI({
     ns <- session$ns # see General Note 1
-    checkboxGroupInput(inputId = ns("checkbox"), label = label, choices = choices(), selected = selected())
+    checkboxGroupInput(inputId = ns("checkbox"), label = label, choices = choices(), selected = selected(), inline = inline)
   })
   
   

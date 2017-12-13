@@ -55,6 +55,14 @@ tagList(
           # Main Panel Options
           tabPanel("Main",
                    br(), br(), # Line Breaks
+                   # Choose Filtered or unfiltered data
+                   radioButtons(ns("dfchoice"), "Full or Filtered Data:", 
+                                choices = c("full", "filtered"),
+                                inline = TRUE),
+                   conditionalPanel(
+                     condition = paste0("input['", ns("dfchoice"), "'] == 'filtered'"), 
+                     p('This Dataset has been filtered and therefore some observations (data points) may be excluded.\n See "Filtered tab"')
+                   ),
                    # Parameter Selection
                    selectInput(ns("param"), "Water Quality Parameter:",        
                                choices=c("-Select Parameter-", levels(factor(df$Parameter))),
@@ -100,7 +108,8 @@ tagList(
                    selectInput(ns("map.type"), "Map Style:",        
                                choices=c(providers$Stamen.TonerLite,
                                          providers$CartoDB.Positron,
-                                         providers$Esri.NatGeoWorldMap),
+                                         providers$Esri.NatGeoWorldMap,
+                                         providers$Esri.WorldImagery),
                                selected = providers$Stamen.TonerLite), # See Note 4
                    hr(), # Horizontal Rule/Line
                    # Plot Style
@@ -130,11 +139,13 @@ tagList(
                                  min = 0, max = 1,
                                  value=0.7)
                    ) # end Well Panel
-          ) # end tab - Display options
-        ), # end tabset
-        br(), br(), br(),
-        # Save Button
-        downloadButton(ns('save.plot'), "Save Plot")
+          ), # end tab - Display options
+          # Save Options Tab
+          tabPanel("save",
+            radioButtons(ns("plot.size"), "plot Size", c("small", "medium", "large")),
+            downloadButton(ns('plot.save'), "Save Plot")
+          ) # end tab
+        ) # end tabset
       ), # end sidebar Panel
       mainPanel(width = 9,
         leafletOutput(ns("map"), height = 800)
@@ -147,14 +158,29 @@ tagList(
 # Server Function
 ##############################################################################################################################
 
-map.plot <- function(input, output, session, df, df.site) {
+# Note that Argument "df.filtered"  needs to be a reactive expression, not a resolved value. 
+# Thus do not use () in callModule argument for reactives
+# For non reactives wrap with "reactive" to make into a reactive expression.
 
+map.plot <- function(input, output, session, df.full, df.filtered, df.site) {
+
+  
+  ### Dataframe filtered or full based on Selection
+  df <- reactive({
+    if(input$dfchoice == "filtered"){
+      df.filtered()
+    }else{
+      df.full
+    }
+  })
+  
+  
 # Reactive Dataframe for data stats
   
   df.react <- reactive({
     
     # Filter by Parameter and remove NAs
-    df.temp <- df %>% 
+    df.temp <- df() %>% 
       filter(!is.na(Result), 
              Parameter %in% input$param)
     

@@ -246,10 +246,6 @@ df.trib.wach <- df.trib.wach.exp %>% select(col.trib.wach)
 df.trib.all.exp <- bind_rows(df.trib.quab, df.trib.ware, df.trib.wach)
 df.trib.all <- df.trib.all.exp %>%  select(col.trib.quab.ware)
 
-# Quabbin Bacteria
-df.bact.quab.exp <- df.trib.res.quab %>% filter(LocationType == "Nutrient")
-df.bact.quab <- df.bact.quab.exp %>%  select(col.bact.quab)
-
 # Wachusett Bacteria
 df.bact.wach.exp <- df.trib.bact.wach %>% filter(LocationType == "Transect")
 df.bact.wach <- df.bact.wach.exp %>% select(col.bact.wach)
@@ -286,9 +282,6 @@ df.trib.ware.site <- df.quab.ware.site %>% filter(Watershed == "Ware River")
 # Wachusett Tributary
 df.trib.wach.site <- df.trib.bact.wach.site %>% filter(LocationType == "Tributary")
 
-# Quabbin Bacteria (Need to find sites)
-df.bact.quab.site <- df.quab.ware.site %>% filter(LocationType == "Transect")
-
 # Wachusett Bacteria
 df.bact.wach.site <- df.trib.bact.wach.site %>% filter(LocationType == "Transect")
 
@@ -299,7 +292,8 @@ df.chem.quab.site <- df.quab.ware.site %>% filter(LocationType == "Nutrient")
 df.chem.wach.site <- df.chem.prof.wach.site %>% filter(!is.na(LocationDepth))
 
 # Quabbin Profile (Need to find Sites)
-
+df.prof.quab.site <- df.chem.quab.site
+  
 # Wachusett Profile
 df.prof.wach.site <- df.chem.prof.wach.site %>% filter(is.na(LocationDepth))
 
