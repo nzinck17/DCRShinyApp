@@ -24,7 +24,7 @@ summary.UI <- function(id) {
     fluidRow(
       column(3,
              checkboxInput(ns("summary.group.site"), label = "Group by Site", value = TRUE),
-             radioButtons(ns("summary.group.time"), "Group by:",
+             radioButtons(ns("summary.group.time"), "Temporal Groupings:",
                           choices = c("None" = 1,
                                       "Year" = 2,
                                       "Season (all years)" = 3,
@@ -77,6 +77,9 @@ summary <- function(input, output, session, df) {
     if(input$summary.group.site == TRUE){
       sum.dots <- c(sum.dots, "Site")
     }  
+    
+    # Group by Param
+    sum.dots <- c("Parameter", sum.dots)
     
     # Applying Grouping (if Grouping selected)
     if (input$summary.group.site == FALSE & input$summary.group.time == 1){

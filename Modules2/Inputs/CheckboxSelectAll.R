@@ -43,15 +43,15 @@ checkboxSelectAll <- function(input, output, session, label, choices, selected =
   
   ### Update the Checkbox basaed on Action Buttons
   observeEvent(input$select.all, {
-    updateCheckboxGroupInput(session = session, inputId = "checkbox", label = NULL, choices = choices(), selected = choices())
+    updateCheckboxGroupInput(session = session, inputId = "checkbox", label = NULL, choices = choices(), selected = choices(), inline = inline)
   })
   
   observeEvent(input$select.def, {
-    updateCheckboxGroupInput(session = session, inputId = "checkbox", label = NULL, choices = choices(), selected = selected())
+    updateCheckboxGroupInput(session = session, inputId = "checkbox", label = NULL, choices = choices(), selected = selected(), inline = inline)
   })
   
   observeEvent(input$unselect.all, {
-    updateCheckboxGroupInput(session = session, inputId = "checkbox", label = NULL, choices = choices())
+    updateCheckboxGroupInput(session = session, inputId = "checkbox", label = NULL, choices = choices(), inline = inline)
   })
   
   

@@ -64,51 +64,41 @@ plot.time.UI <- function(id) {
                         ) # end column
                ), # end Tab Panel
                tabPanel("Trends and Lines", br(), br(),
-                        column(2,
+                        column(3,
                                radioButtons(ns("plot.line.trend"), "Add Simple Trendline:",
                                             choices= c("None",
                                                        "Linear" = "lm",
                                                        "Curve" = "loess")),
-                               checkboxInput(ns("plot.line.trend.ribbon"), "Show Conf.Ribbon"),
-                               radioButtons(ns("plot.line.trend.conf"), "Confidence Interval:",
-                                            choices= c("90","95","99")),
-                               checkboxInput(ns("plot.line.trend.stat"), "Display Equation"),
+                               strong("Confidence Ribbon"),
+                               checkboxInput(ns("plot.line.trend.ribbon"), "Show Conf. Ribbon"),
+                               radioButtons(ns("plot.line.trend.conf"), NULL,
+                                            choices= c(0.90,0.95,0.99), inline = TRUE),
                                sliderInput(ns("plot.line.trend.size"), "Line Thickness:",
-                                           min = 0.5, max = 3, value = 1, step = 0.5)
+                                           min = 0, max = 3, value = 1, step = 0.25)
                         ), # end column
-                        column(2,
-                               strong("Kendall Trendline:"),
-                               checkboxInput(ns("plot.line.kendall"), "Show Kendall Line"),
-                               checkboxInput(ns("plot.line.kendall.ribbon"), "Show Conf.Ribbon"),
-                               radioButtons(ns("plot.line.kendall.conf"), "Confidence Interval:",
-                                            choices= c("90","95","99")),
-                               checkboxInput(ns("plot.line.kendall"), "Show Statistic"),
-                               sliderInput(ns("plot.line.kendall.size"), "Line Thickness:",
-                                           min = 0.5, max = 3, value = 1, step = 0.5)
-                        ), # end column
-                        column(2,
+                        column(3,
                                strong("Non-Detection Level:"),
                                checkboxInput(ns("plot.line.nd"),"Show Line"),
                                radioButtons(ns("plot.line.nd.type"), "Line Type",
                                             choices = c("solid", "dash", "dotted")),
                                sliderInput(ns("plot.line.nd.size"), "Line Thickness:",
-                                           min = 0.5, max = 3, value = 1, step = 0.5)
+                                           min = 0, max = 3, value = 1, step = 0.25)
                         ), # end column
-                        column(2,
+                        column(3,
                                strong("Reporting Limit:"),
                                checkboxInput(ns("plot.line.rl"), "Show Line"),
                                radioButtons(ns("plot.line.rl.type"), "Line Type",
                                             choices = c("solid", "dash", "dotted")),
                                sliderInput(ns("plot.line.rl.size"), "Line Thickness:",
-                                           min = 0.5, max = 3, value = 1, step = 0.5)
+                                           min = 0, max = 3, value = 1, step = 0.25)
                         ), # end column
-                        column(2,
+                        column(3,
                                strong("Performace Standard:"),
                                checkboxInput(ns("plot.line.ps"), "Show Line"),
                                radioButtons(ns("plot.line.ps.type"), "Line Type",
                                             choices = c("solid", "dash", "dotted")),
                                sliderInput(ns("plot.line.ps.size"), "Line Thickness:",
-                                           min = 0.5, max = 3, value = 1, step = 0.5)
+                                           min = 0, max = 3, value = 1, step = 0.25)
                         ) # end column
                ),
                tabPanel("Title and Axis Labels", br(), br(),
@@ -152,11 +142,13 @@ plot.time.UI <- function(id) {
                         column(2,
                                downloadButton(ns('save.plot'), "Save Plot")
                         ),
-                        column(2,
-                               radioButtons(ns("plot.save.size"), "Plot Size:",
-                                            choices= c("small",
-                                                       "medium",
-                                                       "large"))
+                        column(3,
+                               numericInput(ns("plot.save.width"), "Plot Width (inches):", 7,
+                                            min = 3, max = 17, step = 0.25),
+                               
+                               numericInput(ns("plot.save.height"), "Plot Height (inches):", 5,
+                                            min = 3, max = 17, step = 0.25)
+
                         ),
                         column(2,
                                radioButtons(ns("plot.save.type"), "File Type:",
@@ -212,7 +204,8 @@ plot.time <- function(input, output, session, df) {
   
   output$param2.ui <- renderUI({
     radioButtons(ns("param2"), "Secondary Y-Axis Parameter",
-                 choices = c("None", param()))
+                 choices = c(param(), "None"),
+                 selected = "None")
   })
   
   ### Two Dataframes (Primary and Secondary Axis)
@@ -297,11 +290,7 @@ plot.time <- function(input, output, session, df) {
     if(input$plot.display.theme == "Classic"){
       p <- p + theme_classic()
     }
-    
-    # Log Scale
-    if("Log-scale Y-Axis" %in% input$plot.display.axis){
-      p <- p + scale_y_log10()
-    }
+  
     
     # Grouping and Trendline
     
@@ -320,11 +309,12 @@ plot.time <- function(input, output, session, df) {
                      shape = 17, size = input$plot.display.psize)
       }
       if(input$plot.line.trend != "None"){
-        p <- p + geom_smooth(data = df1(), aes_string(x = "as.POSIXct(Date)", y = "Result"),
+        p <- p + geom_smooth(data = df1(), aes_string(x = "as.POSIXct(Date)", y = "Result", 
+                                                      color = input$plot.color, linetype = input$plot.shape),
                              method = input$plot.line.trend,
                              size = input$plot.line.trend.size,
                              se = input$plot.line.trend.ribbon,
-                             aes_string(color = input$plot.color, linetype = input$plot.shape))
+                             level = as.numeric(input$plot.line.trend.conf))
       }
     }
     # Group by only Color when only color grouping is selected
@@ -342,11 +332,11 @@ plot.time <- function(input, output, session, df) {
                      shape = 17, size = input$plot.display.psize)
       }
       if(input$plot.line.trend != "None"){
-        p <- p + geom_smooth(data = df1(), aes_string(x = "as.POSIXct(Date)", y = "Result"),
+        p <- p + geom_smooth(data = df1(), aes_string(x = "as.POSIXct(Date)", y = "Result", color = input$plot.color),
                              method = input$plot.line.trend,
                              size = input$plot.line.trend.size,
                              se = input$plot.line.trend.ribbon,
-                             aes_string(color = input$plot.color))
+                             level = as.numeric(input$plot.line.trend.conf))
       }
     }
     # Group by only Shape when only shape grouping is selected
@@ -364,11 +354,11 @@ plot.time <- function(input, output, session, df) {
                    shape = 17, size = input$plot.display.psize)
       }
       if(input$plot.line.trend != "None"){
-        p <- p + geom_smooth(data = df1(), aes_string(x = "as.POSIXct(Date)", y = "Result"),
+        p <- p + geom_smooth(data = df1(), aes_string(x = "as.POSIXct(Date)", y = "Result", linetype = input$plot.shape),
                              method = input$plot.line.trend,
                              size = input$plot.line.trend.size,
                              se = input$plot.line.trend.ribbon,
-                             aes_string(linetype = input$plot.shape))
+                             level = as.numeric(input$plot.line.trend.conf))
       }
     }
     # No Grouping Selected
@@ -385,7 +375,8 @@ plot.time <- function(input, output, session, df) {
         p <- p + geom_smooth(data = df1(), aes_string(x = "as.POSIXct(Date)", y = "Result"),
                              method = input$plot.line.trend,
                              size = input$plot.line.trend.size,
-                             se = input$plot.line.trend.ribbon)
+                             se = input$plot.line.trend.ribbon,
+                             level = as.numeric(input$plot.line.trend.conf))
       }
     }
     
@@ -458,22 +449,59 @@ plot.time <- function(input, output, session, df) {
     }
     
     
+    # Log Scale
+    if(input$param2 == "None"){
+      if("Log-scale Y-Axis" %in% input$plot.display.axis){
+        p <- p + scale_y_log10()
+      } else {
+        if("Y-axis start at zero" %in% input$plot.display.axis){
+          ymax <- max(df1()$Result, na.rm = TRUE)
+          p <- p + scale_y_continuous(limits = c(0,ymax))
+        } else {
+          p <- p + scale_y_continuous()
+        }
+      }
+    }
+    
     # If Secondary Axis parameter is chosen
     
     if(input$param2 != "None"){
       
-      # Scalar for Secondary Y-axis
+      # Scalars for Secondary Y-axis
+      y1min <- min(df1()$Result, na.rm = TRUE)
+      y2min <- min(df2()$Result, na.rm = TRUE)
+      y1max <- max(df1()$Result, na.rm = TRUE)
+      y2max <- max(df2()$Result, na.rm = TRUE)
       
-      y1lim <- max(df1()$Result, na.rm = TRUE)
-      y2lim <- max(df2()$Result, na.rm = TRUE)
-      mult <- y1lim / y2lim
+      
+      # Two Y-axis Log Scale adn non-Lod Scale
+      if("Log-scale Y-Axis" %in% input$plot.display.axis){
+
+        mult <- exp(log(y1max  - y1min) / log(y2max - y2min))
+        p <- p + scale_y_log10(sec.axis = sec_axis(~./mult, breaks = trans_breaks('log10', function(x) 10^x),
+                                                   name = paste0(text.param2(), " (", text.units2(),")")))
+                                 
+      } else{
+        
+        if("Y-axis start at zero" %in% input$plot.display.axis){
+          
+          mult <- y1max / y2max
+          p <- p + scale_y_continuous(breaks = pretty_breaks(),limits = c(0,y1max),
+                                      sec.axis = sec_axis(~./mult, breaks = pretty_breaks(), 
+                                                          name = paste0(text.param2(), " (", text.units2(),")")))
+        } else {
+          
+          mult <- (y1max  - y1min) / (y2max - y2min)
+          p <- p + scale_y_continuous(breaks = pretty_breaks(),
+                                      sec.axis = sec_axis(~./mult, breaks = pretty_breaks(), 
+                                                          name = paste0(text.param2(), " (", text.units2(),")")))
+        }
+        
       
 
+      }
       
-      p <- p + scale_y_continuous(breaks = pretty_breaks(),limits = c(0,y1lim),
-                                  sec.axis = sec_axis(~./mult, breaks = pretty_breaks(), 
-                                                      name = paste0(text.param2(), " (", text.units2(),")"))) +
-        theme(text = element_text(size = 15))
+      p <- p + theme(text = element_text(size = 15))
 
     }
     
@@ -524,15 +552,18 @@ plot.time <- function(input, output, session, df) {
   # filename
   
   filename <- reactive({
-    paste0(plot.name(), ".png")
+    paste0(plot.name(), ".", input$plot.save.type)
   })
-
+  
   # Plot Print
 
   output$save.plot <- downloadHandler(
     filename = function(){filename()},
-    content = function(file){ggsave(file, plot = p(), device = "png")},
-    contentType = 'image/png'
+    content = function(file){ggsave(file, plot = p(), 
+                                    width = input$plot.save.width,
+                                    height = input$plot.save.height,
+                                    device = input$plot.save.type)}#,
+    #contentType = 'image/png'
   )
 
 
@@ -568,13 +599,13 @@ plot.time <- function(input, output, session, df) {
 
 ### Method 2
 
-# annotate("text", xleg[2], 1.1*max(c(y1lim, y2lim)),
+# annotate("text", xleg[2], 1.1*max(c(y1max, y2max)),
 #          label = text.param1(), hjust = 0, nudge_x = 0.05) +
-# annotate("text", xleg[2], 1.05*max(c(y1lim, y2lim)),
+# annotate("text", xleg[2], 1.05*max(c(y1max, y2max)),
 #          label = text.param2(), hjust = 0, nudge_x = 0.05) +
-# annotate("point", xleg[1], 1.1*max(c(y1lim, y2lim)),
+# annotate("point", xleg[1], 1.1*max(c(y1max, y2max)),
 #          shape = 16) +
-# annotate("point", xleg[1], 1.05*max(c(y1lim, y2lim)),
+# annotate("point", xleg[1], 1.05*max(c(y1max, y2max)),
 #          shape = 17)
 # xleg <- quantile(
 #   seq(min(c(as.POSIXct(df1()$Date), as.POSIXct(df2()$Date)), na.rm = TRUE),
