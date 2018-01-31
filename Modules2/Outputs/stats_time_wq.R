@@ -1,5 +1,5 @@
 ##############################################################################################################################
-#     Title: Summary.R
+#     Title: stats_time_wq.R
 #     Type: Secondary Module for DCR Shiny App
 #     Description: Summary Stats with Grouping
 #     Written by: Nick Zinck, Spring 2017
