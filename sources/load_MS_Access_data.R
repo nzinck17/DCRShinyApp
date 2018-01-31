@@ -1,5 +1,5 @@
 ##############################################################################################################################
-#     Title: LoadMSAccessData.R
+#     Title: load_MS_Access_data.R
 #     Description: This script will load WQ data from both Quabbin and Wachusett Microsof Access Database
 #     Written by: Nick Zinck, Spring 2017
 #     Note: TBD
