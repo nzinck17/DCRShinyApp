@@ -1,5 +1,5 @@
 ##############################################################################################################################
-#     Title: Plot-ProfLine-Custom.R
+#     Title: plot_profheat_custom.R
 #     Type: Secondary Module for DCR Shiny App
 #     Description: Time Series plot (for non-depth dependent data)
 #     Written by: Nick Zinck, Spring 2017
