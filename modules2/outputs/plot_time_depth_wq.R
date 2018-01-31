@@ -1,5 +1,5 @@
 ##############################################################################################################################
-#     Title: Plot-Time-Depth.R
+#     Title: plot_time_depth_wq.R
 #     Type: Secondary Module for DCR Shiny App
 #     Description: Time Series plot (for non-depth dependent data)
 #     Written by: Nick Zinck, Spring 2017
