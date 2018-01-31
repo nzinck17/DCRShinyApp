@@ -23,8 +23,8 @@ packages <- c("rmarkdown", "knitr", "tidyverse", "lubridate", "plotly", "leaflet
 ipak(packages)
 ### Run/Source Scripts that load data
 
-source("Sources/load_MS_Access_data.R")
-#source("Sources/Settings.R")
+source("sources/load_MS_Access_data.R")
+#source("sources/Settings.R")
 
 ### Load Primary Modules
 
@@ -72,8 +72,8 @@ source("modules2/outputs/site_map.R")
 
 ### Load Functions
 
-source("Functions/get_seasons.R")
-source("Functions/phyto_plots.R")
+source("functions/get_seasons.R")
+source("functions/phyto_plots.R")
 
 ###################################################################################
 ##################################  User Interface  ###############################
