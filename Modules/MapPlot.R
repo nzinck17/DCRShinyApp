@@ -259,7 +259,17 @@ map.plot <- function(input, output, session, df.full, df.filtered, df.site) {
     2*value.scale()*sqrt(value.list())
   })
   
+
+# Circle Legend function
   
+  addLegendCustom <- function(map, colors, labels, sizes, opacity = 0.5){
+    colorAdditions <- paste0(colors, "; width:", sizes, "px; height:", sizes, "px")
+    labelAdditions <- paste0("<div style='display: inline-block;height: ", sizes, 
+                             "px;margin-top: 4px;line-height: ", sizes, "px;'>", labels, "</div>")
+    return(addLegend(map, colors = colorAdditions, labels = labelAdditions, opacity = opacity))
+  } 
+
+
 # Base Leaflet Map - See Note 3
   
   output$map <- renderLeaflet({
@@ -268,16 +278,6 @@ map.plot <- function(input, output, session, df.full, df.filtered, df.site) {
                        options = providerTileOptions(noWrap = TRUE)) %>%
       fitBounds(~min((LocationLong)), ~min(LocationLat), ~max(LocationLong), ~max(LocationLat))
   })
-  
-  
-# Circle Legend function
-  
-  addLegendCustom <- function(map, colors, labels, sizes, opacity = 0.5){
-    colorAdditions <- paste0(colors, "; width:", sizes, "px; height:", sizes, "px")
-    labelAdditions <- paste0("<div style='display: inline-block;height: ", sizes, 
-                             "px;margin-top: 4px;line-height: ", sizes, "px;'>", labels, "</div>")
-    return(addLegend(map, colors = colorAdditions, labels = labelAdditions, opacity = opacity))
-  }
   
   
 # Map Proxy - Add the Circle Markers and Legend to the map. This is Reactive to events, unlike the Base Map.

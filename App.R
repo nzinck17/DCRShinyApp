@@ -29,6 +29,7 @@ source("Sources/LoadMSAccessData.R")
 ### Load Primary Modules
 
 source("Modules/Home.R")
+source("Modules/Filter-WQ.R")
 source("Modules/Time.R")
 source("Modules/Regress.R")
 source("Modules/Phyto.R")
@@ -38,7 +39,6 @@ source("Modules/Profile-Heatmap.R")
 source("Modules/Profile-Line.R")
 source("Modules/Profile-Summary.R")
 source("Modules/MapPlot.R")
-source("Modules/Filter-WQ.R")
 source("Modules/Metadata.R")
 source("Modules/Report-AWQ.R")
 source("Modules/Report-MWQ.R")
@@ -67,15 +67,12 @@ source("Modules2/Outputs/Plot-Profline-Custom.R")
 source("Modules2/Outputs/Summary.R")
 source("Modules2/Outputs/Summary-Depth.R")
 #source("Modules2/Outputs/Summary-Profile.R")
-
-# UI
-source("Modules2/UI/SiteMap.R")
+source("Modules2/Outputs/SiteMap.R")
 
 
 ### Load Functions
 
 source("Functions/GetSeasons.R")
-source("Functions/circleSizeLegend.R")
 source("Functions/Plots/Plot-Time-Func.R")
 source("Functions/PhytoPlots.R")
 
