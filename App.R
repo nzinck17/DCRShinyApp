@@ -42,7 +42,7 @@ source("Modules/map_plot.R")
 source("Modules/metadata.R")
 source("Modules/report_AWQ.R")
 source("Modules/report_MWQ.R")
-source("Modules/report_Custom.R")
+source("Modules/report_custom.R")
 
 ### Load Secondary Modules (Modules used inside a primary module)
 
