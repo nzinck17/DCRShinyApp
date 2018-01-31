@@ -1,5 +1,5 @@
  ##############################################################################################################################
-#     Title: App.R
+#     Title: app.R
 #     Type: Master file for DCR Shiny App
 #     Description: This Shiny App contains the "master" script for the app. The app contains a ui and server component
 #           and sources R scripts from the App folder
