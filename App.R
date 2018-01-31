@@ -30,7 +30,7 @@ source("Sources/LoadMSAccessData.R")
 
 source("Modules/Home.R")
 source("Modules/wq_filter.R")
-source("Modules/Time.R")
+source("Modules/wq_time.R")
 source("Modules/Regress.R")
 source("Modules/Phyto.R")
 source("Modules/Time-Depth.R")
@@ -56,7 +56,7 @@ source("Modules2/Inputs/CheckboxSelectAll.R")
 source("Modules2/Inputs/SelectInputSelectAll.R")
 
 # Outputs
-source("Modules2/Outputs/Plot-Time-Mod.R")
+source("Modules2/Outputs/Plot-Time.R")
 source("Modules2/Outputs/Plot-Time-Depth.R")
 source("Modules2/Outputs/Plot-Regress.R")
 source("Modules2/Outputs/Plot-Regress-Depth.R")
