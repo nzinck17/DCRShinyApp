@@ -404,8 +404,8 @@ server <- function(input, output, session) {
   #callModule(regress, "mod.trib.all.regr", df = df.trib.all, df.site = df.trib.all.site)
   
   # Metadata
-  callModule(metadata, "mod.trib.quab.meta", df.site = df.trib.quab.site, df.param = df.trib.quab.site, df.flag = df.trib.quab.site)
-  callModule(metadata, "mod.trib.wach.meta", df.site = df.trib.wach.site, df.param = df.trib.wach.site, df.flag = df.trib.wach.site)
+  callModule(metadata, "mod.trib.quab.meta", df.full = df.trib.quab, df.filtered = df.trib.filtered[[2]], df.site = df.trib.quab.site, df.param = df.trib.quab.site, df.flag = df.trib.quab.site)
+  callModule(metadata, "mod.trib.wach.meta", df.full = df.trib.wach, df.filtered = df.trib.filtered[[1]], df.site = df.trib.wach.site, df.param = df.trib.wach.site, df.flag = df.trib.wach.site)
 
 #############################################################
 # Reservoir
@@ -415,7 +415,7 @@ server <- function(input, output, session) {
 
   callModule(regress, "mod.bact.wach.regr", df = df.bact.wach, df.site = df.bact.wach.site)
 
-  callModule(metadata, "mod.bact.wach.meta", df.site = df.bact.wach.site, df.param = df.bact.wach.site, df.flag = df.bact.wach.site)
+  callModule(metadata, "mod.bact.wach.meta", df.full = df.bact.wach, df.filtered = df.bact.filtered[[1]], df.site = df.bact.wach.site, df.param = df.bact.wach.site, df.flag = df.bact.wach.site)
   
   # Chemical
   callModule(time.depth, "mod.chem.quab.time", df.full = df.chem.quab, df.filtered = df.chem.filtered[[2]], df.site = df.chem.quab.site)
@@ -424,8 +424,8 @@ server <- function(input, output, session) {
   callModule(regress.depth, "mod.chem.quab.regr", df = df.chem.quab, df.site = df.chem.quab.site)
   callModule(regress.depth, "mod.chem.wach.regr", df = df.chem.wach, df.site = df.chem.wach.site)
 
-  callModule(metadata, "mod.chem.quab.meta", df.site = df.chem.quab.site, df.param = df.chem.quab.site, df.flag = df.chem.quab.site)
-  callModule(metadata, "mod.chem.wach.meta", df.site = df.chem.wach.site, df.param = df.chem.wach.site, df.flag = df.chem.wach.site)
+  callModule(metadata, "mod.chem.quab.meta", df.full = df.chem.quab, df.filtered = df.chem.filtered[[2]], df.site = df.chem.quab.site, df.param = df.chem.quab.site, df.flag = df.chem.quab.site)
+  callModule(metadata, "mod.chem.wach.meta",  df.full = df.chem.wach, df.filtered = df.chem.filtered[[1]], df.site = df.chem.wach.site, df.param = df.chem.wach.site, df.flag = df.chem.wach.site)
   
   # Profile (physicochemical)
   callModule(prof.heatmap, "mod.prof.quab.heat", df = df.prof.quab)
@@ -437,8 +437,9 @@ server <- function(input, output, session) {
   callModule(prof.summary, "mod.prof.quab.sum", df = df.prof.quab)
   callModule(prof.summary, "mod.prof.wach.sum", df = df.prof.wach)
 
-  callModule(metadata, "mod.prof.quab.meta", df.site = df.prof.quab.site, df.param = df.prof.quab.site, df.flag = df.prof.quab.site)
-  callModule(metadata, "mod.prof.wach.meta", df.site = df.prof.wach.site, df.param = df.prof.wach.site, df.flag = df.prof.wach.site)
+  # Change the Data Frames to Profile Data
+  callModule(metadata, "mod.prof.quab.meta", df.full = df.chem.quab, df.filtered = df.chem.filtered[[2]], df.site = df.prof.quab.site, df.param = df.prof.quab.site, df.flag = df.prof.quab.site)
+  callModule(metadata, "mod.prof.wach.meta", df.full = df.chem.wach, df.filtered = df.chem.filtered[[1]], df.site = df.prof.wach.site, df.param = df.prof.wach.site, df.flag = df.prof.wach.site)
   
   # AquaBio
   callModule(Phyto, "mod.phyto.wach.plots", df = df.phyto.wach)
