@@ -26,19 +26,21 @@ metadata.UI <- function(id) {
                fluidRow(
                  dataTableOutput(ns("table.site"))
                ), # end Fluid Row
-               fluidRow(
-                 column(2,
-                   radioButtons(ns("df_choice_site"), "Full or Filtered Data:", 
-                                choices = c("full", "filtered"))
-                 ),
-                 # wellPanel(
-                 #   sitemap.UI(ns("site.map"))
-                 # ), # end Well Panel
-                 column(6,
-                   tableOutput(ns("table.site.select"))
-                 ),
-                 column(4,
-                   imageOutput(ns("river_image"))
+               br(), 
+               br(),
+               wellPanel(
+                 fluidRow(
+                   column(3,
+                          sitemap.UI(ns("site_map"))
+                   ),
+                   column(6,
+                          uiOutput(ns("df_choice_ui")),
+                          tableOutput(ns("table.site.select")),
+                          h3(textOutput(ns("site_text")))
+                   ),
+                   column(3,
+                          imageOutput(ns("river_image"))
+                   )
                  )
                ) # end Fluid Row
       ),
@@ -53,9 +55,14 @@ metadata.UI <- function(id) {
                  tableOutput(ns("table.param.select"))
                ) # end Fluid Row
       ),
-      tabPanel("Flags",
+      tabPanel("Flags Codes",
                fluidRow(
                  dataTableOutput(ns("table.flag"))
+               ) # end Fluid Row
+      ),
+      tabPanel("Flag Samples",
+               fluidRow(
+                 dataTableOutput(ns("table.flag.sample"))
                ) # end Fluid Row
       )
     )
@@ -70,7 +77,7 @@ metadata.UI <- function(id) {
 # This module takes df as a reactive expressions. Changes will have to be made to accmodate reactive expressions
 # 
 
-metadata <- function(input, output, session, df.full, df.filtered, df.site, df.param, df.flag) {
+metadata <- function(input, output, session, df.full, df.filtered, df.site = NULL, df.param = NULL, df.flag = NULL, df.flag.sample = NULL) {
   
   ns <- session$ns # see General Note 1
   
@@ -79,17 +86,41 @@ metadata <- function(input, output, session, df.full, df.filtered, df.site, df.p
   
   output$table.site <- renderDataTable(df.site, selection = 'single', 
                                        options = list(lengthMenu = c(5, 10, 50), pageLength = 5))
-  output$table.param <- renderDataTable(df.param, selection = 'single')
+  
+  output$table.param <- renderDataTable(df.param, selection = 'single',
+                                        options = list(lengthMenu = c(5, 10, 50), pageLength = 5))
+  
   output$table.flag <- renderDataTable(df.flag, selection = 'single')
   
+  output$table.flag.sample <- renderDataTable(df.flag.sample, selection = 'single')
   
-  #DT::datatable(df.react.corr(), options = list(lengthMenu = c(15, 25, 50, 100), pageLength = 15))
   
-  ### Additonal Site Info Table
   
-  ### Dataframe filtered or full based on Selection
   
+  ### Additonal Site Info
+  
+  # Selected row from DT
+  Site_Selected <- reactive({
+    req(input$table.site_rows_selected)
+    if(!is.null(input$table.site_rows_selected)){
+      df.site[input$table.site_rows_selected, ]
+    }
+    else{
+      NULL
+    }
+  })
+  
+  # UI for Full or filtered choice
+  output$df_choice_ui <- renderUI({
+    req(Site_Selected())
+    radioButtons(ns("df_choice_site"), "Full or Filtered Data:", 
+                 choices = c("full", "filtered"),
+                 inline = TRUE)
+  })
+  
+  # Dataframe filtered or full based on Selection
   DF_Site_Raw <- reactive({
+    req(Site_Selected())
     if(input$df_choice_site == "filtered"){
       df.filtered()
     }else{
@@ -97,15 +128,13 @@ metadata <- function(input, output, session, df.full, df.filtered, df.site, df.p
     }
   })
   
-  Site_Selected <- reactive({
-    df.site$LocationLabel[input$table.site_rows_selected]
-  })
+  # Site Map
+  callModule(Site_Map_Single, "site_map", site = Site_Selected)
   
-  
+  # Site Overview Table
   DF_Site_Sum_1 <- reactive({
-    
     DF_Site_Raw() %>%
-      filter(LocationLabel %in% Site_Selected()) %>%
+      filter(LocationLabel %in% Site_Selected()$LocationLabel) %>%
       summarise(`Parameter` = "ALL",
                 `Number of Samples` = n(),
                 `Start Date` = min(Date),
@@ -115,9 +144,8 @@ metadata <- function(input, output, session, df.full, df.filtered, df.site, df.p
   })
   
   DF_Site_Sum_2 <- reactive({
-    
     DF_Site_Raw() %>%
-      filter(LocationLabel %in% Site_Selected()) %>%
+      filter(LocationLabel %in% Site_Selected()$LocationLabel) %>%
       group_by(Parameter) %>%
       summarise(`Number of Samples` = n(),
                 `Start Date` = min(Date),
@@ -126,14 +154,29 @@ metadata <- function(input, output, session, df.full, df.filtered, df.site, df.p
                 `Units` = Units[Date == max(Date)])
   })
   
-  
   DF_Site_Sum <- reactive({rbind(DF_Site_Sum_1(), DF_Site_Sum_2())})
 
-  output$table.site.select <- renderTable({DF_Site_Sum()})
+  output$table.site.select <- renderTable({
+    req(Site_Selected())
+    DF_Site_Sum()
+    })
   
+  # Site Image
   output$river_image <- renderImage({
-    list(src = "river.jpg")
-  }, deleteFile = TRUE)  
+    req(Site_Selected()) # can delete once Site_Selected is used in renderImage due to earlier req()
+    
+    list(src = "www/river.jpg",
+         width="100%",
+         height= "300")
+  }, deleteFile = FALSE)
+  
+  # Site Text - when no site is selected
+  output$site_text <- renderText({
+    req(is.null(input$table.site_rows_selected))
+   "Select a Row in the Table above to see more Info on Location"
+  })
+  
+  
   
   
   

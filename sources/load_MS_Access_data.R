@@ -44,8 +44,10 @@ con <- dbConnect(odbc::odbc(),
 # Read Tables
 df.trib.bact.wach <- dbReadTable(con, "tblWQALLDATA")
 #df.trib.bact.wach <- dbGetQuery(con, paste("SELECT", wq.col.list, "FROM tblWQALLDATA"))
-df.trib.bact.wach.site <- dbReadTable(con, "tblLocations")
-df.trib.bact.wach.param <- dbReadTable(con, "tblParameters")
+df.wq.wach.site <- dbReadTable(con, "tblLocations")
+df.wq.wach.param <- dbReadTable(con, "tblParameters")
+df.wq.wach.flag <- dbReadTable(con, "tblFlags")
+df.wq.wach.flag.sample <- dbReadTable(con, "tblSampleFlagIndex")
 
 # Disconnect from db and remove connection obj
 dbDisconnect(con)
@@ -67,6 +69,8 @@ df.chem.prof.wach.site <- dbReadTable(con, "tblLocations")
 df.secchi.wach <- dbReadTable(con, "tblSecchi") # Wachusett Secchi
 df.phyto.wach <- dbReadTable(con, "tbl_Phyto") # Wachusett Phytoplankton
 df.phyto_thresh.wach <- dbReadTable(con, "tbl_PhytoThresholds") # Wachusett Phytoplankton thresholds
+df.aq.wach.site <- dbReadTable(con, "tblLocations")
+df.aq.wach.flag.sample <- dbReadTable(con, "tblSampleFlagIndex") # Wachusett Phytoplankton thresholds
 
 
 # Disconnect from db and remove connection obj
@@ -167,12 +171,12 @@ df.quab.ware.site$LocationCategory[df.quab.ware.site$LocationCategory == "Core"]
 ### WACHUSETT
 
 # rename columns
-df.trib.bact.wach.site <- df.trib.bact.wach.site %>% rename(Site = LocationMWRA)
+df.wq.wach.site <- df.wq.wach.site %>% rename(Site = LocationMWRA)
 df.chem.prof.wach.site <- df.chem.prof.wach.site %>% rename(Site = LocationMWRA, LocationDescription = StationDescription)
 
 # create columns
 df.chem.prof.wach.site$LocationElevFt <- NA
-df.trib.bact.wach.site$Watershed <- "Wachusett"
+df.wq.wach.site$Watershed <- "Wachusett"
 df.chem.prof.wach.site$Watershed <- "Wachusett"
 
 
@@ -187,7 +191,7 @@ df.trib.res.quab <- left_join(df.trib.res.quab, df.quab.ware.site, by = "Site")
 df.prof.quab <- left_join(df.prof.quab, df.quab.ware.site, by = "Site")
 
 # Wachusett Tributary and Bacteria
-df.trib.bact.wach <- left_join(df.trib.bact.wach, df.trib.bact.wach.site, by = "Site")
+df.trib.bact.wach <- left_join(df.trib.bact.wach, df.wq.wach.site, by = "Site")
 
 # Wachusett Chemical
 df.chem.wach <- left_join(df.chem.wach, df.chem.prof.wach.site, by = "Site")
@@ -280,10 +284,10 @@ df.trib.quab.site <- df.quab.ware.site %>% filter(Watershed == "Quabbin", Locati
 df.trib.ware.site <- df.quab.ware.site %>% filter(Watershed == "Ware River")
 
 # Wachusett Tributary
-df.trib.wach.site <- df.trib.bact.wach.site %>% filter(LocationType == "Tributary")
+df.trib.wach.site <- df.wq.wach.site %>% filter(LocationType == "Tributary")
 
 # Wachusett Bacteria
-df.bact.wach.site <- df.trib.bact.wach.site %>% filter(LocationType == "Transect")
+df.bact.wach.site <- df.wq.wach.site %>% filter(LocationType == "Transect")
 
 # Quabbin Chemical
 df.chem.quab.site <- df.quab.ware.site %>% filter(LocationType == "Nutrient")
@@ -303,7 +307,7 @@ df.prof.wach.site <- df.chem.prof.wach.site %>% filter(is.na(LocationDepth))
 
 # All Sites - # Combine All Sites into 1 dataframe ( Need to update when Sites are squared away)
 df.all.site.temp <- full_join(df.quab.ware.site,
-                              df.trib.bact.wach.site,
+                              df.wq.wach.site,
                               by = c("Site",
                                      "Watershed",
                                      "LocationType",
