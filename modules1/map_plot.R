@@ -72,7 +72,7 @@ tagList(
                    selectInput(ns("stat"), "Value Statistic:",        
                                choices=c("average", "minimum", "maximum", 
                                          "median", "1st quartile", "1st quartile",
-                                         "variance", "stand.dev.","number of samples"),
+                                         "variance", "stand.dev.","number of samples", "geometric mean"),
                                selected = "average"),
                    hr(),
                    # Date Selection
@@ -194,15 +194,16 @@ map.plot <- function(input, output, session, df.full, df.filtered, df.site) {
     
     # Group by Site and add any statistics (Make sure this matches with UI options)
     df.temp <- df.temp %>% group_by(Site) %>%
-      summarise(average = mean(Result), 
+      summarise(`number of samples` = n(),
+                average = mean(Result), 
                 minimum = min(Result), 
-                maximum = max(Result), 
-                median = median(Result),
+                maximum = max(Result),
                 `1st quartile` = quantile(Result, 0.25),
+                median = median(Result),
                 `3rd quartile` = quantile(Result, 0.75),
                 variance = var(Result), 
                 `stand.dev.` = sd(Result),
-                `number of samples` = n()) %>%
+                `geometric mean` = gm_mean(Result))
       # Restructuring the Stat Columns into Two new Columns: "Stat" and "Value"
       gather(Stat, Value, -c(Site))
     

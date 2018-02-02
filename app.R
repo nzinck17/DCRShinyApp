@@ -73,7 +73,7 @@ source("modules2/outputs/site_map_single.R")
 
 ### Load Functions
 
-source("functions/get_seasons.R")
+source("functions/stat_functions.R")
 source("functions/phyto_plots.R")
 
 ###################################################################################

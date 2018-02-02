@@ -8,3 +8,7 @@ getSeason <- function(input.date){
   levels(cuts) <- c("Winter","Spring","Summer","Fall","Winter")
   return(cuts)
 }
+
+gm_mean = function(x, na.rm=TRUE){
+  exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))
+}
