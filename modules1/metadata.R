@@ -34,7 +34,7 @@ metadata.UI <- function(id) {
                           sitemap.UI(ns("site_map"))
                    ),
                    column(6,
-                          uiOutput(ns("df_choice_ui")),
+                          uiOutput(ns("df_choice_site_ui")),
                           tableOutput(ns("table.site.select")),
                           h3(textOutput(ns("site_text")))
                    ),
@@ -48,11 +48,18 @@ metadata.UI <- function(id) {
                fluidRow(
                  dataTableOutput(ns("table.param"))
                ), # end Fluid Row
-               radioButtons(ns("df_choice_param"), "Full or Filtered Data:", 
-                            choices = c("full", "filtered"),
-                            inline = TRUE),
-               fluidRow(
-                 tableOutput(ns("table.param.select"))
+               br(), 
+               br(),
+               wellPanel(
+                 fluidRow(
+                   column(1),
+                   column(10,
+                          uiOutput(ns("df_choice_param_ui")),
+                          tableOutput(ns("table.param.select")),
+                          h3(textOutput(ns("param_text")))
+                   ),
+                   column(1)
+                 )
                ) # end Fluid Row
       ),
       tabPanel("Flags Codes",
@@ -102,16 +109,16 @@ metadata <- function(input, output, session, df.full, df.filtered, df.site = NUL
   # Selected row from DT
   Site_Selected <- reactive({
     req(input$table.site_rows_selected)
-    if(!is.null(input$table.site_rows_selected)){
+    # if(!is.null(input$table.site_rows_selected)){
       df.site[input$table.site_rows_selected, ]
-    }
-    else{
-      NULL
-    }
+    # }
+    # else{
+    #   NULL
+    # }
   })
   
   # UI for Full or filtered choice
-  output$df_choice_ui <- renderUI({
+  output$df_choice_site_ui <- renderUI({
     req(Site_Selected())
     radioButtons(ns("df_choice_site"), "Full or Filtered Data:", 
                  choices = c("full", "filtered"),
@@ -120,7 +127,7 @@ metadata <- function(input, output, session, df.full, df.filtered, df.site = NUL
   
   # Dataframe filtered or full based on Selection
   DF_Site_Raw <- reactive({
-    req(Site_Selected())
+    req(input$df_choice_site)
     if(input$df_choice_site == "filtered"){
       df.filtered()
     }else{
@@ -137,8 +144,8 @@ metadata <- function(input, output, session, df.full, df.filtered, df.site = NUL
       filter(LocationLabel %in% Site_Selected()$LocationLabel) %>%
       summarise(`Parameter` = "ALL",
                 `Number of Samples` = n(),
-                `Start Date` = min(Date),
-                `End Date` = max(Date),
+                `Start Date` = as.character(min(Date)),
+                `End Date` = as.character(max(Date)),
                 `Latest Result` = NA,
                 `Units` = NA)
   })
@@ -148,8 +155,8 @@ metadata <- function(input, output, session, df.full, df.filtered, df.site = NUL
       filter(LocationLabel %in% Site_Selected()$LocationLabel) %>%
       group_by(Parameter) %>%
       summarise(`Number of Samples` = n(),
-                `Start Date` = min(Date),
-                `End Date` = max(Date),
+                `Start Date` = as.character(min(Date)),
+                `End Date` = as.character(max(Date)),
                 `Latest Result` = Result[Date == max(Date)],
                 `Units` = Units[Date == max(Date)])
   })
@@ -165,15 +172,15 @@ metadata <- function(input, output, session, df.full, df.filtered, df.site = NUL
   output$river_image <- renderImage({
     req(Site_Selected()) # can delete once Site_Selected is used in renderImage due to earlier req()
     
-    list(src = "www/river.jpg",
+    list(src = "images/river.jpg",
          width="100%",
-         height= "300")
+         height= "350")
   }, deleteFile = FALSE)
   
   # Site Text - when no site is selected
   output$site_text <- renderText({
     req(is.null(input$table.site_rows_selected))
-   "Select a Row in the Table above to see more Info on Location"
+    "SELECT a ROW above to see MORE INFO on a LOCATION"
   })
   
   
@@ -182,7 +189,23 @@ metadata <- function(input, output, session, df.full, df.filtered, df.site = NUL
   
   ### Additional Parameter Info Table
   
+  # Selected row from DT
+  Param_Selected <- reactive({
+    req(input$table.param_rows_selected)
+    df.param[input$table.param_rows_selected, ]
+  })
+  
+  # UI for Full or filtered choice
+  output$df_choice_param_ui <- renderUI({
+    req(Param_Selected())
+    radioButtons(ns("df_choice_param"), "Full or Filtered Data:", 
+                 choices = c("full", "filtered"),
+                 inline = TRUE)
+  })
+  
+  # Dataframe filtered or full based on Selection
   DF_Param_Raw <- reactive({
+    req(input$df_choice_param)
     if(input$df_choice_param == "filtered"){
       df.filtered()
     }else{
@@ -190,42 +213,38 @@ metadata <- function(input, output, session, df.full, df.filtered, df.site = NUL
     }
   })
   
-  
-  Param_Selected <- reactive({
-    df.site$Parameter[input$table.param_rows_selected]
-  })
-  
-  
+  # param Overview Table
   DF_Param_Sum_1 <- reactive({
-    
     DF_Param_Raw() %>%
-      filter(Parameter %in%  Param_Selected()) %>%
+      filter(Parameter %in%  Param_Selected()$ParameterName) %>%
+      summarise(`LocationLabel` = "ALL",
+                `Number of Samples` = n(),
+                `Start Date` = as.character(min(Date)),
+                `End Date` = as.character(max(Date)),
+                `Latest Result` = NA,
+                `Units` = NA)
+  })
+    
+  DF_Param_Sum_2 <- reactive({
+    DF_Param_Raw() %>%
+      filter(Parameter %in%  Param_Selected()$ParameterName) %>%
       group_by(LocationLabel) %>%
       summarise(`Number of Samples` = n(),
-                `Start Date` = min(Date),
-                `End Date` = max(Date),
+                `Start Date` = as.character(min(Date)), # need as.character becuase of renderTable has a bug for Date Class (xtable bug)
+                `End Date` = as.character(max(Date)),
                 `Latest Result` = Result[Date == max(Date)],
                 `Units` = Units[Date == max(Date)])
   })
   
-  
-  DF_Param_Sum_2 <- reactive({
-    
-    DF_Param_Raw() %>%
-      filter(Parameter %in%  Param_Selected()) %>%
-      summarise(`LocationLabel` = "ALL",
-                `Number of Samples` = n(),
-                `Start Date` = min(Date),
-                `End Date` = max(Date),
-                `Latest Result` = NA,
-                `Units` = NA)
-  })
-  
-  
   DF_Param_Sum <- reactive({rbind(DF_Param_Sum_1(), DF_Param_Sum_2())})
 
   output$table.param.select <- renderTable(DF_Param_Sum())
-  
+
+  # Param Text - when no site is selected
+  output$param_text <- renderText({
+    req(is.null(input$table.param_rows_selected))
+    "SELECT a ROW above to see MORE INFO on a PARAMETER"
+  })
   
   
   

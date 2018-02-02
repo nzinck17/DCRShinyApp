@@ -363,9 +363,17 @@ tabPanel("Report",
                       )
          ) # end navlist
 
-) # end tabpanel (page)
+), # end tabpanel (page)
 
 #######################################################
+# Overview
+
+tabPanel("Overview",
+         # Title
+         fluidRow(br(), br(), br(), br(), h2("Overview", align = "center"), br())
+)
+
+#########################################################
 
 ) # end UI
 
@@ -426,7 +434,7 @@ server <- function(input, output, session) {
   callModule(regress.depth, "mod.chem.wach.regr", df = df.chem.wach, df.site = df.chem.wach.site)
 
   callModule(metadata, "mod.chem.quab.meta", df.full = df.chem.quab, df.filtered = df.chem.filtered[[2]], df.site = df.chem.quab.site, df.param = df.quab.param)
-  callModule(metadata, "mod.chem.wach.meta",  df.full = df.chem.wach, df.filtered = df.chem.filtered[[1]], df.site = df.chem.wach.site, df.param = df.aq.wach.param, df.flag.sample = df.aq.wach.flag.sample)
+  callModule(metadata, "mod.chem.wach.meta",  df.full = df.chem.wach, df.filtered = df.chem.filtered[[1]], df.site = df.prof.wach.site, df.flag.sample = df.aq.wach.flag.sample)
   
   # Profile (physicochemical)
   callModule(prof.heatmap, "mod.prof.quab.heat", df = df.prof.quab)
@@ -439,8 +447,8 @@ server <- function(input, output, session) {
   callModule(prof.summary, "mod.prof.wach.sum", df = df.prof.wach)
 
   # Change the Data Frames to Profile Data
-  callModule(metadata, "mod.prof.quab.meta", df.full = df.chem.quab, df.filtered = df.chem.filtered[[2]], df.site = df.prof.quab.site, df.param = df.prof.quab.site, df.flag = df.prof.quab.site)
-  callModule(metadata, "mod.prof.wach.meta", df.full = df.chem.wach, df.filtered = df.chem.filtered[[1]], df.site = df.prof.wach.site, df.param = df.prof.wach.site, df.flag = df.prof.wach.site)
+  callModule(metadata, "mod.prof.quab.meta", df.full = df.chem.quab, df.filtered = df.chem.filtered[[2]], df.site = df.prof.quab.site, df.param = df.quab.param)
+  callModule(metadata, "mod.prof.wach.meta", df.full = df.chem.wach, df.filtered = df.chem.filtered[[1]], df.site = df.prof.wach.site, df.flag.sample = df.aq.wach.flag.sample)
   
   # AquaBio
   callModule(Phyto, "mod.phyto.wach.plots", df = df.phyto.wach)
