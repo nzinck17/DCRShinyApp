@@ -85,19 +85,19 @@ tagList(
                                  selected = "All Years"),
                      # Month
                      selectInput(ns("month"), "Month:", 
-                                 choices = c("All Months",
-                                             January = 1,
-                                             February = 2,
-                                             March = 3,
-                                             April = 4,
-                                             May = 5,
-                                             June = 6,
-                                             July = 7,
-                                             August = 8,
-                                             September = 9,
-                                             October = 10,
-                                             November = 11,
-                                             December = 12), 
+                                 choices = c("All Months", month.name[1:12]),
+                                             # January = 1,
+                                             # February = 2,
+                                             # March = 3,
+                                             # April = 4,
+                                             # May = 5,
+                                             # June = 6,
+                                             # July = 7,
+                                             # August = 8,
+                                             # September = 9,
+                                             # October = 10,
+                                             # November = 11,
+                                             # December = 12), 
                                  selected = "All Months")
                    ) # end Well Panel
           ),
@@ -189,7 +189,7 @@ map.plot <- function(input, output, session, df.full, df.filtered, df.site) {
       df.temp <- df.temp %>% filter(year(Date) == input$year)
     }
     if (input$month != "All Months"){
-      df.temp <- df.temp %>% filter(month(Date) == input$month)
+      df.temp <- df.temp %>% filter(month.name[month(Date)] == input$month)
     }
     
     # Group by Site and add any statistics (Make sure this matches with UI options)

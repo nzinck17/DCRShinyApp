@@ -53,9 +53,9 @@ summary <- function(input, output, session, df) {
     
     # Add Year, season, and Month Columns
     sum.1 <- df() %>%
-      mutate(Year = lubridate::year(Date), 
+      mutate(Year = as.integer(lubridate::year(Date)), 
              Season = getSeason(Date),
-             Month = lubridate::month(Date)
+             Month = month.abb[lubridate::month(Date)]
       )
     
     # Group by time (year, season, month)

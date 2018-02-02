@@ -51,9 +51,9 @@ summary.depth <- function(input, output, session, df) {
   output$summary <- renderTable({
     
     sum.1 <- df() %>%
-      mutate(Year = lubridate::year(Date), 
+      mutate(Year = as.integer(lubridate::year(Date)), 
              Season = getSeason(Date),
-             Month = lubridate::month(Date)
+             Month = month.abb[lubridate::month(Date)]
       )
     
     # group by time
