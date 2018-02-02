@@ -90,13 +90,16 @@ summary.depth <- function(input, output, session, df) {
     }
     
     # Making the Sumamry Statistic Columns
-    sum.2 %>% summarise(average = mean(Result), 
-                        min = min(Result), 
-                        max = max(Result), 
-                        median = median(Result), 
-                        variance = var(Result), 
-                        `stand.dev.` = sd(Result),
-                        `number of samples` = n())
+    sum.2 %>% summarise(`number of samples` = n(),
+                        average = mean(Result), 
+                        min = min(Result, na.rm=TRUE), 
+                        max = max(Result, na.rm=TRUE), 
+                        `1st quartile` = quantile(Result, 0.25),
+                        median = median(Result),
+                        `3rd quartile` = quantile(Result, 0.75),
+                        variance = var(Result, na.rm=TRUE), 
+                        `stand.dev.` = sd(Result, na.rm=TRUE),
+                        `geometric mean` = gm_mean(Result))
   })
 
 } # end Server Function

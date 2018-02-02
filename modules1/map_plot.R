@@ -203,9 +203,8 @@ map.plot <- function(input, output, session, df.full, df.filtered, df.site) {
                 `3rd quartile` = quantile(Result, 0.75),
                 variance = var(Result), 
                 `stand.dev.` = sd(Result),
-                `geometric mean` = gm_mean(Result))
-      # Restructuring the Stat Columns into Two new Columns: "Stat" and "Value"
-      gather(Stat, Value, -c(Site))
+                `geometric mean` = gm_mean(Result)) %>%
+      gather(Stat, Value, -c(Site)) # Restructuring the Stat Columns into Two new Columns: "Stat" and "Value"
     
     # Create a more condensed Site Location dataframe (with Lat,lomg,site ID)
     df.site.temp <- df.site %>% 
