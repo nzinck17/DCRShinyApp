@@ -79,15 +79,13 @@ summary.depth <- function(input, output, session, df) {
     # group by Depth
     if(input$summary.group.level == TRUE){
       sum.dots <- c(sum.dots, "Sampling_Level")
-    } 
-    
-    # Applying Grouping if Grouping selected
-    if (input$summary.group.station == FALSE & input$summary.group.level == FALSE & input$summary.group.time == 1){
-      sum.2 <- sum.1
-    } else {
-      sum.2 <- sum.1 %>%
-        group_by_(.dots = sum.dots)
     }
+      
+    # Group by Param
+    sum.dots <- c("Parameter", sum.dots)
+    
+    # Applying Grouping (stats is always grouped by parameter)
+    sum.2 <- sum.1 %>% group_by_(.dots = sum.dots)
     
     # Making the Sumamry Statistic Columns
     sum.2 %>% summarise(`number of samples` = n(),
