@@ -39,14 +39,14 @@
 
 taxaplot <- function(df,locs,vyear,taxa, color){
 # Function Arguments:
-# df <- df.phyto.wach
+# df <- df_phyto_wach
 # vyear <- 2017 # Selection unique(phyto)
 # taxa <- "Anabaena"
 # locs <- c("BN3417", "CI3409") # Multiple selections Set as default - adjust plot title
 # color <- "dodgerblue"
 ############################################
 # Plot Setup
-  df.thresh <- df.phyto_thresh.wach # df with taxa thresholds
+  df_thresh <- df_phyto_thresh_wach # df with taxa thresholds
   df2 <- df[df$Taxa == taxa & df$Year %in% vyear & df$Station %in% locs,]
   title <- paste0(gsub("_", " ", taxa), " at Station(s) ", str_c(locs, collapse = ", "), " in ", vyear)
   xlabel <- "Date"
@@ -72,8 +72,8 @@ p <- ggplot(df2, aes(x = Date, y = Result)) +
   scale_x_date(date_labels = "%b", date_breaks(width = "1 month"), limits = c(xmin,xmax), name = "Date")
 
   if(taxa %in% taxathreshlist) {
-    trigmon <- df.thresh$EarlyMonitoringTrigger[match(paste0(taxa), df.thresh$Taxa)]
-    trigtreat <- df.thresh$TreatmentConsideration[match(paste0(taxa), df.thresh$Taxa)]
+    trigmon <- df_thresh$EarlyMonitoringTrigger[match(paste0(taxa), df_thresh$Taxa)]
+    trigtreat <- df_thresh$TreatmentConsideration[match(paste0(taxa), df_thresh$Taxa)]
   p <- p + geom_hline(yintercept = trigmon, linetype=2 ) +
     annotate("text", min(df2$Date),trigmon - (0.02 * max(df2$Result)), label = "Early Monitoring Threshold", hjust = "left") +
     geom_hline(yintercept = trigtreat, linetype=5) +
@@ -90,10 +90,10 @@ p
 # Plot 2
 phytoplot <- function(df,locs,vyear,epi_min,epi_max,em_min,em_max) {
 # Specify the data specs
-secchi <- df.secchi.wach # Eventually this needs to be changed to a df argument with ns()
+secchi <- df_secchi_wach # Eventually this needs to be changed to a df argument with ns()
 
 #Function Arguments
-# df <- df.phyto.wach
+# df <- df_phyto_wach
 # vyear <- 2015
 # locs <- c("BN3417", "CI3409")
 # epi_min <- 1
@@ -183,7 +183,7 @@ p
 
 historicplot <- function(df, taxa, locs, vyear, yg1min, yg1max, yg2min, yg2max, yg3min, yg3max, stat, stat1, stat2, stat3, depthmin, depthmax) {
   # #Function Arguments for data selection
-  # df <- df.phyto.wach
+  # df <- df_phyto_wach
   # taxa <- "Anabaena" # Entire list - Alphabetical (single choice)
   # locs <- c("BN3417", "CI3409") # Radio buttons  - default both toggled on
   # vyear <- 2017
@@ -209,7 +209,7 @@ historicplot <- function(df, taxa, locs, vyear, yg1min, yg1max, yg2min, yg2max, 
   ylabel <- paste0(gsub("_", " ", taxa)," Density (ASUs/ml)")
   xmin <- as.Date(paste0(as.numeric(vyear),"-01-01"), format = '%Y-%m-%d')
   xmax <- as.Date(paste0(as.numeric(vyear),"-12-31"), format = '%Y-%m-%d')
-  df.thresh <- df.phyto_thresh.wach # df with taxa thresholds
+  df_thresh <- df_phyto_thresh_wach # df with taxa thresholds
   taxathreshlist <- c("Anabaena","Synura", "Chrysosphaerella", "Uroglenopsis","Dinobryon")
   #Define legend labels and colors
   yg0_leg <- paste0(vyear, " ", taxalabel, " Values")
@@ -283,8 +283,8 @@ var3 <- df_yg3[stat3]
           legend.title=element_blank())
 
   if(taxa %in% taxathreshlist) {
-    trigmon <- df.thresh$EarlyMonitoringTrigger[match(paste0(taxa), df.thresh$Taxa)]
-    trigtreat <- df.thresh$TreatmentConsideration[match(paste0(taxa), df.thresh$Taxa)]
+    trigmon <- df_thresh$EarlyMonitoringTrigger[match(paste0(taxa), df_thresh$Taxa)]
+    trigtreat <- df_thresh$TreatmentConsideration[match(paste0(taxa), df_thresh$Taxa)]
     p <- p + geom_hline(yintercept = trigmon, linetype=2 ) +
       annotate("text", min(df_yr$date),trigmon - (0.02 * max(var, var1, var2, var3)), label = "Early Monitoring Threshold", hjust = "left") +
       geom_hline(yintercept = trigtreat, linetype=5) +
