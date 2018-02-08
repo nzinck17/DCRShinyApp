@@ -23,7 +23,7 @@
 # User Interface
 ##############################################################################################################################
 
-Phyto.UI <- function(id,df) {
+PHYTO_UI <- function(id,df) {
 
   ns <- NS(id) # see General Note 1
 
@@ -33,12 +33,12 @@ Phyto.UI <- function(id,df) {
                # Data filter for plot
                fluidRow(column(5, # fr2 - Site and Year Input
                                selectInput(ns("site"), "Station(s):",
-                                           choices = df.phyto.wach %>% .$Station %>% levels() %>% paste(),
+                                           choices = df %>% .$Station %>% levels() %>% paste(),
                                            multiple = TRUE,
                                            width = '200',
                                            selected = c("BN3417","CI3409")),
                                selectInput(ns("year"), "Year:",
-                                           choices = df.phyto.wach %>%  .$Year %>%  unique() %>% sort(decreasing = TRUE),
+                                           choices = df %>%  .$Year %>%  unique() %>% sort(decreasing = TRUE),
                                            width = '200',
                                            selected = 1)
                ), # End Column
@@ -81,12 +81,12 @@ Phyto.UI <- function(id,df) {
                # Function Args
                fluidRow(column(4, # Sites
                                selectInput(ns("taxasite"), "Station(s):",
-                                           choices = df.phyto.wach %>% .$Station %>% levels() %>% paste(),
+                                           choices = df %>% .$Station %>% levels() %>% paste(),
                                            multiple = TRUE,
                                            width = '200',
                                            selected = c("BN3417","CI3409")),
                                selectInput(ns("taxayear"), "Year:", # Year
-                                           choices = df.phyto.wach %>%  .$Year %>%  unique() %>% sort(decreasing = TRUE),
+                                           choices = df %>%  .$Year %>%  unique() %>% sort(decreasing = TRUE),
                                            width = '200',
                                            selected = 1)
                ), # End Col
@@ -132,13 +132,13 @@ Phyto.UI <- function(id,df) {
                         column(3, br(),downloadButton(ns('save.plot13'), "Save Plot"))),
                fluidRow(column(4, "Other (Select Taxa):",
                                selectInput(ns("taxa14"), "Taxa:",
-                                           choices = df.phyto.wach %>%  .$Taxa %>%  unique() %>% sort(decreasing = FALSE),
+                                           choices = df %>%  .$Taxa %>%  unique() %>% sort(decreasing = FALSE),
                                            width = '200',
                                            selected = NULL)
                ), # End Col
                column(4,br(),
                       selectInput(ns("taxa14year"), "Year:",
-                                  choices = df.phyto.wach %>%  .$Year %>%  unique() %>% sort(decreasing = TRUE),
+                                  choices = df %>%  .$Year %>%  unique() %>% sort(decreasing = TRUE),
                                   width = '200',
                                   selected = 1)
                ),
@@ -149,16 +149,16 @@ Phyto.UI <- function(id,df) {
       tabPanel("Historical Comparison Plots",
                fluidRow(column(3, # Sites
                                selectInput(ns("histtaxa"), "Taxa:",
-                                           choices = df.phyto.wach %>%  .$Taxa %>%  unique() %>% sort(decreasing = FALSE),
+                                           choices = df %>%  .$Taxa %>%  unique() %>% sort(decreasing = FALSE),
                                            width = '200',
                                            selected = 1),
                                selectInput(ns("histlocs"), "Station(s):",
-                                           choices = df.phyto.wach %>% .$Station %>% levels() %>% paste(),
+                                           choices = df %>% .$Station %>% levels() %>% paste(),
                                            multiple = TRUE,
                                            width = '200',
                                            selected = c("BN3417","CI3409")),
                                selectInput(ns("histyear"), " Comparison Year:",
-                                           choices = df.phyto.wach %>%  .$Year %>%  unique() %>% sort(decreasing = TRUE),
+                                           choices = df %>%  .$Year %>%  unique() %>% sort(decreasing = TRUE),
                                            width = '200',
                                            selected = 1),
                                radioButtons(ns("stat"), "Stat for Comparison Year:",
@@ -169,11 +169,11 @@ Phyto.UI <- function(id,df) {
                ), # End Col
                column(5,
                       sliderInput(ns("yg1"), "Year Grouping 1 (Min-Max):",
-                                  min = min(df.phyto.wach$Year), max = max(df.phyto.wach$Year), value = c(2012,2016), step = 1, sep = ""),
+                                  min = min(df$Year), max = max(df$Year), value = c(2012,2016), step = 1, sep = ""),
                       sliderInput(ns("yg2"), "Year Grouping 2 (Min-Max):",
-                                  min = min(df.phyto.wach$Year), max = max(df.phyto.wach$Year), value = c(2007,2016), step = 1, sep = ""),
+                                  min = min(df$Year), max = max(df$Year), value = c(2007,2016), step = 1, sep = ""),
                       sliderInput(ns("yg3"), "Year Grouping 3 (Min-Max):",
-                                  min = min(df.phyto.wach$Year), max = max(df.phyto.wach$Year), value = c(1988,2016), step = 1, sep = "")
+                                  min = min(df$Year), max = max(df$Year), value = c(1988,2016), step = 1, sep = "")
                ), # End Col
                column(3,
                       radioButtons(ns("stat1"), "Stat for Year Group 1:",
@@ -208,7 +208,7 @@ Phyto.UI <- function(id,df) {
       tabPanel("Filter/Export Data",
                fluidRow(column(4, # Sites
                                selectInput(ns("filtersite"), "Station(s):",
-                                           choices = df.phyto.wach %>% .$Station %>% levels() %>% paste(),
+                                           choices = df %>% .$Station %>% levels() %>% paste(),
                                            multiple = TRUE,
                                            width = '200',
                                            selected = c("BN3417","CI3409"))
@@ -223,7 +223,7 @@ Phyto.UI <- function(id,df) {
 # Server Function
 ##############################################################################################################################
 
-Phyto <- function(input, output, session, df) {
+PHYTO <- function(input, output, session, df) {
 
   # p  <- reactive({
   #

@@ -17,14 +17,14 @@
 # User Interface
 ##############################################################################################################################
 
-plot.time.UI <- function(id) {
+PLOT_TIME_WQ_UI <- function(id) {
 
   ns <- NS(id) # see General Note 1
 
   tagList(
     conditionalPanel(
-      condition = "input.param2 == 'None'", ns = ns,
-      plotlyOutput(ns("plot1"), width = "100%", height = 600)
+      condition = "input.param2 == 'None'", ns = ns,   # Use "." instead of "$" for JS condition
+      plotlyOutput(ns("plot1"), width = "100%", height = 600) # Use "." instead of "$" for JS condition
       ),
     conditionalPanel(
       condition = "input.param2 != 'None'", ns = ns,
@@ -36,128 +36,142 @@ plot.time.UI <- function(id) {
     fluidRow(
       column(11,
              tabsetPanel(
-               tabPanel("Display Options", br(), br(),
-                        column(2,
-                               uiOutput(ns("param1.ui"))
-                        ), # end column
-                        column(2,
-                               uiOutput(ns("param2.ui"))
-                        ), # end column
-                        column(2,
-                               checkboxGroupInput(ns("plot.display.axis"), "Axis Options:",
-                                                  choices= c("Log-scale Y-Axis",
-                                                             "Y-axis start at zero"))
-                        ), # end column
-                        column(2,
-                               radioButtons(ns("plot.display.theme"), "Theme:",
-                                            choices= c("Gray",
-                                                       "Black and White",
-                                                       "Line Draw",
-                                                       "Light",
-                                                       "Dark",
-                                                       "Minimal",
-                                                       "Classic"))
-                        ), # end column
-                        column(2,
-                               sliderInput(ns("plot.display.psize"), "Point Size:",
-                                           min = 0.5, max = 4, value = 1.5, step = 0.5)
-                        ) # end column
+               tabPanel("Main Options", br(), br(),
+                        #fluidRow(
+                          column(4,
+                                 wellPanel(
+                                   fluidRow(
+                                     column(6,
+                                            uiOutput(ns("param1_ui"))
+                                     ),
+                                     column(6,
+                                            uiOutput(ns("param2_ui"))
+                                   )
+                                   )
+                                 )
+                          ), # end column
+                          column(4,
+                                 wellPanel(
+                                   column(6,
+                                          radioButtons(ns("plot_color"), label = "Group with Colors:",
+                                                       choices = c("None" = "None",
+                                                                   "Site" = "Site",
+                                                                   "Flagged data" = "FlagCode"),
+                                                       selected = "Site")
+                                   ), # end column
+                                   # new column
+                                   column(6,
+                                          radioButtons(ns("plot_shape"), label = "Group with Shapes:",
+                                                       choices = c("None" = "None",
+                                                                   "Site" = "Site",
+                                                                   "Flagged data" = "FlagCode"),
+                                                       selected = "None")
+                                   ) # end column
+                                 )
+                          ), # end column
+                          column(4,
+                                 wellPanel(
+                                 radioButtons(ns("plot_line_trend"), "Add Simple Trendline:",
+                                              choices= c("None",
+                                                         "Linear" = "lm",
+                                                         "Curve" = "loess")),
+                                 strong("Confidence Ribbon"),
+                                 checkboxInput(ns("plot_line_trend_ribbon"), "Show Conf. Ribbon"),
+                                 radioButtons(ns("plot_line_trend_conf"), NULL,
+                                              choices= c(0.90,0.95,0.99), inline = TRUE),
+                                 sliderInput(ns("plot_line_trend_size"), "Line Thickness:",
+                                             min = 0, max = 3, value = 1, step = 0.25)
+                                 )
+                          ) # end column
+                        #)
                ), # end Tab Panel
-               tabPanel("Trends and Lines", br(), br(),
-                        column(3,
-                               radioButtons(ns("plot.line.trend"), "Add Simple Trendline:",
-                                            choices= c("None",
-                                                       "Linear" = "lm",
-                                                       "Curve" = "loess")),
-                               strong("Confidence Ribbon"),
-                               checkboxInput(ns("plot.line.trend.ribbon"), "Show Conf. Ribbon"),
-                               radioButtons(ns("plot.line.trend.conf"), NULL,
-                                            choices= c(0.90,0.95,0.99), inline = TRUE),
-                               sliderInput(ns("plot.line.trend.size"), "Line Thickness:",
-                                           min = 0, max = 3, value = 1, step = 0.25)
-                        ), # end column
-                        column(3,
-                               strong("Non-Detection Level:"),
-                               checkboxInput(ns("plot.line.nd"),"Show Line"),
-                               radioButtons(ns("plot.line.nd.type"), "Line Type",
-                                            choices = c("solid", "dash", "dotted")),
-                               sliderInput(ns("plot.line.nd.size"), "Line Thickness:",
-                                           min = 0, max = 3, value = 1, step = 0.25)
-                        ), # end column
-                        column(3,
-                               strong("Reporting Limit:"),
-                               checkboxInput(ns("plot.line.rl"), "Show Line"),
-                               radioButtons(ns("plot.line.rl.type"), "Line Type",
-                                            choices = c("solid", "dash", "dotted")),
-                               sliderInput(ns("plot.line.rl.size"), "Line Thickness:",
-                                           min = 0, max = 3, value = 1, step = 0.25)
-                        ), # end column
-                        column(3,
-                               strong("Performace Standard:"),
-                               checkboxInput(ns("plot.line.ps"), "Show Line"),
-                               radioButtons(ns("plot.line.ps.type"), "Line Type",
-                                            choices = c("solid", "dash", "dotted")),
-                               sliderInput(ns("plot.line.ps.size"), "Line Thickness:",
-                                           min = 0, max = 3, value = 1, step = 0.25)
-                        ) # end column
+               tabPanel("Display Options", br(), br(),
+                        fluidRow(
+                          column(3,
+                                 wellPanel(
+                                   checkboxGroupInput(ns("plot_display_axis"), "Axis Options:",
+                                                      choices= c("Log-scale Y-Axis",
+                                                                 "Y-axis start at zero")),
+                                   radioButtons(ns("plot_display_theme"), "Theme:",
+                                                choices= c("Gray",
+                                                           "Black and White",
+                                                           "Line Draw",
+                                                           "Light",
+                                                           "Dark",
+                                                           "Minimal",
+                                                           "Classic")),
+                                   sliderInput(ns("plot_display_psize"), "Point Size:",
+                                               min = 0.5, max = 4, value = 1.5, step = 0.5),
+                                   sliderInput(ns("plot_display_pshape"), "Point Shape:",
+                                               min = 0, max = 5, value = 1, step = 1)
+                                 )
+                          ), # end column
+                          column(3,
+                                 strong("Horizontal Line 1:"),
+                                 checkboxInput(ns("plot_line_nd"),"Show Line"),
+                                 radioButtons(ns("plot_line_nd_type"), "Line Type",
+                                              choices = c("solid", "dash", "dotted")),
+                                 sliderInput(ns("plot_line_nd_size"), "Line Thickness:",
+                                             min = 0, max = 3, value = 1, step = 0.25)
+                          ), # end column
+                          column(3,
+                                 strong("Horizontal Line 2"),
+                                 checkboxInput(ns("plot_line_rl"), "Show Line"),
+                                 radioButtons(ns("plot_line_rl_type"), "Line Type",
+                                              choices = c("solid", "dash", "dotted")),
+                                 sliderInput(ns("plot_line_rl_size"), "Line Thickness:",
+                                             min = 0, max = 3, value = 1, step = 0.25)
+                          ), # end column
+                          column(3,
+                                 strong("Vertical Line:"),
+                                 checkboxInput(ns("plot_line_ps"), "Show Line"),
+                                 radioButtons(ns("plot_line_ps_type"), "Line Type",
+                                              choices = c("solid", "dash", "dotted")),
+                                 sliderInput(ns("plot_line_ps_size"), "Line Thickness:",
+                                             min = 0, max = 3, value = 1, step = 0.25)
+                          ) # end column
+                        )
                ),
                tabPanel("Title and Axis Labels", br(), br(),
                         column(3,
-                               radioButtons(ns("plot.title"), "Title Options:",
+                               radioButtons(ns("plot_title"), "Title Options:",
                                             choices= c("None", "Auto", "Custom"),
                                             selected = "Auto"),
-                               textInput(ns("plot.title.text"), "")
+                               textInput(ns("plot_title_text"), "")
                         ), # end column
                         column(3,
-                               radioButtons(ns("plot.xlab"), "X Label Options:",
+                               radioButtons(ns("plot_xlab"), "X Label Options:",
                                             choices= c("None", "Auto", "Custom"),
                                             selected = "Auto"),
-                               textInput(ns("plot.xlab.text"), "")
+                               textInput(ns("plot_xlab_text"), "")
                         ), # end column
                         column(3,
-                               radioButtons(ns("plot.ylab"), "Y Label Options:",
+                               radioButtons(ns("plot_ylab"), "Y Label Options:",
                                             choices= c("None", "Auto", "Custom"),
                                             selected = "Auto"),
-                               textInput(ns("plot.ylab.text"), "")
+                               textInput(ns("plot_ylab_text"), "")
                         ) # end column
                ), # end Tab Panel
-               tabPanel("Grouping (Color/Shape)", br(), br(),
-                        column(3,
-                               radioButtons(ns("plot.color"), label = "Group with Colors:",
-                                            choices = c("None" = "None",
-                                                        "Site" = "Site",
-                                                        "Flagged data" = "FlagCode"),
-                                            selected = "Site")
-                        ), # end column
-                        # new column
-                        column(3,
-                               radioButtons(ns("plot.shape"), label = "Group with Shapes:",
-                                            choices = c("None" = "None",
-                                                        "Site" = "Site",
-                                                        "Flagged data" = "FlagCode"),
-                                            selected = "None")
-                        ) # end column
-               ), # tabPanel
                tabPanel("Save Plot", br(), br(),
                         column(2,
-                               downloadButton(ns('save.plot'), "Save Plot")
+                               downloadButton(ns('save_plot'), "Save Plot")
                         ),
                         column(3,
-                               numericInput(ns("plot.save.width"), "Plot Width (inches):", 7,
+                               numericInput(ns("plot_save_width"), "Plot Width (inches):", 7,
                                             min = 3, max = 17, step = 0.25),
                                
-                               numericInput(ns("plot.save.height"), "Plot Height (inches):", 5,
+                               numericInput(ns("plot_save_height"), "Plot Height (inches):", 5,
                                             min = 3, max = 17, step = 0.25)
 
                         ),
                         column(2,
-                               radioButtons(ns("plot.save.type"), "File Type:",
+                               radioButtons(ns("plot_save_type"), "File Type:",
                                             choices= c("pdf",
                                                        "jpg",
                                                        "png"))
                         ),
                         column(2,
-                               checkboxGroupInput(ns("plot.save.grid"), "Gridline Override:",
+                               checkboxGroupInput(ns("plot_save_grid"), "Gridline Override:",
                                                   choices= c("major gridlines",
                                                              "minor gridlines"))
                         ) # end column
@@ -177,285 +191,255 @@ plot.time.UI <- function(id) {
 # Server Function
 ##############################################################################################################################
 
-# Note that Argument "df"  needs to be a reactive expression, not a resolved value. 
+# Note that Argument "Df"  needs to be a reactive expression, not a resolved value. 
 # Thus do not use () in callModule argument for reactives
 # For non reactives wrap with "reactive" to make into a reactive expression.
 
-plot.time <- function(input, output, session, df) {
+PLOT_TIME_WQ <- function(input, output, session, Df) {
 
   ns <- session$ns # see General Note 1
   
   
-  ### Before Plot 
+  # Find Choices for Sites and Param (could make it so plot.time module server function accepts this instead (probably faster)
   
-  # Find Number of Sites and Param (could make it so plot.time module server function accepts this instead (probably faster)
-  
-  site <- reactive({df() %>% .$Site %>% factor() %>% levels()})
-  param <- reactive({df() %>% .$Parameter %>% factor() %>% levels()})
+  Site <- reactive({Df()$Site %>% factor() %>% levels()})
+  Param <- reactive({Df()$Parameter %>% factor() %>% levels()})
 
+  # Parameter Axis Choice
   
-
-  ### Parameter Axis Choice
-  
-  output$param1.ui <- renderUI({
+  output$param1_ui <- renderUI({
     radioButtons(ns("param1"), "Primary Y-Axis Parameter",
-                 choices = param())
+                 choices = Param())
   })
   
-  output$param2.ui <- renderUI({
+  output$param2_ui <- renderUI({
     radioButtons(ns("param2"), "Secondary Y-Axis Parameter",
-                 choices = c(param(), "None"),
+                 choices = c(Param(), "None"),
                  selected = "None")
   })
   
-  ### Two Dataframes (Primary and Secondary Axis)
+  # Two Dataframes (Primary and Secondary Axis)
   
-  df1 <- reactive({
-    req(input$param1, df())
-    df() %>% filter(Parameter %in% input$param1)})
+  Df1 <- reactive({
+    req(input$param1, Df())
+    Df() %>% filter(Parameter %in% input$param1)})
   
-  df2 <- reactive({
+  Df2 <- reactive({
     req(input$param2 != "None")
-    df() %>% filter(Parameter %in% input$param2)
+    Df() %>% filter(Parameter %in% input$param2)
   })
   
   
-  # Texts For Plot
+  ### Plot Outputs 
   
-  text.site <- reactive({site() %>% paste(collapse = ", ")})
+  # ONe Y-axis interactive Plotly plot
+  output$plot1 <- renderPlotly({
+    req(input$param2 == "None")
+    ggplotly(P())
+  })
   
-  text.param1 <- reactive({df1()$Parameter %>% factor() %>% levels() %>% paste()})
-  
-  text.param2 <- reactive({df2()$Parameter %>% factor() %>% levels() %>% paste()})
-  
-  text.units1 <- reactive({df1()$Units %>% factor() %>% levels() %>% paste(collapse = ", ")})
-  
-  text.units2 <- reactive({df2()$Units %>% factor() %>% levels() %>% paste(collapse = ", ")})
-  
-  text.date.start1 <- reactive({df1()$Date %>% min(na.rm = TRUE) %>% paste()})
-  
-  text.date.end1 <- reactive({df1()$Date %>% max(na.rm = TRUE) %>% paste()})
-  
-  text.date.start2 <- reactive({c(df1()$Date, df2()$Date)  %>% min(na.rm = TRUE) %>% paste()})
-  
-  text.date.end2 <- reactive({c(df1()$Date, df2()$Date) %>% max(na.rm = TRUE) %>% paste()})
-  
-  plot.name <- reactive({
-    if(input$param2 == "None"){
-      paste0(text.param1(),' at Site(s)', text.site(),
-             ' from ', text.date.start1(),' to ', text.date.end1())
-    } else{
-      paste0(text.param1(), ' and ', text.param2(), ' at Site(s)', text.site(),
-             ' from ', text.date.start2(),' to ', text.date.end2())
-    }
+  # Two Y-axis ggplot static plot
+  output$plot2 <- renderPlot({
+    req(input$param2 != "None")
+    P()
   })
 
   
   
+  ### PLOT Creation
   
-  ### PLOT
-  
-  # Plot Creation
-  
-  p <- reactive({
-    
-    #
+  P <- reactive({
     
     # Features in which all plot options have in common
     p <- ggplot() +
       scale_x_datetime(breaks = pretty_breaks(n=12))
-  
     
     # Display Tab
     
     # Theme based on selection
-    if(input$plot.display.theme == "Gray"){
+    if(input$plot_display_theme == "Gray"){
       p <- p + theme_gray()
     }
-    if(input$plot.display.theme == "Black and White"){
+    if(input$plot_display_theme == "Black and White"){
       p <- p + theme_bw()
     }
-    if(input$plot.display.theme == "Line Draw"){
+    if(input$plot_display_theme == "Line Draw"){
       p <- p + theme_linedraw()
     }
-    if(input$plot.display.theme == "Light"){
+    if(input$plot_display_theme == "Light"){
       p <- p + theme_light()
     }
-    if(input$plot.display.theme == "Dark"){
+    if(input$plot_display_theme == "Dark"){
       p <- p + theme_dark()
     }
-    if(input$plot.display.theme == "Minimal"){
+    if(input$plot_display_theme == "Minimal"){
       p <- p + theme_minimal()
     }
-    if(input$plot.display.theme == "Classic"){
+    if(input$plot_display_theme == "Classic"){
       p <- p + theme_classic()
     }
-  
     
     # Grouping and Trendline
     
     # Group by both Color and Shape when both selected
-    if(input$plot.color != "None" & input$plot.shape != "None"){
+    if(input$plot_color != "None" & input$plot_shape != "None"){
       if(input$param2 == "None"){
-        p <- p + geom_point(data = df1(), 
-                            aes_string(x = "as.POSIXct(Date)", y = "Result", color = input$plot.color, shape = input$plot.shape),
-                            size = input$plot.display.psize)
+        p <- p + geom_point(data = Df1(), 
+                            aes_string(x = "as.POSIXct(Date)", y = "Result", color = input$plot_color, shape = input$plot_shape),
+                            size = input$plot_display_psize)
       } else {
-        p <- p + geom_point(data = df1(), 
-                            aes_string(x = "as.POSIXct(Date)", y = "Result", color = input$plot.color),
-                            shape = 16, size = input$plot.display.psize) +
-          geom_point(data = df2(),
-                     aes_string(x = "as.POSIXct(Date)", y = "Result*mult", color = input$plot.color), 
-                     shape = 17, size = input$plot.display.psize)
+        p <- p + geom_point(data = Df1(), 
+                            aes_string(x = "as.POSIXct(Date)", y = "Result", color = input$plot_color),
+                            shape = 16, size = input$plot_display_psize) +
+          geom_point(data = Df2(),
+                     aes_string(x = "as.POSIXct(Date)", y = "Result*mult", color = input$plot_color), 
+                     shape = 17, size = input$plot_display_psize)
       }
-      if(input$plot.line.trend != "None"){
-        p <- p + geom_smooth(data = df1(), aes_string(x = "as.POSIXct(Date)", y = "Result", 
-                                                      color = input$plot.color, linetype = input$plot.shape),
-                             method = input$plot.line.trend,
-                             size = input$plot.line.trend.size,
-                             se = input$plot.line.trend.ribbon,
-                             level = as.numeric(input$plot.line.trend.conf))
+      if(input$plot_line_trend != "None"){
+        p <- p + geom_smooth(data = Df1(), aes_string(x = "as.POSIXct(Date)", y = "Result", 
+                                                      color = input$plot_color, linetype = input$plot_shape),
+                             method = input$plot_line_trend,
+                             size = input$plot_line_trend_size,
+                             se = input$plot_line_trend_ribbon,
+                             level = as.numeric(input$plot_line_trend_conf))
       }
     }
     # Group by only Color when only color grouping is selected
-    else if (input$plot.color != "None"){
+    else if (input$plot_color != "None"){
       if(input$param2 == "None"){
-        p <- p + geom_point(data = df1(), 
-                            aes_string(x = "as.POSIXct(Date)", y = "Result", color = input$plot.color), 
-                            size = input$plot.display.psize)
+        p <- p + geom_point(data = Df1(), 
+                            aes_string(x = "as.POSIXct(Date)", y = "Result", color = input$plot_color), 
+                            size = input$plot_display_psize)
       }else{
-        p <- p + geom_point(data = df1(), 
-                            aes_string(x = "as.POSIXct(Date)", y = "Result", color = input$plot.color), 
-                            shape = 16, size = input$plot.display.psize) +
-          geom_point(data = df2(), 
-                     aes_string(x = "as.POSIXct(Date)", y = "Result*mult", color = input$plot.color), 
-                     shape = 17, size = input$plot.display.psize)
+        p <- p + geom_point(data = Df1(), 
+                            aes_string(x = "as.POSIXct(Date)", y = "Result", color = input$plot_color), 
+                            shape = 16, size = input$plot_display_psize) +
+          geom_point(data = Df2(), 
+                     aes_string(x = "as.POSIXct(Date)", y = "Result*mult", color = input$plot_color), 
+                     shape = 17, size = input$plot_display_psize)
       }
-      if(input$plot.line.trend != "None"){
-        p <- p + geom_smooth(data = df1(), aes_string(x = "as.POSIXct(Date)", y = "Result", color = input$plot.color),
-                             method = input$plot.line.trend,
-                             size = input$plot.line.trend.size,
-                             se = input$plot.line.trend.ribbon,
-                             level = as.numeric(input$plot.line.trend.conf))
+      if(input$plot_line_trend != "None"){
+        p <- p + geom_smooth(data = Df1(), aes_string(x = "as.POSIXct(Date)", y = "Result", color = input$plot.color),
+                             method = input$plot_line_trend,
+                             size = input$plot_line_trend_size,
+                             se = input$plot_line_trend_ribbon,
+                             level = as.numeric(input$plot_line_trend_conf))
       }
     }
     # Group by only Shape when only shape grouping is selected
-    else if (input$plot.shape != "None"){
+    else if (input$plot_shape != "None"){
       if(input$param2 == "None"){
-      p <- p + geom_point(data = df1(), 
-                          aes_string(x = "as.POSIXct(Date)", y = "Result", shape = input$plot.shape), 
-                          size = input$plot.display.psize)
+      p <- p + geom_point(data = Df1(), 
+                          aes_string(x = "as.POSIXct(Date)", y = "Result", shape = input$plot_shape), 
+                          size = input$plot_display_psize)
       }else{
-        p <- p + geom_point(data = df1(), 
+        p <- p + geom_point(data = Df1(), 
                             aes_string(x = "as.POSIXct(Date)", y = "Result"), 
-                            shape = 16, size = input$plot.display.psize) +
-        geom_point(data = df2(),
+                            shape = 16, size = input$plot_display_psize) +
+        geom_point(data = Df2(),
                    aes_string(x = "as.POSIXct(Date)", y = "Result*mult"), 
-                   shape = 17, size = input$plot.display.psize)
+                   shape = 17, size = input$plot_display_psize)
       }
-      if(input$plot.line.trend != "None"){
-        p <- p + geom_smooth(data = df1(), aes_string(x = "as.POSIXct(Date)", y = "Result", linetype = input$plot.shape),
-                             method = input$plot.line.trend,
-                             size = input$plot.line.trend.size,
-                             se = input$plot.line.trend.ribbon,
-                             level = as.numeric(input$plot.line.trend.conf))
+      if(input$plot_line_trend != "None"){
+        p <- p + geom_smooth(data = Df1(), aes_string(x = "as.POSIXct(Date)", y = "Result", linetype = input$plot_shape),
+                             method = input$plot_line_trend,
+                             size = input$plot_line_trend_size,
+                             se = input$plot_line_trend_ribbon,
+                             level = as.numeric(input$plot_line_trend_conf))
       }
     }
     # No Grouping Selected
     else {
       if(input$param2 == "None"){
-        p <- p + geom_point(data = df1(), aes_string(x = "as.POSIXct(Date)", y = "Result"), size = input$plot.display.psize)
+        p <- p + geom_point(data = Df1(), aes_string(x = "as.POSIXct(Date)", y = "Result"), size = input$plot_display_psize)
       }else{
-        p <- p + geom_point(data = df1(), aes_string(x = "as.POSIXct(Date)", y = "Result"), 
-                            shape = 16, size = input$plot.display.psize) +
-          geom_point(data = df2(), aes_string(x = "as.POSIXct(Date)", y = "Result*mult"), 
-                     shape = 17, size = input$plot.display.psize)        
+        p <- p + geom_point(data = Df1(), aes_string(x = "as.POSIXct(Date)", y = "Result"), 
+                            shape = 16, size = input$plot_display_psize) +
+          geom_point(data = Df2(), aes_string(x = "as.POSIXct(Date)", y = "Result*mult"), 
+                     shape = 17, size = input$plot_display_psize)        
       }
-      if(input$plot.line.trend != "None"){
-        p <- p + geom_smooth(data = df1(), aes_string(x = "as.POSIXct(Date)", y = "Result"),
-                             method = input$plot.line.trend,
-                             size = input$plot.line.trend.size,
-                             se = input$plot.line.trend.ribbon,
-                             level = as.numeric(input$plot.line.trend.conf))
+      if(input$plot_line_trend != "None"){
+        p <- p + geom_smooth(data = Df1(), aes_string(x = "as.POSIXct(Date)", y = "Result"),
+                             method = input$plot_line_trend,
+                             size = input$plot_line_trend_size,
+                             se = input$plot_line_trend_ribbon,
+                             level = as.numeric(input$plot_line_trend_conf))
       }
     }
     
     # Facet for Sites if no grouping for site is selected and number of sites is greater than 1
-    if(input$plot.color != "Site" & (input$plot.shape != "Site" | input$param2 != "None") & length(c(site())) > 1){
-      p <- p + facet_wrap(~Site, ncol = ceiling(length(c(site()))/4))
+    if(input$plot_color != "Site" & (input$plot_shape != "Site" | input$param2 != "None") & length(c(Site())) > 1){
+      p <- p + facet_wrap(~Site, ncol = ceiling(length(c(Site()))/4))
     }
-
     
     # Add Lines
     
     # Show Non-Detect Level
-    if(input$plot.line.nd == TRUE){
-      p <- p + geom_hline(data = df1(), aes_string(x = "as.POSIXct(Date)", y = "Result"),
+    if(input$plot_line_nd == TRUE){
+      p <- p + geom_hline(data = Df1(), aes_string(x = "as.POSIXct(Date)", y = "Result"),
                           yintercept = 2,
-                          linetype = input$plot.line.nd.type,
-                          size = input$plot.line.nd.size)
+                          linetype = input$plot_line_nd_type,
+                          size = input$plot_line_nd_size)
     }
     
     # Show Reprting Limit
-    if(input$plot.line.rl == TRUE){
-      p <- p + geom_hline(data = df1(), aes_string(x = "as.POSIXct(Date)", y = "Result"),
+    if(input$plot_line_rl == TRUE){
+      p <- p + geom_hline(data = Df1(), aes_string(x = "as.POSIXct(Date)", y = "Result"),
                           yintercept = 3,
-                          linetype = input$plot.line.rl.type,
-                          size = input$plot.line.rl.size)
+                          linetype = input$plot_line_rl_type,
+                          size = input$plot_line_rl_size)
     }
     
     # Performance Standard
-    if(input$plot.line.ps == TRUE){
-      p <- p + geom_hline(data = df1(), aes_string(x = "as.POSIXct(Date)", y = "Result"),
+    if(input$plot_line_ps == TRUE){
+      p <- p + geom_hline(data = Df1(), aes_string(x = "as.POSIXct(Date)", y = "Result"),
                           yintercept = 4,
-                          linetype = input$plot.line.ps.type,
-                          size = input$plot.line.ps.size)
+                          linetype = input$plot_line_ps_type,
+                          size = input$plot_line_ps_size)
     }
-    
     
     # Title and Axis Lables
     
     # Title
-    if(input$plot.title == "None"){
+    if(input$plot_title == "None"){
       p <- p + ggtitle("")
     }
-    if(input$plot.title == "Auto"){
-      p <- p + ggtitle(plot.name())
+    if(input$plot_title == "Auto"){
+      p <- p + ggtitle(Plot_Name())
     }
-    if(input$plot.title == "Custom"){
-      p <- p + ggtitle(input$plot.title.text)
+    if(input$plot_title == "Custom"){
+      p <- p + ggtitle(input$plot_title_text)
     }
     
     # X Axis
-    if(input$plot.xlab == "None"){
+    if(input$plot_xlab == "None"){
       p <- p + xlab("")
     }
-    if(input$plot.xlab == "Auto"){
+    if(input$plot_xlab == "Auto"){
       p <- p + xlab("Date")
     }
-    if(input$plot.xlab == "Custom"){
-      p <- p + xlab(input$plot.xlab.text)
+    if(input$plot_xlab == "Custom"){
+      p <- p + xlab(input$plot_xlab_text)
     }
     
     # Y Axis
-    if(input$plot.ylab == "None"){
+    if(input$plot_ylab == "None"){
       p <- p + ylab("")
     }
-    if(input$plot.ylab == "Auto"){
-      p <- p + ylab(paste(text.param1(), " (", text.units1(),")", sep= ""))
+    if(input$plot_ylab == "Auto"){
+      p <- p + ylab(paste(Text_Param1(), " (", Text_Units1(),")", sep= ""))
     }
-    if(input$plot.ylab == "Custom"){
-      p <- p + ylab(input$plot.ylab.text)
+    if(input$plot_ylab == "Custom"){
+      p <- p + ylab(input$plot_ylab_text)
     }
-    
     
     # Log Scale
     if(input$param2 == "None"){
-      if("Log-scale Y-Axis" %in% input$plot.display.axis){
+      if("Log-scale Y-Axis" %in% input$plot_display_axis){
         p <- p + scale_y_log10()
       } else {
-        if("Y-axis start at zero" %in% input$plot.display.axis){
-          ymax <- max(df1()$Result, na.rm = TRUE)
+        if("Y-axis start at zero" %in% input$plot_display_axis){
+          ymax <- max(Df1()$Result, na.rm = TRUE)
           p <- p + scale_y_continuous(limits = c(0,ymax))
         } else {
           p <- p + scale_y_continuous()
@@ -468,54 +452,44 @@ plot.time <- function(input, output, session, df) {
     if(input$param2 != "None"){
       
       # Scalars for Secondary Y-axis
-      y1min <- min(df1()$Result, na.rm = TRUE)
-      y2min <- min(df2()$Result, na.rm = TRUE)
-      y1max <- max(df1()$Result, na.rm = TRUE)
-      y2max <- max(df2()$Result, na.rm = TRUE)
-      
+      y1min <- min(Df1()$Result, na.rm = TRUE)
+      y2min <- min(Df2()$Result, na.rm = TRUE)
+      y1max <- max(Df1()$Result, na.rm = TRUE)
+      y2max <- max(Df2()$Result, na.rm = TRUE)
       
       # Two Y-axis Log Scale adn non-Lod Scale
-      if("Log-scale Y-Axis" %in% input$plot.display.axis){
+      if("Log-scale Y-Axis" %in% input$plot_display_axis){
 
         mult <- exp(log(y1max  - y1min) / log(y2max - y2min))
         p <- p + scale_y_log10(sec.axis = sec_axis(~./mult, breaks = trans_breaks('log10', function(x) 10^x),
-                                                   name = paste0(text.param2(), " (", text.units2(),")")))
-                                 
+                                                   name = paste0(Text_Param2(), " (", Text_Units2(),")")))
       } else{
         
-        if("Y-axis start at zero" %in% input$plot.display.axis){
-          
+        if("Y-axis start at zero" %in% input$plot_display_axis){
           mult <- y1max / y2max
           p <- p + scale_y_continuous(breaks = pretty_breaks(),limits = c(0,y1max),
                                       sec.axis = sec_axis(~./mult, breaks = pretty_breaks(), 
-                                                          name = paste0(text.param2(), " (", text.units2(),")")))
+                                                          name = paste0(Text_Param2(), " (", Text_Units2(),")")))
         } else {
-          
           mult <- (y1max  - y1min) / (y2max - y2min)
           p <- p + scale_y_continuous(breaks = pretty_breaks(),
                                       sec.axis = sec_axis(~./mult, breaks = pretty_breaks(), 
-                                                          name = paste0(text.param2(), " (", text.units2(),")")))
+                                                          name = paste0(Text_Param2(), " (", Text_Units2(),")")))
         }
-        
-      
-
       }
-      
       p <- p + theme(text = element_text(size = 15))
-
     }
     
-  
     # Save Options
     
     # Size dependent? Change size for saving?
     p <- p + theme(plot.margin = unit(c(0.2, 0.2, 0.2, 0.5), "in"))
     
     # Gridlines for saving options
-    if("major gridlines" %in% input$plot.save.grid){
+    if("major gridlines" %in% input$plot_save_grid){
       p <- p + theme(panel.grid.major = element_line())
     }
-    if("minor gridlines" %in% input$plot.save.grid){
+    if("minor gridlines" %in% input$plot_save_grid){
       p <- p + theme(panel.grid.minor = element_line())
     }
     
@@ -526,43 +500,56 @@ plot.time <- function(input, output, session, df) {
   
   
   
+  ### Texts For Plot
   
-  # Text for legend of double Plot
+  Text_Site <- reactive({Site() %>% paste(collapse = ", ")})
+  
+  Text_Param1 <- reactive({Df1()$Parameter %>% factor() %>% levels() %>% paste()})
+  
+  Text_Param2 <- reactive({Df2()$Parameter %>% factor() %>% levels() %>% paste()})
+  
+  Text_Units1 <- reactive({Df1()$Units %>% factor() %>% levels() %>% paste(collapse = ", ")})
+  
+  Text_Units2 <- reactive({Df2()$Units %>% factor() %>% levels() %>% paste(collapse = ", ")})
+  
+  Text_Date_Start1 <- reactive({Df1()$Date %>% min(na.rm = TRUE) %>% paste()})
+  
+  Text_Date_End1 <- reactive({Df1()$Date %>% max(na.rm = TRUE) %>% paste()})
+  
+  Text_Date_Start2 <- reactive({c(Df1()$Date, Df2()$Date)  %>% min(na.rm = TRUE) %>% paste()})
+  
+  Text_Date_End2 <- reactive({c(Df1()$Date, Df2()$Date) %>% max(na.rm = TRUE) %>% paste()})
+  
+  Plot_Name <- reactive({
+    if(input$param2 == "None"){
+      paste0(Text_Param1(),' at Site(s)', Text_Site(),
+             ' from ', Text_Date_Start1(),' to ', Text_Date_End1())
+    } else{
+      paste0(Text_Param1(), ' and ', Text_Param2(), ' at Site(s)', Text_Site(),
+             ' from ', Text_Date_Start2(),' to ', Text_Date_End2())
+    }
+  })
+  
+  # legend for double y-axis plot
   output$plot2text <- renderText({
-    paste("Circle =", text.param1(), ";   Triangle =", text.param2())
+    paste("Circle =", Text_Param1(), ";   Triangle =", Text_Param2())
     })
   
 
-  # Plot Visualization - convert plot to interactive plot and create an plot output object
-
-  output$plot1 <- renderPlotly({
-    req(input$param2 == "None")
-    
-    ggplotly(p())
-    
-  })
+  # Filename
   
-  output$plot2 <- renderPlot({
-    req(input$param2 != "None")
-
-    p()
-
-  })
-
-  # filename
-  
-  filename <- reactive({
-    paste0(plot.name(), ".", input$plot.save.type)
+  Filename <- reactive({
+    paste0(Plot_Name(), ".", input$plot_save_type)
   })
   
   # Plot Print
 
-  output$save.plot <- downloadHandler(
-    filename = function(){filename()},
-    content = function(file){ggsave(file, plot = p(), 
-                                    width = input$plot.save.width,
-                                    height = input$plot.save.height,
-                                    device = input$plot.save.type)}#,
+  output$save_plot <- downloadHandler(
+    filename = function(){Filename()},
+    content = function(file){ggsave(file, plot = P(), 
+                                    width = input$plot_save_width,
+                                    height = input$plot_save_height,
+                                    device = input$plot_save_type)}#,
     #contentType = 'image/png'
   )
 
@@ -608,7 +595,7 @@ plot.time <- function(input, output, session, df) {
 # annotate("point", xleg[1], 1.05*max(c(y1max, y2max)),
 #          shape = 17)
 # xleg <- quantile(
-#   seq(min(c(as.POSIXct(df1()$Date), as.POSIXct(df2()$Date)), na.rm = TRUE),
-#       max(c(as.POSIXct(df1()$Date), as.POSIXct(df2()$Date)), na.rm = TRUE), 
+#   seq(min(c(as.POSIXct(Df1()$Date), as.POSIXct(Df2()$Date)), na.rm = TRUE),
+#       max(c(as.POSIXct(Df1()$Date), as.POSIXct(Df2()$Date)), na.rm = TRUE), 
 #       by = "day"), 
 #   c(.92, .95))

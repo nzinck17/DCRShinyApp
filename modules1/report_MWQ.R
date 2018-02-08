@@ -15,7 +15,7 @@
 # User Interface
 ##############################################################################################################################
 
-report.mwq.UI <- function(id, df) {
+REPORT_MWQ_UI <- function(id, df) {
   
   ns <- NS(id) # see General Note 1
   
@@ -45,10 +45,10 @@ report.mwq.UI <- function(id, df) {
                               November = 11,
                               December = 12), 
                   selected = "All Months"),
-      textInput(ns("mwq.text1"), "Section 1 text"),
-      textInput(ns("mwq.text2"), "Section 2 text"),
-      textInput(ns("mwq.text3"), "Section 3 text"),
-      textInput(ns("mwq.text4"), "Conclusion text")
+      textInput(ns("mwq_text1"), "Section 1 text"),
+      textInput(ns("mwq_text2"), "Section 2 text"),
+      textInput(ns("mwq_text3"), "Section 3 text"),
+      textInput(ns("mwq_text4"), "Conclusion text")
     ), # end Well Panel
     downloadButton(ns("report"), "Generate report")
   ) # end Taglist
@@ -59,7 +59,7 @@ report.mwq.UI <- function(id, df) {
 # Server Function
 ##############################################################################################################################
 
-report.mwq <- function(input, output, session, df.trib, df.chem, df.profile, df.site) {  
+REPORT_MWQ <- function(input, output, session, df_trib, df_chem, df_prof, df_site) {  
   
   output$report <- downloadHandler(
     filename = "report.pdf",

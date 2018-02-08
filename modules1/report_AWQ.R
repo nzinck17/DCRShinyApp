@@ -15,7 +15,7 @@
 # User Interface
 ##############################################################################################################################
 
-report.awq.UI <- function(id, df) {
+REPORT_AWQ_UI <- function(id, df) {
   
   ns <- NS(id) # see General Note 1
   
@@ -28,10 +28,10 @@ report.awq.UI <- function(id, df) {
       selectInput(ns("year"), "Year:", 
                   choices = c(rev(year(seq(as.Date("1990-1-1"), Sys.Date(), "years")))), 
                   selected = year(Sys.Date())),
-      textInput(ns("awq.text1"), "Section 1 text"),
-      textInput(ns("awq.text2"), "Section 2 text"),
-      textInput(ns("awq.text3"), "Section 3 text"),
-      textInput(ns("awq.text4"), "Conclusion text")
+      textInput(ns("awq_text1"), "Section 1 text"),
+      textInput(ns("awq_text2"), "Section 2 text"),
+      textInput(ns("awq_text3"), "Section 3 text"),
+      textInput(ns("awq_text4"), "Conclusion text")
     ), # end Well Panel
     br(), br(),
     downloadButton(ns("report"), "Generate report")
@@ -44,7 +44,7 @@ report.awq.UI <- function(id, df) {
 # Server Function
 ##############################################################################################################################
 
-report.awq <- function(input, output, session, df.trib, df.chem, df.profile, df.site) {  
+REPORT_AWQ <- function(input, output, session, df_trib, df_chem, df_prof, df_site) {  
       
   output$report <- downloadHandler(
         filename = "report.pdf",

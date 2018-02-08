@@ -16,7 +16,7 @@
 # User Interface
 ##############################################################################################################################
 
-sitemap.UI <- function(id, df) {
+SITE_MAP_UI <- function(id) {
   
   ns <- NS(id) # see General Note 1
   
@@ -29,34 +29,34 @@ sitemap.UI <- function(id, df) {
 ##############################################################################################################################
 # Server Function
 ##############################################################################################################################
+# SITE LIST IS REACTIVE
 
-sitemap <- function(input, output, session, df.site, site.list) {
+SITE_MAP <- function(input, output, session, df_site, Site_List) {
   
   # Reactive Site Dataframe for Map Coloring, Creating a Selected Column with "Yes" or "No" values
   
-  df.site.react <- reactive({
-    df.temp <- df.site %>% filter(!is.na(LocationLat), !is.na(LocationLong))
-    if(!is.null(site.list)){
-      df.temp$Selected <- ifelse(df.temp$LocationLabel %in% site.list(), "yes", "no")
+  df_site_react <- reactive({
+    df_temp <- df_site %>% filter(!is.na(LocationLat), !is.na(LocationLong))
+    if(!is.null(Site_List)){   # SHOULD THIS BE Site_List() ?
+      df_temp$Selected <- ifelse(df_temp$LocationLabel %in% Site_List(), "yes", "no")
     } else {
-      df.temp$Selected <- "no"
+      df_temp$Selected <- "no"
     }
-    df.temp
+    df_temp
   })
   
   
   # Map Color Scheme - Coloring the Selected Site Markers a different color than the unselected 
-  
+  # does this need to be reactive? if not, probably still needs to be a function?
   colorpal <- reactive({
     colorFactor(c("navy", "red"), domain = c("yes", "no"))
   })
-  
   
   # Base Leaflet Map - See General Note 3
   
   output$map <- renderLeaflet({
     
-    leaflet(data = df.site %>% filter(!is.na(LocationLat), !is.na(LocationLong))) %>%
+    leaflet(data = df_site %>% filter(!is.na(LocationLat), !is.na(LocationLong))) %>%
       addProviderTiles(providers$Stamen.TonerLite,
                        options = providerTileOptions(noWrap = TRUE)) %>%
       addCircleMarkers(lng = ~LocationLong, lat = ~LocationLat,
@@ -81,7 +81,7 @@ sitemap <- function(input, output, session, df.site, site.list) {
     
     pal <- colorpal()
     
-    leafletProxy("map", data = df.site.react()) %>%
+    leafletProxy("map", data = df_site_react()) %>%
       clearMarkers() %>%
       addCircleMarkers(lng = ~LocationLong, lat = ~LocationLat,
                        label=~LocationLabel,

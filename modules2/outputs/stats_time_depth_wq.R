@@ -16,16 +16,16 @@
 # User Interface
 ##############################################################################################################################
 
-summary.depth.UI <- function(id) {
+STAT_TIME_DEPTH_WQ_UI <- function(id) {
   
   ns <- NS(id) # see General Note 1
   
   tagList(
     fluidRow(
       column(3,
-             checkboxInput(ns("summary.group.station"), label = "Group by Station", value = TRUE),
-             checkboxInput(ns("summary.group.level"), label = "Group by Level", value = TRUE),
-             radioButtons(ns("summary.group.time"), "Group by:",
+             checkboxInput(ns("stats_group_station"), label = "Group by Station", value = TRUE),
+             checkboxInput(ns("stats_group_level"), label = "Group by Level", value = TRUE),
+             radioButtons(ns("stats_group_time"), "Group by:",
                           choices = c("None" = 1,
                                       "Year" = 2,
                                       "Season (all years)" = 3,
@@ -35,7 +35,7 @@ summary.depth.UI <- function(id) {
                           selected = 1)
       ),
       column(9,
-             tableOutput(ns("summary"))
+             tableOutput(ns("stats"))
       ) # end column
     )
   ) # end taglist
@@ -46,49 +46,49 @@ summary.depth.UI <- function(id) {
 # Server Function
 ##############################################################################################################################
 
-summary.depth <- function(input, output, session, df) {
+STAT_TIME_DEPTH_WQ <- function(input, output, session, Df) {
   
-  output$summary <- renderTable({
+  output$stats <- renderTable({
     
-    sum.1 <- df() %>%
+    sum_1 <- Df() %>%
       mutate(Year = as.integer(lubridate::year(Date)), 
              Season = getSeason(Date),
              Month = month.abb[lubridate::month(Date)]
       )
     
     # group by time
-    if (input$summary.group.time == 1){
-      sum.dots = c()
-    } else if (input$summary.group.time == 2) {
-      sum.dots = c("Year")
-    } else if (input$summary.group.time == 3) {
-      sum.dots = c("Season")
-    } else if (input$summary.group.time == 4) {
-      sum.dots = c("Month")
-    } else if (input$summary.group.time == 5) {
-      sum.dots = c("Year", "Season")
-    } else if (input$summary.group.time == 6) {
-      sum.dots = c("Year", "Month")
+    if (input$stats_group_time == 1){
+      sum_dots = c()
+    } else if (input$stats_group_time == 2) {
+      sum_dots = c("Year")
+    } else if (input$stats_group_time == 3) {
+      sum_dots = c("Season")
+    } else if (input$stats_group_time == 4) {
+      sum_dots = c("Month")
+    } else if (input$stats_group_time == 5) {
+      sum_dots = c("Year", "Season")
+    } else if (input$stats_group_time == 6) {
+      sum_dots = c("Year", "Month")
     }
     
     # group by Location
-    if(input$summary.group.station == TRUE){
-      sum.dots <- c(sum.dots, "Station")
+    if(input$stats_group_station == TRUE){
+      sum_dots <- c(sum_dots, "Station")
     }
     
     # group by Depth
-    if(input$summary.group.level == TRUE){
-      sum.dots <- c(sum.dots, "Sampling_Level")
+    if(input$stats_group_level == TRUE){
+      sum_dots <- c(sum_dots, "Sampling_Level")
     }
       
     # Group by Param
-    sum.dots <- c("Parameter", sum.dots)
+    sum_dots <- c("Parameter", sum_dots)
     
     # Applying Grouping (stats is always grouped by parameter)
-    sum.2 <- sum.1 %>% group_by_(.dots = sum.dots)
+    sum_2 <- sum_1 %>% group_by_(.dots = sum_dots)
     
     # Making the Sumamry Statistic Columns
-    sum.2 %>% summarise(`number of samples` = n(),
+    sum_2 %>% summarise(`number of samples` = n(),
                         average = mean(Result), 
                         min = min(Result, na.rm=TRUE), 
                         max = max(Result, na.rm=TRUE), 
@@ -96,7 +96,7 @@ summary.depth <- function(input, output, session, df) {
                         median = median(Result),
                         `3rd quartile` = quantile(Result, 0.75),
                         variance = var(Result, na.rm=TRUE), 
-                        `stand.dev.` = sd(Result, na.rm=TRUE),
+                        `stand. dev.` = sd(Result, na.rm=TRUE),
                         `geometric mean` = gm_mean(Result))
   })
 

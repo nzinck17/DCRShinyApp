@@ -13,16 +13,16 @@
 # User Interface
 ##############################################################################################################################
 
-param.checkbox.UI <- function(id) {
+PARAM_CHECKBOX_UI <- function(id) {
   
   ns <- NS(id) # see General Note 1
   
   tagList(
     # Parameter Selection
     wellPanel(
-      uiOutput(ns("type.ui")),
+      uiOutput(ns("type_ui")),
       br(),
-      uiOutput(ns("range.ui"))
+      uiOutput(ns("range_ui"))
     ) # end Well Panel
   ) # end taglist
   
@@ -33,16 +33,16 @@ param.checkbox.UI <- function(id) {
 # Server Function
 ##############################################################################################################################
 
-# Note that Argument "df"  needs to be a reactive expression, not a resolved value. 
+# Note that Argument "Df"  needs to be a reactive expression, not a resolved value. 
 # Thus do not use () in callModule argument for reactives
 # For non reactives wrap with "reactive" to make into a reactive expression.
 
-param.checkbox <- function(input, output, session, df, selectall = FALSE, colwidth = 3) { 
+PARAM_CHECKBOX <- function(input, output, session, Df, selectall = FALSE, colwidth = 3) { 
   
 
   # Non Historical (when a Parameter has been used  in the last 5 years). See General Note 6
-  parameters.non.historical <- reactive({
-    df() %>%
+  parameters_non_historical <- reactive({
+    Df() %>%
       filter(Date > Sys.Date()-years(5), Date < Sys.Date()) %>%
       .$Parameter %>%
       factor() %>%
@@ -52,9 +52,9 @@ param.checkbox <- function(input, output, session, df, selectall = FALSE, colwid
   
   
   # Parameters which have data at any Site (in the mofule's df) within 5 years.
-  param.new.choices <- reactive({
-    df() %>%
-      filter(Parameter %in% parameters.non.historical()) %>%
+  param_new_choices <- reactive({
+    Df() %>%
+      filter(Parameter %in% parameters_non_historical()) %>%
       .$Parameter %>%
       factor() %>%
       levels()
@@ -62,10 +62,10 @@ param.checkbox <- function(input, output, session, df, selectall = FALSE, colwid
 
   
   
-  # Parameters which do NOT have data at any Site (in the mofule's df) within 5 years.
-  param.old.choices <- reactive({
-    df() %>%
-      filter(!(Parameter %in% parameters.non.historical())) %>%
+  # Parameters which do NOT have data at any Site (in the mofule's Df) within 5 years.
+  param_old_choices <- reactive({
+    Df() %>%
+      filter(!(Parameter %in% parameters_non_historical())) %>%
       .$Parameter %>%
       factor() %>%
       levels()
@@ -73,8 +73,8 @@ param.checkbox <- function(input, output, session, df, selectall = FALSE, colwid
 
   
   # Combine new and old
-  param.choices <- reactive({
-    c(param.new.choices(), param.old.choices())
+  param_choices <- reactive({
+    c(param_new_choices(), param_old_choices())
   })
   
   
@@ -83,47 +83,48 @@ param.checkbox <- function(input, output, session, df, selectall = FALSE, colwid
     if(selectall == FALSE){
       NULL
     }else{
-      param.choices()
+      param_choices()
     }
   })
   
   
   # Parameter - Selection UI
-  output$type.ui <- renderUI({
+  output$type_ui <- renderUI({
     ns <- session$ns # see General Note 1
-    checkboxSelectAll.UI(ns("type"))
+    CHECKBOX_SELECT_ALL_UI(ns("type"))
   })
   
-  type <- callModule(checkboxSelectAll, "type",
+  Type <- callModule(CHECKBOX_SELECT_ALL, "type",
                      label = "Parameters:",
-                     choices = param.choices,
+                     choices = param_choices,
                      selected = selected,
                      colwidth = colwidth)
   
   
   # Parameter Value Range Bar UI
   
-  output$range.ui <- renderUI({
+  output$range_ui <- renderUI({
     
     ns <- session$ns # see General Note 1
     
-    result <- df() %>%
-      filter(Parameter %in% type()) %>%
+    result <- Df() %>%
+      filter(Parameter %in% Type()) %>%
       .$Result
     
-    param.min <- result %>% min(na.rm=TRUE)
+    param_min <- result %>% min(na.rm=TRUE)
     
-    param.max <- result %>% max(na.rm=TRUE)
+    param_max <- result %>% max(na.rm=TRUE)
     
     sliderInput(ns("range"), " Value Range",
-                min = param.min, max = param.max,
-                value = c(param.min, param.max))
+                min = param_min, max = param_max,
+                value = c(param_min, param_max))
     
   })
   
-  return(list(type = reactive({type()}),
-              range.min = reactive({input$range[1]}), 
-              range.max = reactive({input$range[2]})))
+  # Retuens a list of reactive expressions.
+  return(list(Type = reactive({Type()}), # could also just write Type = Type
+              Range_Min = reactive({input$range[1]}), 
+              Range_Max = reactive({input$range[2]})))
 
 } # end Server Function
 

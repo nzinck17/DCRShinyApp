@@ -16,7 +16,7 @@
 ##############################################################################################################################
 # User Interface
 ##############################################################################################################################
-Home.UI <- function(id) {
+HOME_UI <- function(id) {
 
 ns <- NS(id)
 
@@ -43,7 +43,6 @@ tagList(
   )
 )
 
-
 }
 
 
@@ -51,18 +50,18 @@ tagList(
 # Server Function
 ##############################################################################################################################
 
-Home <- function(input, output, session, df.site) {
+HOME <- function(input, output, session, df_site) {
 
-  df.site$LocationType[df.site$LocationType == "Nutrient"] <- "Reservoir"
+  df_site$LocationType[df_site$LocationType == "Nutrient"] <- "Reservoir"
   
   # to fix duplicated Reservoir (Nutrient locations due to multiple depths)
-  df.site$Site[!is.na(df.site$Station)] <- df.site$Station[!is.na(df.site$Station)]
-  df.site <- df.site[!duplicated(df.site[,c("Site", "LocationLat", "LocationLong", "LocationCategory")]),]
+  df_site$Site[!is.na(df_site$Station)] <- df_site$Station[!is.na(df_site$Station)]
+  df_site <- df_site[!duplicated(df_site[,c("Site", "LocationLat", "LocationLong", "LocationCategory")]),]
   
   
 # levels (Categories) of Colors and Legend
   
-  map.levels <- c("Quabbin Tributary",
+  map_levels <- c("Quabbin Tributary",
                   "Ware River Tributary", 
                   "Wachusett Tributary",
                   "Quabbin Transect",
@@ -70,41 +69,30 @@ Home <- function(input, output, session, df.site) {
                   "Quabbin Reservoir",
                   "Wachusett Reservoir")
   
-# Create a new column in df.site for coloring and legend purposes
+# Create a new column in df_site for coloring and legend purposes
   
-  df.site.react <- reactive({
-    df.site.temp <- df.site %>%
-      mutate(MapFactor = paste(Watershed, LocationType))
-
-    df.site.temp$MapFactor <- factor(df.site.temp$MapFactor, 
-                                        levels = map.levels)
-    df.site.temp
-  })
+  df_site2 <- df_site %>%
+      mutate(MapFactor = factor(paste(Watershed, LocationType), levels = map_levels))
   
 # Color
   
-  colorpal <- reactive({
-    
-    colorFactor(palette = c("firebrick", 
-                            "tomato", 
-                            "red2",
-                            "orange1",
-                            "orange2",
-                            "yellow1",
-                            "yellow2"),
-                domain = factor(map.levels,
-                                levels = map.levels),
-                ordered = TRUE)
-  })  
-  
-   
+  color_pal <- colorFactor(palette = c("firebrick", 
+                                       "tomato", 
+                                       "red2",
+                                       "orange1",
+                                       "orange2",
+                                       "yellow1",
+                                       "yellow2"),
+                           domain = factor(map_levels, levels = map_levels),
+                           ordered = TRUE)
+ 
 # Map
   
   output$map <- renderLeaflet({
     
-    pal <- colorpal()
+    pal <- color_pal
     
-    leaflet(data = df.site.react()) %>%
+    leaflet(data = df_site2) %>%
       addProviderTiles(providers$Esri.WorldImagery,  #  Stamen.TonerLite
                        options = providerTileOptions(noWrap = TRUE)
       ) %>%

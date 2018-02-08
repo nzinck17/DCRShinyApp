@@ -13,17 +13,17 @@
 # User Interface
 ##############################################################################################################################
 
-station.level.checkbox.UI <- function(id) {
+STATION_LEVEL_CHECKBOX_UI <- function(id) {
   
   ns <- NS(id) # see General Note 1
   
   tagList(
     # Site Selection
     wellPanel(
-      uiOutput(ns("station.ui"))
+      uiOutput(ns("station_ui"))
     ),
     wellPanel(
-      uiOutput(ns("level.ui"))
+      uiOutput(ns("level_ui"))
     ) # end Well Panel
   ) # end taglist
   
@@ -34,39 +34,38 @@ station.level.checkbox.UI <- function(id) {
 # Server Function
 ##############################################################################################################################
 
-# Note that Argument "df"  needs to be a reactive expression, not a resolved value. 
+# Note that Argument "Df"  needs to be a reactive expression, not a resolved value. 
 # Thus do not use () in callModule argument for reactives
 # For non reactives wrap with "reactive" to make into a reactive expression.
 
-station.level.checkbox <- function(input, output, session, df, selectall = FALSE, colwidth = 3) { 
+STATION_LEVEL_CHECKBOX <- function(input, output, session, Df, selectall = FALSE, colwidth = 3) { 
   
-
   ### Station
   
-  # Choices
-  station.choices <- reactive({
-    df()$Station %>% factor() %>% levels()
+  # Choice LIST
+  Station_Choices <- reactive({
+    Df()$Station %>% factor() %>% levels()
   })
   
-  selected1 <- reactive({
+  Selected1 <- reactive({
     if(selectall == FALSE){
       NULL
     }else{
-      station.choices()
+      Station_Choices()
     }
   })
   
   # UI
-  output$station.ui <- renderUI({
+  output$station_ui <- renderUI({
     ns <- session$ns # see General Note 1
-    checkboxSelectAll.UI(ns("station"))
+    CHECKBOX_SELECT_ALL_UI(ns("station"))
   })
   
   # Server
-  station.selected <- callModule(checkboxSelectAll, "station",
+  Station_Selected <- callModule(CHECKBOX_SELECT_ALL, "station",
                                  label = "Station:",
-                                 choices = station.choices,
-                                 selected = selected1,
+                                 choices = Station_Choices,
+                                 selected = Selected1,
                                  colwidth = colwidth)
 
   
@@ -74,47 +73,47 @@ station.level.checkbox <- function(input, output, session, df, selectall = FALSE
   ### Sampling Level
   
   # Choices
-  level.choices <- reactive({
-    df()$Sampling_Level %>% factor() %>% levels()
+  Level_Choices <- reactive({
+    Df()$Sampling_Level %>% factor() %>% levels()
   })
     
-  selected2 <- reactive({
+  Selected2 <- reactive({
     if(selectall == FALSE){
       NULL
     }else{
-      level.choices()
+      level_choices()
     }
   })
   
   # UI
-  output$level.ui <- renderUI({
+  output$level_ui <- renderUI({
     ns <- session$ns # see General Note 1
-    checkboxSelectAll.UI(ns("level"))
+    CHECKBOX_SELECT_ALL_UI(ns("level"))
   })
   
   # Server
-  level.selected <- callModule(checkboxSelectAll, "level",
+  Level_Selected <- callModule(CHECKBOX_SELECT_ALL, "level",
                                label = "Sampling Level:",
-                               choices = level.choices,
-                               selected = selected2,
+                               choices = Level_Choices,
+                               selected = Selected2,
                                colwidth = colwidth)
   
   
   # Create Site (location Labels) Choices from selected Stations and Levels
-  site.selected <- reactive({
+  Site_Selected <- reactive({
     
-    req(station.selected(), level.selected())
+    req(Station_Selected(), Level_Selected())
     
-    df() %>%
-      filter(Station %in% station.selected(),
-             Sampling_Level %in% level.selected()) %>%
+    Df() %>%
+      filter(Station %in% Station_Selected(),
+             Sampling_Level %in% Level_Selected()) %>%
       .$LocationLabel %>%
       factor() %>%
       levels()
     
   })
 
-  return(reactive({site.selected()}))
+  return(reactive({Site_Selected()}))
 
 } # end Server Function
 

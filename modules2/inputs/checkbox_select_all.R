@@ -13,12 +13,12 @@
 # User Interface
 ##############################################################################################################################
 
-checkboxSelectAll.UI <- function(id) {
+CHECKBOX_SELECT_ALL_UI <- function(id) {
   
   ns <- NS(id) # see General Note 1
   
   tagList(
-    uiOutput(ns("checkbox.ui")),
+    uiOutput(ns("checkbox_ui")),
     uiOutput(ns("actionbuttons"))
   )
 }
@@ -32,25 +32,25 @@ checkboxSelectAll.UI <- function(id) {
 # Thus do not use () in callModule argument for reactives
 # For non reactives wrap with "reactive" to make into a reactive expression.
 
-checkboxSelectAll <- function(input, output, session, label, choices, selected = reactive(NULL), 
+CHECKBOX_SELECT_ALL <- function(input, output, session, label, choices, selected = reactive(NULL), 
                               colwidth = 3, hidden = FALSE, inline = FALSE) { 
   
-  output$checkbox.ui <- renderUI({
+  output$checkbox_ui <- renderUI({
     ns <- session$ns # see General Note 1
     checkboxGroupInput(inputId = ns("checkbox"), label = label, choices = choices(), selected = selected(), inline = inline)
   })
   
   
   ### Update the Checkbox basaed on Action Buttons
-  observeEvent(input$select.all, {
+  observeEvent(input$select_all, {
     updateCheckboxGroupInput(session = session, inputId = "checkbox", label = NULL, choices = choices(), selected = choices(), inline = inline)
   })
   
-  observeEvent(input$select.def, {
+  observeEvent(input$select_def, {
     updateCheckboxGroupInput(session = session, inputId = "checkbox", label = NULL, choices = choices(), selected = selected(), inline = inline)
   })
   
-  observeEvent(input$unselect.all, {
+  observeEvent(input$unselect_all, {
     updateCheckboxGroupInput(session = session, inputId = "checkbox", label = NULL, choices = choices(), inline = inline)
   })
   
@@ -63,33 +63,33 @@ checkboxSelectAll <- function(input, output, session, label, choices, selected =
       # Size Buttons according to column width (input)
       if(colwidth >= 3){
         tagList(
-          fluidRow(actionButton(inputId = ns("select.all"), label = "Select All", width = "48%"), 
-                   actionButton(inputId = ns("unselect.all"), label = "Unselect All", width = "48%"))
+          fluidRow(actionButton(inputId = ns("select_all"), label = "Select All", width = "48%"), 
+                   actionButton(inputId = ns("unselect_all"), label = "Unselect All", width = "48%"))
         )
       }else if(colwidth == 2){
         tagList(
-          fluidRow(actionButton(inputId = ns("select.all"), label = "Select All", width = "98%")), 
-          fluidRow(actionButton(inputId = ns("unselect.all"), label = "Unselect All", width = "98%"))
+          fluidRow(actionButton(inputId = ns("select_all"), label = "Select All", width = "98%")), 
+          fluidRow(actionButton(inputId = ns("unselect_all"), label = "Unselect All", width = "98%"))
         )
       } else {
         tagList(
-          fluidRow(actionButton(inputId = ns("select.all"), label = "Select All", width = "98%")), 
-          fluidRow(actionButton(inputId = ns("unselect.all"), label = "Unselect All", width = "98%"))
+          fluidRow(actionButton(inputId = ns("select_all"), label = "Select All", width = "98%")), 
+          fluidRow(actionButton(inputId = ns("unselect_all"), label = "Unselect All", width = "98%"))
         )
       }
       # If Default Selection - Add a third button
     } else {
       if(colwidth >= 4){
         tagList(
-          fluidRow(actionButton(inputId = ns("select.all"), label = "Select All", width = "32%"),
-                   actionButton(inputId = ns("select.def"), label = "Select Default", width = "32%"), 
-                   actionButton(inputId = ns("unselect.all"), label = "Unselect All", width = "32%"))
+          fluidRow(actionButton(inputId = ns("select_all"), label = "Select All", width = "32%"),
+                   actionButton(inputId = ns("select_def"), label = "Select Default", width = "32%"), 
+                   actionButton(inputId = ns("unselect_all"), label = "Unselect All", width = "32%"))
         )
       } else {
         tagList(
-          fluidRow(actionButton(inputId = ns("select.all"), label = "Select All", width = "98%")),
-          fluidRow(actionButton(inputId = ns("select.def"), label = "Select Default", width = "98%")), 
-          fluidRow(actionButton(inputId = ns("unselect.all"), label = "Unselect All", width = "98%"))
+          fluidRow(actionButton(inputId = ns("select_all"), label = "Select All", width = "98%")),
+          fluidRow(actionButton(inputId = ns("select_def"), label = "Select Default", width = "98%")), 
+          fluidRow(actionButton(inputId = ns("unselect_all"), label = "Unselect All", width = "98%"))
         )
       }
     }
@@ -98,7 +98,7 @@ checkboxSelectAll <- function(input, output, session, label, choices, selected =
   # Getoptions(SuspendedWhenHidden = FALSE) to checkbox.ui so when input are on serperate tabs, uiOUtput (by renderUI) does not suspend
   # this is used in Filter Tab becuase this is hidden when other tabs are open yet use this info
   if(hidden == TRUE){
-    outputOptions(output, "checkbox.ui", suspendWhenHidden = FALSE)
+    outputOptions(output, "checkbox_ui", suspendWhenHidden = FALSE)
   }
   
   return(reactive({input$checkbox}))

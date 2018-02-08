@@ -9,7 +9,7 @@
 # User Interface
 ##############################################################################################################################
 
-Site_Map_Single_UI <- function(id, df) {
+SITE_MAP_SINGLE_UI <- function(id) {
   
   ns <- NS(id) # see General Note 1
   
@@ -23,16 +23,15 @@ Site_Map_Single_UI <- function(id, df) {
 # Server Function
 ##############################################################################################################################
 
-Site_Map_Single <- function(input, output, session, site) {
-  
+SITE_MAP_SINGLE <- function(input, output, session, Site) {
   
   # Base Leaflet Map - See General Note 3
   
   output$map <- renderLeaflet({
     
-    req(site())
+    req(Site())
     
-    leaflet(data = site()) %>%
+    leaflet(data = Site()) %>%
       addProviderTiles(providers$Esri.WorldImagery,
                        options = providerTileOptions(noWrap = TRUE)) %>%
       addMarkers(lng = ~LocationLong, lat = ~LocationLat,
@@ -43,7 +42,6 @@ Site_Map_Single <- function(input, output, session, site) {
                                       "Long = ", LocationLong, "<br/>",
                                       "Elev = ", LocationElevFt, "ft")
                  )
-    
   })
   
   

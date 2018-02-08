@@ -1,5 +1,5 @@
 ##############################################################################################################################
-#     Title: load_MS_Access_data.R
+#     Title: load_MS_Access_data_R
 #     Description: This script will load WQ data from both Quabbin and Wachusett Microsof Access Database
 #     Written by: Nick Zinck, Spring 2017
 #     Note: TBD
@@ -7,9 +7,9 @@
 
 # File name path from the Shiny App Folder (***Update if name changed****)
 
-filename.quab <- "DBQ=C:/WQDatabase/QUABBIN_WQDB_fe.mdb"
-filename.wach.wq <- "DBQ=C:/WQDatabase/WACHUSETT_WQDB_fe.mdb"
-filename.wach.aquabio <- "DBQ=C:/WQDatabase/WACHUSETT_AQBIO_DB_fe.mdb"
+filename_quab <- "DBQ=C:/WQDatabase/QUABBIN_WQDB_fe.mdb"
+filename_wach_wq <- "DBQ=C:/WQDatabase/WACHUSETT_WQDB_fe.mdb"
+filename_wach_aquabio <- "DBQ=C:/WQDatabase/WACHUSETT_AQBIO_DB_fe.mdb"
 
 ##############################################################################################################################
 # GET DATA FROM DATABASE *(Connect to database, fetch tables, and close connection)
@@ -19,14 +19,14 @@ filename.wach.aquabio <- "DBQ=C:/WQDatabase/WACHUSETT_AQBIO_DB_fe.mdb"
 
 # Connect to db
 con <- dbConnect(odbc::odbc(),
-                 .connection_string = paste("driver={Microsoft Access Driver (*.mdb, *.accdb)}", filename.quab, "Uid=Admin;Pwd=;", sep = ";"),
+                 .connection_string = paste("driver={Microsoft Access Driver (*.mdb, *.accdb)}", filename_quab, "Uid=Admin;Pwd=;", sep = ";"),
                  timezone = "America/New_York")
 
 # Read Tables
-df.trib.res.quab <- dbReadTable(con, "tblWQTribRes2")
-df.prof.quab <- dbReadTable(con, "tblWQProfile")
-df.quab.ware.site <- dbReadTable(con, "tblSiteLocation2")
-df.quab.param <- dbReadTable(con, "tblParameters")
+df_trib_res_quab <- dbReadTable(con, "tblWQTribRes2")
+df_prof_quab <- dbReadTable(con, "tblWQProfile")
+df_quab_ware_site <- dbReadTable(con, "tblSiteLocation2")
+df_quab_param <- dbReadTable(con, "tblParameters")
 
 # Disconnect from db and remove connection obj
 dbDisconnect(con)
@@ -38,16 +38,16 @@ rm(con)
 # Connect to db
 con <- dbConnect(odbc::odbc(),
                              .connection_string = paste("driver={Microsoft Access Driver (*.mdb, *.accdb)}",
-                              filename.wach.wq, "Uid=Admin;Pwd=;", sep = ";"),
+                              filename_wach_wq, "Uid=Admin;Pwd=;", sep = ";"),
                              timezone = "America/New_York")
 
 # Read Tables
-df.trib.bact.wach <- dbReadTable(con, "tblWQALLDATA")
-#df.trib.bact.wach <- dbGetQuery(con, paste("SELECT", wq.col.list, "FROM tblWQALLDATA"))
-df.wq.wach.site <- dbReadTable(con, "tblLocations")
-df.wq.wach.param <- dbReadTable(con, "tblParameters")
-df.wq.wach.flag <- dbReadTable(con, "tblFlags")
-df.wq.wach.flag.sample <- dbReadTable(con, "tblSampleFlagIndex")
+df_trib_bact_wach <- dbReadTable(con, "tblWQALLDATA")
+#df_trib_bact_wach <- dbGetQuery(con, paste("SELECT", wq_col_list, "FROM tblWQALLDATA"))
+df_wq_wach_site <- dbReadTable(con, "tblLocations")
+df_wq_wach_param <- dbReadTable(con, "tblParameters")
+df_wq_wach_flag <- dbReadTable(con, "tblFlags")
+df_wq_wach_flag_sample <- dbReadTable(con, "tblSampleFlagIndex")
 
 # Disconnect from db and remove connection obj
 dbDisconnect(con)
@@ -59,18 +59,18 @@ rm(con)
 # Connect to db
 con<- dbConnect(odbc::odbc(),
                              .connection_string = paste("driver={Microsoft Access Driver (*.mdb, *.accdb)}",
-                              filename.wach.aquabio, "Uid=Admin;Pwd=;", sep = ";"),
+                              filename_wach_aquabio, "Uid=Admin;Pwd=;", sep = ";"),
                               timezone = "America/New_York")
 
 # Read Tables
-df.chem.wach <- dbReadTable(con, "tbl_Nutrients")
-df.prof.wach <- dbReadTable(con, "tbl_Profiles")
-df.chem.prof.wach.site <- dbReadTable(con, "tblLocations")
-df.secchi.wach <- dbReadTable(con, "tblSecchi") # Wachusett Secchi
-df.phyto.wach <- dbReadTable(con, "tbl_Phyto") # Wachusett Phytoplankton
-df.phyto_thresh.wach <- dbReadTable(con, "tbl_PhytoThresholds") # Wachusett Phytoplankton thresholds
-df.aq.wach.site <- dbReadTable(con, "tblLocations")
-df.aq.wach.flag.sample <- dbReadTable(con, "tblSampleFlagIndex") # Wachusett Phytoplankton thresholds
+df_chem_wach <- dbReadTable(con, "tbl_Nutrients")
+df_prof_wach <- dbReadTable(con, "tbl_Profiles")
+df_chem_prof_wach_site <- dbReadTable(con, "tblLocations")
+df_secchi_wach <- dbReadTable(con, "tblSecchi") # Wachusett Secchi
+df_phyto_wach <- dbReadTable(con, "tbl_Phyto") # Wachusett Phytoplankton
+df_phyto_thresh_wach <- dbReadTable(con, "tbl_PhytoThresholds") # Wachusett Phytoplankton thresholds
+df_aq_wach_site <- dbReadTable(con, "tblLocations")
+df_aq_wach_flag_sample <- dbReadTable(con, "tblSampleFlagIndex") # Wachusett Phytoplankton thresholds
 
 
 # Disconnect from db and remove connection obj
@@ -85,67 +85,67 @@ rm(con)
 ### QUABBIN
 
 # delete columns
-df.trib.res.quab <- df.trib.res.quab %>% select(-rownames)
-df.prof.quab <- df.prof.quab %>% select(-rownames)
+df_trib_res_quab <- df_trib_res_quab %>% select(-rownames)
+df_prof_quab <- df_prof_quab %>% select(-rownames)
 
 # result format - Numeric Class (Make Character first in the case that the results are imported as factors)
-df.trib.res.quab$Result <- as.numeric(as.character(df.trib.res.quab$Result))
-df.prof.quab$Result <- as.numeric(as.character(df.prof.quab$Result))
+df_trib_res_quab$Result <- as.numeric(as.character(df_trib_res_quab$Result))
+df_prof_quab$Result <- as.numeric(as.character(df_prof_quab$Result))
 
 # date Format - Date Class
-df.trib.res.quab$Date <- as.Date(as.character(df.trib.res.quab$Date),format ='%m/%d/%Y')
-df.prof.quab$Date <- as.Date(as.character(df.prof.quab$Date), format = '%d-%b-%y')
+df_trib_res_quab$Date <- as.Date(as.character(df_trib_res_quab$Date),format ='%m/%d/%Y')
+df_prof_quab$Date <- as.Date(as.character(df_prof_quab$Date), format = '%d-%b-%y')
 
 
 ### WACHUSETT
 
 # rename columns
-df.trib.bact.wach <- rename(df.trib.bact.wach, Site = Location, `Result Temp` = ResultReported, Result = FinalResult)
-df.chem.wach <- rename(df.chem.wach, Site = Location, `Result Temp` = ResultReported, Result = FinalResult)
-df.prof.wach <- rename(df.prof.wach, Date = Pro_Date, Site = Pro_Station, Time = Pro_TimeFormatted, Depthm = Pro_Depth_m)
+df_trib_bact_wach <- rename(df_trib_bact_wach, Site = Location, `Result Temp` = ResultReported, Result = FinalResult)
+df_chem_wach <- rename(df_chem_wach, Site = Location, `Result Temp` = ResultReported, Result = FinalResult)
+df_prof_wach <- rename(df_prof_wach, Date = Pro_Date, Site = Pro_Station, Time = Pro_TimeFormatted, Depthm = Pro_Depth_m)
 
 # reformat the Wachusett Profile data to "Tidy" data format ("Long" instead of "Wide")
-df.prof.wach <- gather(df.prof.wach, Parameter, Result, c(Temp_C, SpCond, LDO_pct, LDO_mgL, pH, Chl_ugL, Chl_volts, Turbidity, TDS_mgL, BGA_PC_ugL))
+df_prof_wach <- gather(df_prof_wach, Parameter, Result, c(Temp_C, SpCond, LDO_pct, LDO_mgL, pH, Chl_ugL, Chl_volts, Turbidity, TDS_mgL, BGA_PC_ugL))
 
 # result format - Numeric Class (Make Character first in the case that the results are imported as factors (could maybe be set within DB))
-df.trib.bact.wach$Result <- as.numeric(as.character(df.trib.bact.wach$Result))
-df.chem.wach$Result <- as.numeric(as.character(df.chem.wach$Result))
-df.prof.wach$Result <- as.numeric(as.character(df.prof.wach$Result))
+df_trib_bact_wach$Result <- as.numeric(as.character(df_trib_bact_wach$Result))
+df_chem_wach$Result <- as.numeric(as.character(df_chem_wach$Result))
+df_prof_wach$Result <- as.numeric(as.character(df_prof_wach$Result))
 
 # date format - Date Class. (Could maybe be set withing DB)
-df.trib.bact.wach$SampleDateTime <- format(df.trib.bact.wach$SampleDateTime, tz ="America/New_York", usetz=TRUE) %>%
+df_trib_bact_wach$SampleDateTime <- format(df_trib_bact_wach$SampleDateTime, tz ="America/New_York", usetz=TRUE) %>%
   as.POSIXct()
-df.trib.bact.wach$Date <- as.Date(as.character(df.trib.bact.wach$SampleDateTime),format ='%Y-%m-%d %H:%M:%S')
-df.phyto.wach$Phyt_Date <- as.Date(format(df.phyto.wach$Phyt_Date, tz ="America/New_York", usetz=TRUE))
-df.secchi.wach$Date <- as.Date(format(df.secchi.wach$Date, tz ="America/New_York", usetz=TRUE))
-df.chem.wach$Date <- as.Date(as.character(df.chem.wach$SampleDateTime),format ='%Y-%m-%d %H:%M:%S')
-df.prof.wach$Date <- as.Date(df.prof.wach$Date)
+df_trib_bact_wach$Date <- as.Date(as.character(df_trib_bact_wach$SampleDateTime),format ='%Y-%m-%d %H:%M:%S')
+df_phyto_wach$Phyt_Date <- as.Date(format(df_phyto_wach$Phyt_Date, tz ="America/New_York", usetz=TRUE))
+df_secchi_wach$Date <- as.Date(format(df_secchi_wach$Date, tz ="America/New_York", usetz=TRUE))
+df_chem_wach$Date <- as.Date(as.character(df_chem_wach$SampleDateTime),format ='%Y-%m-%d %H:%M:%S')
+df_prof_wach$Date <- as.Date(df_prof_wach$Date)
 
 # time format
-#df.chem.wach$Time <- format(df.chem.wach$Time,"%H:%M:%S") No longer needed because df now has combined date-time stamp
-df.prof.wach$Time <- format(df.prof.wach$Time,"%H:%M:%S")
-df.prof.wach$DateTime <-as.POSIXct(paste(df.prof.wach$Date, df.prof.wach$Time), format="%Y-%m-%d %H:%M:%S")
-#df.secchi.wach$SampleTime <- format(df.secchi.wach$SampleTime, "%H:%M")
+#df_chem_wach$Time <- format(df_chem_wach$Time,"%H:%M:%S") No longer needed because df now has combined date-time stamp
+df_prof_wach$Time <- format(df_prof_wach$Time,"%H:%M:%S")
+df_prof_wach$DateTime <-as.POSIXct(paste(df_prof_wach$Date, df_prof_wach$Time), format="%Y-%m-%d %H:%M:%S")
+#df_secchi_wach$SampleTime <- format(df_secchi_wach$SampleTime, "%H:%M")
 
 # flag format - Change a "NA" or "NAN" value to "No Flag"
-df.trib.bact.wach$FlagCode <- as.character(df.trib.bact.wach$FlagCode)
-df.trib.bact.wach$FlagCode[is.na(df.trib.bact.wach$FlagCode)] <- "No Flag"
-df.trib.bact.wach$FlagCode[is.nan(df.trib.bact.wach$FlagCode)] <- "No Flag"
-df.trib.bact.wach$FlagCode <- factor(df.trib.bact.wach$FlagCode)
+df_trib_bact_wach$FlagCode <- as.character(df_trib_bact_wach$FlagCode)
+df_trib_bact_wach$FlagCode[is.na(df_trib_bact_wach$FlagCode)] <- "No Flag"
+df_trib_bact_wach$FlagCode[is.nan(df_trib_bact_wach$FlagCode)] <- "No Flag"
+df_trib_bact_wach$FlagCode <- factor(df_trib_bact_wach$FlagCode)
 
 # Additional formatting for Phyto data
 #Purge unwanted columns of data, transpose to long format, change data formats
-df.phyto.wach <- select(df.phyto.wach,-Phyt_ID,-Microscope,-Magnification,-Method,-ImportDate,-DataSource, -Analyst, -UniqueID) %>%
+df_phyto_wach <- select(df_phyto_wach,-Phyt_ID,-Microscope,-Magnification,-Method,-ImportDate,-DataSource, -Analyst, -UniqueID) %>%
  gather("taxa","count",5:82, na.rm =T) %>%
  dplyr::rename(Station = Phyt_Station, Year = Phyt_Year, Date = Phyt_Date, Depthm = Phyt_Depth_m, Taxa = taxa, Result = count) %>%
  select(Station, Year, Date, Depthm, Taxa, Result) %>%
  filter(Result >=0)
 
-df.phyto.wach$Taxa <- as.factor(df.phyto.wach$Taxa)
-df.phyto.wach$Station <- as.factor(df.phyto.wach$Station)
+df_phyto_wach$Taxa <- as.factor(df_phyto_wach$Taxa)
+df_phyto_wach$Station <- as.factor(df_phyto_wach$Station)
 
 # Additional formatting for Phyto data
-df.secchi.wach <- df.secchi.wach[,c(2:5)] # Remove unwated columns
+df_secchi_wach <- df_secchi_wach[,c(2:5)] # Remove unwated columns
 
 ###########################################################################################################################
 # RESTRUCTURING SITE INFORMATION DATA
@@ -154,30 +154,30 @@ df.secchi.wach <- df.secchi.wach[,c(2:5)] # Remove unwated columns
 ### QUABBIN
 
 # delete columns
-df.quab.ware.site <- df.quab.ware.site %>% select(-c(rownames, Description))
+df_quab_ware_site <- df_quab_ware_site %>% select(-c(rownames, Description))
 
 # rename columns
-df.quab.ware.site <- df.quab.ware.site %>% rename(Site = SiteID, LocationType = Type, LocationDescription = SiteDescription)
+df_quab_ware_site <- df_quab_ware_site %>% rename(Site = SiteID, LocationType = Type, LocationDescription = SiteDescription)
 
 # create columns
-df.quab.ware.site <- df.quab.ware.site %>% mutate(LocationLabel = paste(LocationShortName, Site))
-df.quab.ware.site$LocationElevFt <- NA
+df_quab_ware_site <- df_quab_ware_site %>% mutate(LocationLabel = paste(LocationShortName, Site))
+df_quab_ware_site$LocationElevFt <- NA
 
 # change "Core" to "Primary Active"
-df.quab.ware.site$LocationCategory <- as.character(df.quab.ware.site$LocationCategory)
-df.quab.ware.site$LocationCategory[df.quab.ware.site$LocationCategory == "Core"] <- "Primary Active"
+df_quab_ware_site$LocationCategory <- as.character(df_quab_ware_site$LocationCategory)
+df_quab_ware_site$LocationCategory[df_quab_ware_site$LocationCategory == "Core"] <- "Primary Active"
 
 
 ### WACHUSETT
 
 # rename columns
-df.wq.wach.site <- df.wq.wach.site %>% rename(Site = LocationMWRA)
-df.chem.prof.wach.site <- df.chem.prof.wach.site %>% rename(Site = LocationMWRA, LocationDescription = StationDescription)
+df_wq_wach_site <- df_wq_wach_site %>% rename(Site = LocationMWRA)
+df_chem_prof_wach_site <- df_chem_prof_wach_site %>% rename(Site = LocationMWRA, LocationDescription = StationDescription)
 
 # create columns
-df.chem.prof.wach.site$LocationElevFt <- NA
-df.wq.wach.site$Watershed <- "Wachusett"
-df.chem.prof.wach.site$Watershed <- "Wachusett"
+df_chem_prof_wach_site$LocationElevFt <- NA
+df_wq_wach_site$Watershed <- "Wachusett"
+df_chem_prof_wach_site$Watershed <- "Wachusett"
 
 
 ###########################################################################################################################
@@ -185,129 +185,129 @@ df.chem.prof.wach.site$Watershed <- "Wachusett"
 ###########################################################################################################################
 
 # Quabbin Tributary and Chemical
-df.trib.res.quab <- left_join(df.trib.res.quab, df.quab.ware.site, by = "Site")
+df_trib_res_quab <- left_join(df_trib_res_quab, df_quab_ware_site, by = "Site")
 
 # Quabbin Profile
-df.prof.quab <- left_join(df.prof.quab, df.quab.ware.site, by = "Site")
+df_prof_quab <- left_join(df_prof_quab, df_quab_ware_site, by = "Site")
 
 # Wachusett Tributary and Bacteria
-df.trib.bact.wach <- left_join(df.trib.bact.wach, df.wq.wach.site, by = "Site")
+df_trib_bact_wach <- left_join(df_trib_bact_wach, df_wq_wach_site, by = "Site")
 
 # Wachusett Chemical
-df.chem.wach <- left_join(df.chem.wach, df.chem.prof.wach.site, by = "Site")
+df_chem_wach <- left_join(df_chem_wach, df_chem_prof_wach_site, by = "Site")
 
 # Wachusett Profile
-df.prof.wach <- left_join(df.prof.wach, df.chem.prof.wach.site, by = "Site")
+df_prof_wach <- left_join(df_prof_wach, df_chem_prof_wach_site, by = "Site")
 
 ###########################################################################################################################
 # List of Column names to be shown in Trib and Res Module tables and Default Selected in Export Module
 ###########################################################################################################################
 
 # Trib and Res Columns to read into the App (right now for Wachusett but eventually for Quabbin too)
-#wq.col.list <- "ID, UniqueID, Location, SampleDateTime, Parameter, Units, FinalResult, StormSample, StormSampleN, DetectionLimit, FlagCode"
+#wq_col_list <- "ID, UniqueID, Location, SampleDateTime, Parameter, Units, FinalResult, StormSample, StormSampleN, DetectionLimit, FlagCode"
 
 # Quabbin, Ware, and All Tributary
-col.trib.quab.ware <- c("LocationLabel", "Date", "Parameter", "Result", "Units", "Site", "LocationCategory")
+col_trib_quab_ware <- c("LocationLabel", "Date", "Parameter", "Result", "Units", "Site", "LocationCategory")
 
 # Wachusett Tributary
-col.trib.wach <- c("LocationLabel", "SampleDateTime", "Date", "Parameter", "Result", "Units","FlagCode", "StormSample", "Site", "LocationCategory")
+col_trib_wach <- c("LocationLabel", "SampleDateTime", "Date", "Parameter", "Result", "Units","FlagCode", "StormSample", "Site", "LocationCategory")
 
 # Quabbin (Res) Bacteria
-col.bact.quab <- c("LocationLabel", "Date", "Sampling_Level", "Parameter", "Result", "Units", "Site", "Station", "LocationCategory")
+col_bact_quab <- c("LocationLabel", "Date", "Sampling_Level", "Parameter", "Result", "Units", "Site", "Station", "LocationCategory")
 
 # Wachusett Res Bacteria
-col.bact.wach <- c("LocationLabel", "Date", "Parameter", "Result", "Units", "FlagCode", "StormSample", "Site", "LocationCategory")
+col_bact_wach <- c("LocationLabel", "Date", "Parameter", "Result", "Units", "FlagCode", "StormSample", "Site", "LocationCategory")
 
 # Quabbin (Res) Chemical
-col.chem.quab <- c("LocationLabel", "Date", "Sampling_Level", "Parameter", "Result", "Units", "Site", "Station", "LocationCategory")
+col_chem_quab <- c("LocationLabel", "Date", "Sampling_Level", "Parameter", "Result", "Units", "Site", "Station", "LocationCategory")
 
 # Wachusett Res Chemical
-col.chem.wach <- c("LocationLabel", "Date", "LocationDepth", "Parameter", "Result", "Units", "FlagCode", "Site", "Station", "LocationCategory")
+col_chem_wach <- c("LocationLabel", "Date", "LocationDepth", "Parameter", "Result", "Units", "FlagCode", "Site", "Station", "LocationCategory")
 
 # Quabbin (Res) Profile
-col.prof.quab <- c("LocationLabel", "Date", "Depthm", "Parameter", "Result", "Units", "Site", "Station", "LocationCategory")
+col_prof_quab <- c("LocationLabel", "Date", "Depthm", "Parameter", "Result", "Units", "Site", "Station", "LocationCategory")
 
 # Wachusett Res Profile
-col.prof.wach <- c("LocationLabel", "Date", "Depthm", "Parameter", "Result", "Site", "Station", "LocationCategory") # need units??
+col_prof_wach <- c("LocationLabel", "Date", "Depthm", "Parameter", "Result", "Site", "Station", "LocationCategory") # need units??
 
 ###########################################################################################################################
 # Final Water Quality Dataframes
 ###########################################################################################################################
 
 # Quabbin Tributary
-df.trib.quab.exp <- df.trib.res.quab %>% filter(LocationType == "Tributary", Watershed == "Quabbin")
-df.trib.quab <- df.trib.quab.exp %>% select(col.trib.quab.ware)
+df_trib_quab_exp <- df_trib_res_quab %>% filter(LocationType == "Tributary", Watershed == "Quabbin")
+df_trib_quab <- df_trib_quab_exp %>% select(col_trib_quab_ware)
 
 # Ware River Tributary
-df.trib.ware.exp <- df.trib.res.quab %>% filter(LocationType == "Tributary", Watershed == "Ware River")
-df.trib.ware <- df.trib.ware.exp %>% select(col.trib.quab.ware)
+df_trib_ware_exp <- df_trib_res_quab %>% filter(LocationType == "Tributary", Watershed == "Ware River")
+df_trib_ware <- df_trib_ware_exp %>% select(col_trib_quab_ware)
 
 # Wachusett Tributary
-df.trib.wach.exp <- df.trib.bact.wach %>% filter(LocationType == "Tributary")
-df.trib.wach <- df.trib.wach.exp %>% select(col.trib.wach)
+df_trib_wach_exp <- df_trib_bact_wach %>% filter(LocationType == "Tributary")
+df_trib_wach <- df_trib_wach_exp %>% select(col_trib_wach)
 
 # All Tributaries
-df.trib.all.exp <- bind_rows(df.trib.quab, df.trib.ware, df.trib.wach)
-df.trib.all <- df.trib.all.exp %>%  select(col.trib.quab.ware)
+df_trib_all_exp <- bind_rows(df_trib_quab, df_trib_ware, df_trib_wach)
+df_trib_all <- df_trib_all_exp %>%  select(col_trib_quab_ware)
 
 # Wachusett Bacteria
-df.bact.wach.exp <- df.trib.bact.wach %>% filter(LocationType == "Transect")
-df.bact.wach <- df.bact.wach.exp %>% select(col.bact.wach)
+df_bact_wach_exp <- df_trib_bact_wach %>% filter(LocationType == "Transect")
+df_bact_wach <- df_bact_wach_exp %>% select(col_bact_wach)
 
 # Quabbin Chemical
-df.chem.quab.exp <- df.trib.res.quab %>% filter(LocationType == "Nutrient")
-df.chem.quab <- df.chem.quab.exp %>% select(col.chem.quab)
+df_chem_quab_exp <- df_trib_res_quab %>% filter(LocationType == "Nutrient")
+df_chem_quab <- df_chem_quab_exp %>% select(col_chem_quab)
 
 # Wachusett Chemical (all set?)
-df.chem.wach.exp <- df.chem.wach
-df.chem.wach <- df.chem.wach.exp  %>% select(col.chem.wach)
+df_chem_wach_exp <- df_chem_wach
+df_chem_wach <- df_chem_wach_exp  %>% select(col_chem_wach)
 
 # Quabbin Profile (all set?)
-df.prof.quab.exp <- df.prof.quab
-df.prof.quab <- df.prof.quab.exp %>% select(col.prof.quab)
+df_prof_quab_exp <- df_prof_quab
+df_prof_quab <- df_prof_quab_exp %>% select(col_prof_quab)
 
 # Wachusett Profile (all set?)
-df.prof.wach.exp <- df.prof.wach
-df.prof.wach <- df.prof.wach.exp  %>% select(col.prof.wach)
+df_prof_wach_exp <- df_prof_wach
+df_prof_wach <- df_prof_wach_exp  %>% select(col_prof_wach)
 
 # Wachusett Phytoplankton
-#df.phyto.wach <- df.phyto.wach
+#df_phyto_wach <- df_phyto_wach
 
 ###########################################################################################################################
 # Final Site/Location Information Dataframes
 ###########################################################################################################################
 
 # Quabbin Tributary
-df.trib.quab.site <- df.quab.ware.site %>% filter(Watershed == "Quabbin", LocationType == "Tributary")
+df_trib_quab_site <- df_quab_ware_site %>% filter(Watershed == "Quabbin", LocationType == "Tributary")
 
 # Ware River Tributary
-df.trib.ware.site <- df.quab.ware.site %>% filter(Watershed == "Ware River")
+df_trib_ware_site <- df_quab_ware_site %>% filter(Watershed == "Ware River")
 
 # Wachusett Tributary
-df.trib.wach.site <- df.wq.wach.site %>% filter(LocationType == "Tributary")
+df_trib_wach_site <- df_wq_wach_site %>% filter(LocationType == "Tributary")
 
 # Wachusett Bacteria
-df.bact.wach.site <- df.wq.wach.site %>% filter(LocationType == "Transect")
+df_bact_wach_site <- df_wq_wach_site %>% filter(LocationType == "Transect")
 
 # Quabbin Chemical
-df.chem.quab.site <- df.quab.ware.site %>% filter(LocationType == "Nutrient")
+df_chem_quab_site <- df_quab_ware_site %>% filter(LocationType == "Nutrient")
 
 # Wachusett Chemical (Maybe in Site Table change location LocationType to Chemical or )
-df.chem.wach.site <- df.chem.prof.wach.site %>% filter(!is.na(LocationDepth))
+df_chem_wach_site <- df_chem_prof_wach_site %>% filter(!is.na(LocationDepth))
 
 # Quabbin Profile (Need to find Sites)
-df.prof.quab.site <- df.chem.quab.site
+df_prof_quab_site <- df_chem_quab_site
   
 # Wachusett Profile
-df.prof.wach.site <- df.chem.prof.wach.site %>% filter(is.na(LocationDepth))
+df_prof_wach_site <- df_chem_prof_wach_site %>% filter(is.na(LocationDepth))
 
 # Wachusett Phytoplankton
 
 # Just use match function where needed - like in pick lists and chart labels/titles rather than append site data to each record
 
 # All Sites - # Combine All Sites into 1 dataframe ( Need to update when Sites are squared away)
-df.all.site.temp <- full_join(df.quab.ware.site,
-                              df.wq.wach.site,
+df_all_site_temp <- full_join(df_quab_ware_site,
+                              df_wq_wach_site,
                               by = c("Site",
                                      "Watershed",
                                      "LocationType",
@@ -317,8 +317,8 @@ df.all.site.temp <- full_join(df.quab.ware.site,
                                      "LocationDescription",
                                      "LocationElevFt"))
 
-df.all.site <- full_join(df.all.site.temp,
-                         df.chem.prof.wach.site,
+df_all_site <- full_join(df_all_site_temp,
+                         df_chem_prof_wach_site,
                          by = c("Site",
                                 "Station",
                                 "Watershed",
@@ -330,7 +330,7 @@ df.all.site <- full_join(df.all.site.temp,
                                 "LocationElevFt"))
 
 # All Tributaries
-df.trib.all.site <- df.all.site %>% filter(LocationType == "Tributary")
+df_trib_all_site <- df_all_site %>% filter(LocationType == "Tributary")
 
 
 

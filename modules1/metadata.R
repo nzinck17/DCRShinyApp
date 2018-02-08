@@ -16,7 +16,7 @@
 # User Interface
 ##############################################################################################################################
 
-metadata.UI <- function(id) {
+METADATA_UI <- function(id) {
   
   ns <- NS(id) # see General Note 1
   
@@ -24,19 +24,20 @@ metadata.UI <- function(id) {
     tabsetPanel(
       tabPanel("Location",
                fluidRow(
-                 dataTableOutput(ns("table.site"))
+                 dataTableOutput(ns("table_site"))
                ), # end Fluid Row
                br(), 
                br(),
                wellPanel(
                  fluidRow(
                    column(3,
-                          sitemap.UI(ns("site_map"))
+                          SITE_MAP_UI(ns("site_map"))
                    ),
                    column(6,
                           uiOutput(ns("df_choice_site_ui")),
-                          tableOutput(ns("table.site.select")),
-                          h3(textOutput(ns("site_text")))
+                          tableOutput(ns("table_site_stat")),
+                          h3(textOutput(ns("site_text_null"))),
+                          h3(textOutput(ns("site_text_select")))
                    ),
                    column(3,
                           imageOutput(ns("river_image"))
@@ -46,7 +47,7 @@ metadata.UI <- function(id) {
       ),
       tabPanel("Parameter",
                fluidRow(
-                 dataTableOutput(ns("table.param"))
+                 dataTableOutput(ns("table_param"))
                ), # end Fluid Row
                br(), 
                br(),
@@ -55,8 +56,9 @@ metadata.UI <- function(id) {
                    column(1),
                    column(10,
                           uiOutput(ns("df_choice_param_ui")),
-                          tableOutput(ns("table.param.select")),
-                          h3(textOutput(ns("param_text")))
+                          tableOutput(ns("table_param_stat")),
+                          h3(textOutput(ns("param_text_null"))),
+                          h3(textOutput(ns("param_text_select")))
                    ),
                    column(1)
                  )
@@ -64,12 +66,22 @@ metadata.UI <- function(id) {
       ),
       tabPanel("Flags Codes",
                fluidRow(
-                 dataTableOutput(ns("table.flag"))
-               ) # end Fluid Row
-      ),
-      tabPanel("Flag Samples",
-               fluidRow(
-                 dataTableOutput(ns("table.flag.sample"))
+                 dataTableOutput(ns("table_flag"))
+               ), # end Fluid Row
+               br(), 
+               br(),
+               wellPanel(
+                 fluidRow(
+                   column(3),
+                   uiOutput(ns("df_choice_flag_ui")),
+                   uiOutput(ns("flag_grouping_ui")),
+                   column(9,
+
+                          tableOutput(ns("table_flag_stat")),
+                          h3(textOutput(ns("flag_text_null"))),
+                          h3(textOutput(ns("flag_text_select")))
+                   )
+                 )
                ) # end Fluid Row
       )
     )
@@ -84,37 +96,27 @@ metadata.UI <- function(id) {
 # This module takes df as a reactive expressions. Changes will have to be made to accmodate reactive expressions
 # 
 
-metadata <- function(input, output, session, df.full, df.filtered, df.site = NULL, df.param = NULL, df.flag = NULL, df.flag.sample = NULL) {
+METADATA <- function(input, output, session, df_site = NULL, df_param = NULL, df_flag = NULL, df_full, Df_Filtered) {
   
   ns <- session$ns # see General Note 1
   
-  
   ### Primary Tables
   
-  output$table.site <- renderDataTable(df.site, selection = 'single', 
+  output$table_site <- renderDataTable(df_site, selection = 'single', 
                                        options = list(lengthMenu = c(5, 10, 50), pageLength = 5))
   
-  output$table.param <- renderDataTable(df.param, selection = 'single',
+  output$table_param <- renderDataTable(df_param, selection = 'single',
                                         options = list(lengthMenu = c(5, 10, 50), pageLength = 5))
   
-  output$table.flag <- renderDataTable(df.flag, selection = 'single')
-  
-  output$table.flag.sample <- renderDataTable(df.flag.sample, selection = 'single')
-  
-  
+  output$table_flag <- renderDataTable(df_flag, selection = 'single')
   
   
   ### Additonal Site Info
   
   # Selected row from DT
   Site_Selected <- reactive({
-    req(input$table.site_rows_selected)
-    # if(!is.null(input$table.site_rows_selected)){
-      df.site[input$table.site_rows_selected, ]
-    # }
-    # else{
-    #   NULL
-    # }
+    req(input$table_site_rows_selected)
+    df_site[input$table_site_rows_selected, ]
   })
   
   # UI for Full or filtered choice
@@ -126,21 +128,21 @@ metadata <- function(input, output, session, df.full, df.filtered, df.site = NUL
   })
   
   # Dataframe filtered or full based on Selection
-  DF_Site_Raw <- reactive({
+  Df_For_Site <- reactive({
     req(input$df_choice_site)
     if(input$df_choice_site == "filtered"){
-      df.filtered()
+      Df_Filtered()
     }else{
-      df.full
+      df_full
     }
   })
   
   # Site Map
-  callModule(Site_Map_Single, "site_map", site = Site_Selected)
+  callModule(SITE_MAP_SINGLE, "site_map", Site = Site_Selected)
   
   # Site Overview Table
-  DF_Site_Sum_1 <- reactive({
-    DF_Site_Raw() %>%
+  Df_Site_Info_a <- reactive({
+    Df_For_Site() %>%
       filter(LocationLabel %in% Site_Selected()$LocationLabel) %>%
       summarise(`Parameter` = "ALL",
                 `Number of Samples` = n(),
@@ -150,8 +152,8 @@ metadata <- function(input, output, session, df.full, df.filtered, df.site = NUL
                 `Units` = NA)
   })
   
-  DF_Site_Sum_2 <- reactive({
-    DF_Site_Raw() %>%
+  Df_Site_Info_b <- reactive({
+    Df_For_Site() %>%
       filter(LocationLabel %in% Site_Selected()$LocationLabel) %>%
       group_by(Parameter) %>%
       summarise(`Number of Samples` = n(),
@@ -161,11 +163,11 @@ metadata <- function(input, output, session, df.full, df.filtered, df.site = NUL
                 `Units` = Units[Date == max(Date)])
   })
   
-  DF_Site_Sum <- reactive({rbind(DF_Site_Sum_1(), DF_Site_Sum_2())})
+  Df_Site_Info <- reactive({rbind(Df_Site_Info_a(), Df_Site_Info_b())})
 
-  output$table.site.select <- renderTable({
+  output$table_site_stat <- renderTable({
     req(Site_Selected())
-    DF_Site_Sum()
+    Df_Site_Info()
     })
   
   # Site Image
@@ -177,13 +179,17 @@ metadata <- function(input, output, session, df.full, df.filtered, df.site = NUL
          height= "350")
   }, deleteFile = FALSE)
   
-  # Site Text - when no site is selected
-  output$site_text <- renderText({
-    req(is.null(input$table.site_rows_selected))
+  # Site Text - when no site table is given to module
+  output$site_text_null <- renderText({
+    req(is.null(df_site))
     "SELECT a ROW above to see MORE INFO on a LOCATION"
   })
   
-  
+  # Site Text - when no site is selected
+  output$site_text_select <- renderText({
+    req(!isTruthy(input$table_site_rows_selected))
+    "SELECT a ROW above to see MORE INFO on a LOCATION"
+  })
   
   
   
@@ -191,8 +197,8 @@ metadata <- function(input, output, session, df.full, df.filtered, df.site = NUL
   
   # Selected row from DT
   Param_Selected <- reactive({
-    req(input$table.param_rows_selected)
-    df.param[input$table.param_rows_selected, ]
+    req(input$table_param_rows_selected)
+    df_param[input$table_param_rows_selected, ]
   })
   
   # UI for Full or filtered choice
@@ -204,18 +210,18 @@ metadata <- function(input, output, session, df.full, df.filtered, df.site = NUL
   })
   
   # Dataframe filtered or full based on Selection
-  DF_Param_Raw <- reactive({
+  Df_For_Param <- reactive({
     req(input$df_choice_param)
     if(input$df_choice_param == "filtered"){
-      df.filtered()
+      Df_Filtered()
     }else{
-      df.full
+      df_full
     }
   })
   
   # param Overview Table
-  DF_Param_Sum_1 <- reactive({
-    DF_Param_Raw() %>%
+  Df_Param_Info_a <- reactive({
+    Df_For_Param() %>%
       filter(Parameter %in%  Param_Selected()$ParameterName) %>%
       summarise(`LocationLabel` = "ALL",
                 `Number of Samples` = n(),
@@ -225,8 +231,8 @@ metadata <- function(input, output, session, df.full, df.filtered, df.site = NUL
                 `Units` = NA)
   })
     
-  DF_Param_Sum_2 <- reactive({
-    DF_Param_Raw() %>%
+  Df_Param_Info_b <- reactive({
+    Df_For_Param() %>%
       filter(Parameter %in%  Param_Selected()$ParameterName) %>%
       group_by(LocationLabel) %>%
       summarise(`Number of Samples` = n(),
@@ -236,16 +242,90 @@ metadata <- function(input, output, session, df.full, df.filtered, df.site = NUL
                 `Units` = Units[Date == max(Date)])
   })
   
-  DF_Param_Sum <- reactive({rbind(DF_Param_Sum_1(), DF_Param_Sum_2())})
+  Df_Param_Info <- reactive({rbind(Df_Param_Info_a(), Df_Param_Info_b())})
 
-  output$table.param.select <- renderTable(DF_Param_Sum())
+  output$table_param_stat <- renderTable(Df_Param_Info())
 
+  # Param Text - when no Parameter table is not available
+  output$param_text_null <- renderText({
+    req(is.null(df_param))
+    "No Parameter Table available. Please set up"
+  })
+  
   # Param Text - when no site is selected
-  output$param_text <- renderText({
-    req(is.null(input$table.param_rows_selected))
+  output$param_text_select <- renderText({
+    req(!isTruthy(input$table_param_rows_selected))
     "SELECT a ROW above to see MORE INFO on a PARAMETER"
   })
   
+
+  
+  ### Additional Flag Info Table
+  
+  # Selected row from DT
+  Flag_Selected <- reactive({
+    req(input$table_flag_rows_selected)
+    df_flag[input$table_flag_rows_selected, ]
+  })
+  
+  # UI for Full or filtered choice
+  output$df_choice_flag_ui <- renderUI({
+    req(Flag_Selected())
+    radioButtons(ns("df_choice_flag"), "Full or Filtered Data:", 
+                 choices = c("full", "filtered"),
+                 inline = TRUE)
+  })
+  
+  # Dataframe filtered or full based on Selection
+  Df_For_Flag <- reactive({
+    req(input$df_choice_flag)
+    if(input$df_choice_flag == "filtered"){
+      Df_Filtered()
+    }else{
+      df_full
+    }
+  })
+  
+  # UI for grouping type
+  output$flag_grouping_ui <- renderUI({
+    req(Flag_Selected())
+    radioButtons(ns("flag_grouping"), "Flag Grouping:", 
+                 choices = c("None" = "None",
+                             "Site" = c("LocationLabel"), 
+                             "Parameter" = c("LocationLabel", "Parameter"),
+                             "Site and Parameter" = c("LocationLabel", "Parameter"),
+                             "Parameter and Site" = c("Parameter", "LocationLabel"))
+                 )
+  })
+  
+  
+  Df_Flag_Info <- reactive({
+   
+    df_temp <- Df_For_Flag() %>% filter_(!is.null(paste0("Flag", Flag_Selected()$Flag_ID)))
+    
+    if(input$flag_grouping == "None"){
+      df_temp <- df.temp
+    }else{
+      df_temp <- group_by_(.dots = input$flag_grouping)
+    }
+    
+    df_temp %>% summarise(`Number of Samples` = n(),
+                          `Start Date` = as.character(min(Date)), # need as.character becuase of renderTable has a bug for Date Class (xtable bug)
+                          `End Date` = as.character(max(Date)))
+  })
+  
+  
+  # Flag Text - when no site table is given to module
+  output$flag_text_null <- renderText({
+    req(is.null(df_flag))
+    "No Flag Code Table available. Please set up"
+  })
+  
+  # Flag Text - when no site is selected
+  output$flag_text_select <- renderText({
+    req(!isTruthy(input$table_flag_rows_selected))
+    "SELECT a ROW above to see MORE INFO on a Flag Code"
+  })
   
   
 } # end Server Function

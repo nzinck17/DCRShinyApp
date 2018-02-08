@@ -18,7 +18,7 @@
 # User Interface
 ##
 
-prof.line.UI <- function(id, df) {
+PROF_LINE_UI <- function(id, df) {
   
 ns <- NS(id)
 
@@ -35,16 +35,16 @@ tagList(
       column(2,
              # SITE
              wellPanel(
-               h3(textOutput(ns("text.site.null")), align = "center"),
-               h3(textOutput(ns("text.param.null")), align = "center"),
-               h4(textOutput(ns("text.num.text")), align = "center"),
-               h3(textOutput(ns("text.num")), align = "center")
+               h3(textOutput(ns("text_site_null")), align = "center"),
+               h3(textOutput(ns("text_param_null")), align = "center"),
+               h4(textOutput(ns("text_num_text")), align = "center"),
+               h3(textOutput(ns("text_num")), align = "center")
              )
       ),
       column(3,
              # PARAMETER
              wellPanel(
-               uiOutput(ns("param.ui"))
+               uiOutput(ns("param_ui"))
              )
       ),
       column(5,
@@ -52,7 +52,7 @@ tagList(
              wellPanel(
                fluidRow(
                  column(6,
-                        radioButtons(ns("date.option"), "Choose Date Method:",        
+                        radioButtons(ns("date_option"), "Choose Date Method:",        
                                      choices=c("Calendar Range",
                                                "Select Year",
                                                "Select Month",
@@ -60,7 +60,7 @@ tagList(
                                      selected = "Calendar Range")
                  ),
                  column(6,
-                        uiOutput(ns("date.ui"))
+                        uiOutput(ns("date_ui"))
                  )
                ) # end Fluid Row
              ) # end Well Panel
@@ -71,7 +71,7 @@ tagList(
   tabsetPanel(
     # the "Plot" tab panel where everything realted to the plot goes
     tabPanel("Custom Plot",
-             plot.profline.custom.UI(ns("Plot Profile Line Custom"))
+             PLOT_PROFLINE_CUSTOM_UI(ns("plot"))
     ),
     tabPanel("Standard Template Line Plot",
              fluidRow(
@@ -80,7 +80,7 @@ tagList(
     ),
     tabPanel("Table",
              fluidRow(
-               dataTableOutput(ns("table.dynamic"))
+               dataTableOutput(ns("table_dynamic"))
              )
     )
   ) # end tabsetpanel
@@ -92,7 +92,9 @@ tagList(
 ##############################################################################################################################
 
 
-prof.line <- function(input, output, session, df) {
+PROF_LINE <- function(input, output, session, df) {
+  
+  ns <- session$ns
   
   # filter DF for blank data
   
@@ -102,7 +104,7 @@ prof.line <- function(input, output, session, df) {
   
   # Non Historical Parameters (when a Parameter has not been used in over 5 years). See General Note 6
   
-  parameters.non.historical <- df %>%
+  parameters_non_historical <- df %>%
     filter(Date > Sys.Date()-years(5), Date < Sys.Date()) %>%
     .$Parameter %>%
     factor() %>%
@@ -111,30 +113,30 @@ prof.line <- function(input, output, session, df) {
   
   # Parameter Selection UI
   
-  output$param.ui <- renderUI({
+  output$param_ui <- renderUI({
     
     req(input$site) # See General Note 5
     
     ns <- session$ns # see General Note 1
     
     # Parameters which have data at any Site (in the mofule's df) within 5 years.
-    param.choices.new <- df %>%
+    param_choices_new <- df %>%
       filter(Site %in% input$site,
-             Parameter %in% parameters.non.historical) %>%
+             Parameter %in% parameters_non_historical) %>%
       .$Parameter %>%
       factor() %>%
       levels()
     
     # Parameters which do NOT have data at any Site (in the mofule's df) within 5 years.
-    param.choices.old <- df %>%
+    param_choices_old <- df %>%
       filter(Site %in% input$site,
-             !(Parameter %in% parameters.non.historical)) %>%
+             !(Parameter %in% parameters_non_historical)) %>%
       .$Parameter %>%
       factor() %>%
       levels()
     
     # Recent Parameters first and then old parameters
-    param.choices <- c(param.choices.new, param.choices.old)
+    param_choices <- c(param_choices_new, param_choices_old)
     
     # Parameter Input
     checkboxGroupInput(ns("param"), "Parameter:",        
@@ -145,43 +147,41 @@ prof.line <- function(input, output, session, df) {
   
 # Depending on input$date.option, we'll generate a different UI date component 
   
-  output$date.ui <- renderUI({
+  output$date_ui <- renderUI({
     
     req(input$site) # See General Note 5
     
-    ns <- session$ns
-    
-    Dates <- df %>% 
+    dates <- df %>% 
       filter(Site %in% input$site) %>%
       .$Date
     
-    Date.min <- Dates %>% min(na.rm=TRUE)
-    Date.max <- Dates %>% max(na.rm=TRUE)
+    date_min <- dates %>% min(na.rm=TRUE)
+    date_max <- dates %>% max(na.rm=TRUE)
     
     # Date Input
     
-    Months.unique <- levels(factor(month(Dates)))
-    Days.unique <- levels(factor(Dates))
+    months_unique <- levels(factor(month(dates)))
+    days_unique <- levels(factor(dates))
     
-    switch(input$date.option,
+    switch(input$date_option,
            
            "Calendar Range" = dateRangeInput(ns("date"), "Date Range:", 
-                                             start = Date.max - years(1), 
-                                             end = Date.max,  
-                                             min = Date.min,
-                                             max = Date.max,
+                                             start = date_max - years(1), 
+                                             end = date_max,  
+                                             min = date_min,
+                                             max = date_max,
                                              startview = "year"),
            
            "Select Year" = selectInput(ns("date"), "Year:", 
-                                       choices = year(seq(Date.min, Date.max, "years")), 
-                                       selected = year(Date.max)),
+                                       choices = year(seq(date_min, date_max, "years")), 
+                                       selected = year(date_max)),
            
            "Select Month" = selectInput(ns("date"), "Month:", 
-                       choices = c(Months.unique), 
+                       choices = c(months_unique), 
                        selected = month(Sys.Date())),
            
-           "Select Day" = selectInput(ns("date"), "Year:", 
-                                        choices = Days.unique)
+           "Select Day" = selectInput(ns("date"), "Day:", 
+                                        choices = days_unique)
            
     )
   })
@@ -189,35 +189,30 @@ prof.line <- function(input, output, session, df) {
   
 # Reactive Data Frames for different date selection methods:
   
-  df.react <- reactive({
+  Df2 <- reactive({
     
-    req(input$site, input$param, input$date) # See General Note 5
+    req(input$site, input$param, input$date, input$date_option) # See General Note 5
     
-    if(input$date.option == "Select Year"){
-      
+    if(input$date_option == "Select Year"){
         df %>% 
           filter(Parameter %in% input$param,
                  Site %in% c(input$site),
                  year(Date) == input$date)
-      
-    } else if (input$date.option == "Select Month"){
+    } else if (input$date_option == "Select Month"){
       df %>% 
         filter(Parameter %in% input$param,
                Site %in% c(input$site),
                month(Date) == input$date)
-      
-    } else if (input$date.option == "Calendar Range"){
+    } else if (input$date_option == "Calendar Range"){
       df %>% 
         filter(Parameter %in% input$param,
                Site %in% c(input$site),
                Date > input$date[1], Date < input$date[2])
-      
-    } else if (input$date.option == "Select Day"){
-  
-        df %>% 
-          filter(Parameter %in% input$param,
-                 Site %in% c(input$site),
-                 Date == input$date)
+    } else if (input$date_option == "Select Day"){
+      df %>% 
+        filter(Parameter %in% input$param,
+               Site %in% c(input$site),
+               Date == input$date)
     }
     
   })
@@ -225,39 +220,39 @@ prof.line <- function(input, output, session, df) {
   
   # Text - Select Site
   
-  output$text.site.null <- renderText({
+  output$text_site_null <- renderText({
     req(is.null(input$site)) # See General Note 1
     "Select Site(s)"
   })
   
   # Text - Select Parameter
   
-  output$text.param.null <- renderText({
+  output$text_param_null <- renderText({
     req(!is.null(input$site), is.null(input$param)) # See General Note 1
     "Select Parameter(s)"
   })
   
   # Text - Number of Samples
   
-  output$text.num.text <- renderText({
+  output$text_num_text <- renderText({
     req(input$site, input$param) # See General Note 1
     "Number of Samples in Selected Data"
   })
   
   # Text - Number of Samples
   
-  output$text.num <- renderText({
-    req(df.react()) # See General Note 1
-    df.react() %>% summarise(n()) %>% paste()
+  output$text_num <- renderText({
+    req(Df2()) # See General Note 1
+    Df2() %>% summarise(n()) %>% paste()
   })
   
 # Plot
 
-  callModule(plot.profline.custom, "Plot Profile Line Custom", df = df.react)
+  callModule(PLOT_PROFLINE_CUSTOM, "plot", Df = Df2)
   
 # Table
   
-  output$table.dynamic <- renderDataTable(df.react())
+  output$table_dynamic <- renderDataTable(Df2())
   
   
 }

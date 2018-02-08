@@ -1,29 +1,29 @@
 ##############################################################################################################################
-#     Title: plot_profline_custom.R
+#     Title: plot_profline_custom_R
 #     Type: Secondary Module for DCR Shiny App
 #     Description: Time Series plot (for non-depth dependent data)
 #     Written by: Nick Zinck, Spring 2017
 ##############################################################################################################################
 
 # Notes: 
-#   1. req() will delay the rendering of a widget or other reactive object until a certain logical expression is TRUE or not NULL
+#   1_ req() will delay the rendering of a widget or other reactive object until a certain logical expression is TRUE or not NULL
 #
 # To-Do List:
-#   1. Make the Metero/Hydro Filters work
-#   2. Plotting Features - Show Limits, Finish and Clean up Coloring options (flagged data, met filters)
-#   3. 1 to None (in shape and color )
+#   1_ Make the Metero/Hydro Filters work
+#   2_ Plotting Features - Show Limits, Finish and Clean up Coloring options (flagged data, met filters)
+#   3_ 1 to None (in shape and color )
 
 ##############################################################################################################################
 # User Interface
 ##############################################################################################################################
 
-plot.profline.custom.UI <- function(id) {
+PLOT_PROFLINE_CUSTOM_UI <- function(id) {
   
   ns <- NS(id) # see General Note 1
   
   tagList(
     
-    uiOutput(ns("plot.ui")),
+    uiOutput(ns("plot_ui")),
     # Plot Options
     fluidRow(br(), br()),
     fluidRow(
@@ -31,7 +31,7 @@ plot.profline.custom.UI <- function(id) {
              tabsetPanel(
                tabPanel("Display Options", br(), br(),
                         column(2,
-                               radioButtons(ns("plot.display.theme"), "Theme:", 
+                               radioButtons(ns("plot_display_theme"), "Theme:", 
                                             choices= c("Gray", 
                                                        "Black and White",  
                                                        "Line Draw", 
@@ -41,75 +41,75 @@ plot.profline.custom.UI <- function(id) {
                                                        "Classic"))
                         ), # end column
                         column(2,
-                               checkboxInput(ns("plot.display.int"), "Interactive Plot:")
+                               checkboxInput(ns("plot_display_int"), "Interactive Plot:")
                         ), # end column
                         column(2,
-                               sliderInput(ns("plot.display.lsize"), "Line Thickness:",
+                               sliderInput(ns("plot_display_lsize"), "Line Thickness:",
                                            min = 0.5, max = 4, value = 1.5, step = 0.5)
                         ) # end column
                ), # end Tab Panel
                tabPanel("Trends and Lines", br(), br(),
                         column(2,
                                strong("Secchi Depth:"),
-                               checkboxInput(ns("plot.line.sec"),"Show Line"),
-                               radioButtons(ns("plot.line.sec.type"), "Line Type",
+                               checkboxInput(ns("plot_line_sec"),"Show Line"),
+                               radioButtons(ns("plot_line_sec_type"), "Line Type",
                                             choices = c("solid", "dash", "dotted")),
-                               sliderInput(ns("plot.line.sec.size"), "Line Thickness:",
+                               sliderInput(ns("plot_line_sec_size"), "Line Thickness:",
                                            min = 0.5, max = 3, value = 1, step = 0.5)
                         ) # end column
                ),
                tabPanel("Title and Axis Labels", br(), br(),
                         column(3,
-                               radioButtons(ns("plot.title"), "Title Options:", 
+                               radioButtons(ns("plot_title"), "Title Options:", 
                                             choices= c("None", "Auto", "Custom"),
                                             selected = "Auto"),
-                               textInput(ns("plot.title.text"), "")
+                               textInput(ns("plot_title_text"), "")
                         ), # end column
                         column(3,
-                               radioButtons(ns("plot.xlab"), "X Label Options:", 
+                               radioButtons(ns("plot_xlab"), "X Label Options:", 
                                             choices= c("None", "Auto", "Custom"),
                                             selected = "Auto"),
-                               textInput(ns("plot.xlab.text"), "")
+                               textInput(ns("plot_xlab_text"), "")
                         ), # end column
                         column(3,
-                               radioButtons(ns("plot.ylab"), "Y Label Options:", 
+                               radioButtons(ns("plot_ylab"), "Y Label Options:", 
                                             choices= c("None", "Auto", "Custom"),
                                             selected = "Auto"),
-                               textInput(ns("plot.ylab.text"), "")
+                               textInput(ns("plot_ylab_text"), "")
                         ) # end column
                ), # end Tab Panel
                tabPanel("Grouping (Color/Shape)", br(), br(),
                         column(2,
-                               radioButtons(ns("plot.color"), label = "Group with Colors:", 
+                               radioButtons(ns("plot_color"), label = "Group with Colors:", 
                                             choices = c("Parameter", "Site"),
                                             selected = "Parameter")
 
                         ), # end column
                         # new column
                         column(2,
-                               radioButtons(ns("plot.linetype"), label = "Group with Linetypes:", 
+                               radioButtons(ns("plot_linetype"), label = "Group with Linetypes:", 
                                             choices = c("Parameter", "Site"),
                                             selected = "Site")
                         ) # end column
                ), # tabPanel
                tabPanel("Save Plot", br(), br(),
                         column(2,
-                               downloadButton(ns('save.plot'), "Save Plot")
+                               downloadButton(ns('save_plot'), "Save Plot")
                         ),
                         column(2,
-                               radioButtons(ns("plot.save.size"), "Plot Size:", 
+                               radioButtons(ns("plot_save_size"), "Plot Size:", 
                                             choices= c("small",
                                                        "medium",
                                                        "large"))
                         ),
                         column(2,
-                               radioButtons(ns("plot.save.type"), "File Type:", 
+                               radioButtons(ns("plot_save_type"), "File Type:", 
                                             choices= c("pdf",
                                                        "jpg",
                                                        "png"))
                         ),
                         column(2,
-                               checkboxGroupInput(ns("plot.save.grid"), "Gridline Override:", 
+                               checkboxGroupInput(ns("plot_save_grid"), "Gridline Override:", 
                                                   choices= c("major gridlines",
                                                              "minor gridlines"))
                         ) # end column
@@ -129,34 +129,34 @@ plot.profline.custom.UI <- function(id) {
 # Server Function
 ##############################################################################################################################
 
-plot.profline.custom <- function(input, output, session, df) {
+PLOT_PROFLINE_CUSTOM <- function(input, output, session, Df) {
   
   
 ### Text For Plot
   
   # Site Text
-  text.site <- reactive({
-    df() %>% .$Site %>% factor() %>% levels() %>% paste()
+  text_site <- reactive({
+    Df()$Site %>% factor() %>% levels() %>% paste()
   })
   
   # Param Text
-  text.param <- reactive({
-    df() %>% .$Parameter %>% factor() %>% levels() %>% paste()
+  text_param <- reactive({
+    Df()$Parameter %>% factor() %>% levels() %>% paste()
   })
   
   # Units Text
-  text.units <- reactive({
-    df() %>% .$Units %>% factor() %>% levels() %>% paste()
+  text_units <- reactive({
+    Df()$Units %>% factor() %>% levels() %>% paste()
   })
   
   # Date Text - Start
-  text.date.start <- reactive({
-    df() %>% .$Date %>% min(na.rm = TRUE) %>% paste()
+  text_date_start <- reactive({
+    Df()$Date %>% min(na.rm = TRUE) %>% paste()
   })
   
   # Date Text - End
-  text.date.end <- reactive({
-    df() %>% .$Date %>% max(na.rm = TRUE) %>% paste()
+  text_date_end <- reactive({
+    Df()$Date %>% max(na.rm = TRUE) %>% paste()
   })
   
 
@@ -168,96 +168,96 @@ plot.profline.custom <- function(input, output, session, df) {
   p <- reactive({
     
     # Features in which all plot options have in common
-    p <- ggplot(df(),aes(x=Result,y=Depthm)) +
+    p <- ggplot(Df(),aes(x=Result,y=Depthm)) +
       scale_y_reverse()
       
 
 # Display Tab
     
     # Theme based on selection
-    if(input$plot.display.theme == "Gray"){
+    if(input$plot_display_theme == "Gray"){
       p <- p + theme_gray()
     }    
-    if(input$plot.display.theme == "Black and White"){
+    if(input$plot_display_theme == "Black and White"){
       p <- p + theme_bw()
     }
-    if(input$plot.display.theme == "Line Draw"){
+    if(input$plot_display_theme == "Line Draw"){
       p <- p + theme_linedraw()
     }
-    if(input$plot.display.theme == "Light"){
+    if(input$plot_display_theme == "Light"){
       p <- p + theme_light()
     }
-    if(input$plot.display.theme == "Dark"){
+    if(input$plot_display_theme == "Dark"){
       p <- p + theme_dark()
     }
-    if(input$plot.display.theme == "Minimal"){
+    if(input$plot_display_theme == "Minimal"){
       p <- p + theme_minimal()
     }
-    if(input$plot.display.theme == "Classic"){
+    if(input$plot_display_theme == "Classic"){
       p <- p + theme_classic()
     }
     
 # Grouping and Faceting
     
     # No Parameter Coloring/linetype --> facet by param
-    if(input$plot.color != "Parameter" & input$plot.linetype != "Parameter"){
-      p <- p + geom_path(aes_string(color = input$plot.color, linetype = input$plot.linetype), size = input$plot.display.lsize) +
+    if(input$plot_color != "Parameter" & input$plot_linetype != "Parameter"){
+      p <- p + geom_path(aes_string(color = input$plot_color, linetype = input$plot_linetype), size = input$plot_display_lsize) +
         facet_grid(Parameter~Date)
       # No Site Coloring/linetype --> facet by site
-    } else if(input$plot.color != "Site" & input$plot.linetype != "Site"){
-      p <- p + geom_path(aes_string(color = input$plot.color, linetype = input$plot.linetype), size = input$plot.display.lsize) +
+    } else if(input$plot_color != "Site" & input$plot_linetype != "Site"){
+      p <- p + geom_path(aes_string(color = input$plot_color, linetype = input$plot_linetype), size = input$plot_display_lsize) +
         facet_grid(Site~Date)
       # Param and Site both colored or linetyped
     } else {
-      p <- p + geom_path(aes_string(color = input$plot.color, linetype = input$plot.linetype), size = input$plot.display.lsize) +
+      p <- p + geom_path(aes_string(color = input$plot_color, linetype = input$plot_linetype), size = input$plot_display_lsize) +
         facet_grid(.~Date)
     }
 
 # Add Lines
     
     # Show Secchi
-    if(input$plot.line.sec == TRUE){
+    if(input$plot_line_sec == TRUE){
       p <- p + geom_hline(yintercept = 2, 
-                          linetype = input$plot.line.sec.type,
-                          size = input$plot.line.sec.size)
+                          linetype = input$plot_line_sec_type,
+                          size = input$plot_line_sec_size)
     }
 
 
 # Title and Axis Lables
     
     # Title
-    if(input$plot.title == "None"){
+    if(input$plot_title == "None"){
       p <- p + ggtitle("")
     }
-    if(input$plot.title == "Auto"){
-      p <- p + ggtitle(paste(text.param(), "at", 
-                             text.site(), 
-                             "from", text.date.start(), "to", text.date.end(), sep= " "))
+    if(input$plot_title == "Auto"){
+      p <- p + ggtitle(paste(text_param(), "at", 
+                             text_site(), 
+                             "from", text_date_start(), "to", text_date_end(), sep= " "))
     }
-    if(input$plot.title == "Custom"){
-      p <- p + ggtitle(input$plot.title.text)
+    if(input$plot_title == "Custom"){
+      p <- p + ggtitle(input$plot_title_text)
     }
     
     # X Axis
-    if(input$plot.xlab == "None"){
+    if(input$plot_xlab == "None"){
       p <- p + xlab("")
     }
-    if(input$plot.xlab == "Auto"){
+    if(input$plot_xlab == "Auto"){
       p <- p + xlab("Date")
     }
-    if(input$plot.xlab == "Custom"){
-      p <- p + xlab(input$plot.xlab.text)
+    if(input$plot_xlab == "Custom"){
+      p <- p + xlab(input$plot_xlab_text)
     }
     
     # Y Axis
-    if(input$plot.ylab == "None"){
+    if(input$plot_ylab == "None"){
       p <- p + ylab("")
     }
-    if(input$plot.ylab == "Auto"){
+    if(input$plot_ylab == "Auto"){
       p <- p + ylab("Depth (m)")
     }
-    if(input$plot.ylab == "Custom"){
-      p <- p + ylab(input$plot.ylab.text)
+    if(input$plot_ylab == "Custom"){
+      p <- p + ylab(input$plot_ylab_text)
     }
     
 # Save Options
@@ -266,11 +266,11 @@ plot.profline.custom <- function(input, output, session, df) {
     p <- p + theme(plot.margin = unit(c(0.2, 0.2, 0.2, 0.5), "in"))
     
     # Gridlines for saving options
-    if("major gridlines" %in% input$plot.save.grid){
-      p <- p + theme(panel.grid.major = element_line())
+    if("major gridlines" %in% input$plot_save_grid){
+      p <- p + theme(panel_grid_major = element_line())
     }
-    if("minor gridlines" %in% input$plot.save.grid){
-      p <- p + theme(panel.grid.minor = element_line())
+    if("minor gridlines" %in% input$plot_save_grid){
+      p <- p + theme(panel_grid_minor = element_line())
     }
     
     p
@@ -287,26 +287,26 @@ plot.profline.custom <- function(input, output, session, df) {
   
   # Plot Interactive
   
-  output$plot.int <- renderPlotly({
+  output$plot_int <- renderPlotly({
     ggplotly(p() + theme(plot.margin = unit(c(0.2, 0.2, 0.2, 0.5), "in")))
   })
   
   # Plot Output
   
-  output$plot.ui <- renderUI({
+  output$plot_ui <- renderUI({
     ns <- session$ns # see General Note 1
     
-    if(input$plot.display.int == FALSE){
+    if(input$plot_display_int == FALSE){
       plotOutput(ns("plot"), width = "100%", height = 500)
     } else {
-      plotlyOutput(ns("plot.int"), width = "100%", height = 500)
+      plotlyOutput(ns("plot_int"), width = "100%", height = 500)
     }
   })
   
   # Plot Print
   
-  output$save.plot <- downloadHandler(
-    filename = function (){paste(text.param(),' Site ', text.site(),' from ', text.date.start(),' to ', text.date.end(), '.png', sep='')},
+  output$save_plot <- downloadHandler(
+    filename = function (){paste(text_param(),' Site ', text_site(),' from ', text_date_start(),' to ', text_date_end(), '.png', sep='')},
     content = function(file) {ggsave(file, plot = p(), device = "png")},
     contentType = 'image/png'
   )

@@ -7,23 +7,30 @@
 ##############################################################################################################################
 
 # Notes:
-#   1.
+#   1_
 #
 # To-Do List:
-#   1.
+#   1_
 
 ####################################################################################################
 # Load Libraries and Script (Sources, Modules, and Functions)
 #####################################################################################################
 
+### ipak function
+ ipak <- function(pkg){
+   new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+   if (length(new.pkg))
+     install.packages(new.pkg, dependencies = TRUE)
+   sapply(pkg, require, character.only = TRUE)
+ }
 
 #### NOTE - Shiny must be installed and loaded in the LaunchAppGitHub.R script - any other packages requred should be listed below
-packages <- c("rmarkdown", "knitr", "tidyverse", "lubridate", "plotly", "leaflet", "RColorBrewer", 
+packages <- c("shiny", "rmarkdown", "knitr", "tidyverse", "lubridate", "plotly", "leaflet", "RColorBrewer", 
               "DT", "akima", "odbc", "DBI", "scales", "stringr", "cowplot", "shinythemes")
 ipak(packages)
 ### Run/Source Scripts that load data
 
-source("sources/load_MS_Access_data.R")
+source("Sources/load_MS_Access_data.R")
 #source("sources/Settings.R")
 
 ### Load Primary Modules
@@ -31,15 +38,15 @@ source("sources/load_MS_Access_data.R")
 source("modules1/home.R")
 source("modules1/filter_wq.R")
 source("modules1/time_wq.R")
-source("modules1/correlation_wq.R")
-source("modules1/phyto.R")
 source("modules1/time_depth_wq.R")
+source("modules1/correlation_wq.R")
 source("modules1/correlation_depth_wq.R")
+source("modules1/metadata.R")
 source("modules1/profile_heatmap.R")
 source("modules1/profile_line.R")
 source("modules1/profile_table_stats.R")
+source("modules1/phyto.R")
 source("modules1/map_plot.R")
-source("modules1/metadata.R")
 source("modules1/report_AWQ.R")
 source("modules1/report_MWQ.R")
 source("modules1/report_custom.R")
@@ -90,7 +97,7 @@ tabPanel("Home",
   # Title
   fluidRow(br(), br(), br(), br(), h2("Water Quality Data Management System", align = "center")),
   fluidRow(h3("Department of Conservation and Recreation", align = "center"), br()),
-  Home.UI("Home")
+  HOME_UI("Home")
 
 ),
 
@@ -107,19 +114,19 @@ tabPanel("Filter",
                       "Water Quality Data",
                       tabPanel("Tributary",
                                fluidRow(column(10, h4("Filter and Export for Tributary WQ Data", align = "center")), column(2)),
-                               filter.wq.UI("mod.trib.filter")
+                               FILTER_WQ_UI("mod_trib_filter")
                       ),
                       tabPanel("Bacteria (Res)",
                                fluidRow(column(10, h4("Filter and Export for Reservoir Bacteria WQ Data", align = "center")), column(2)),
-                               filter.wq.UI("mod.bact.filter")
+                               FILTER_WQ_UI("mod_bact_filter")
                       ),
                       tabPanel("Chemical (Res)",
                                fluidRow(column(10, h4("Filter and Export for Reservoir Chemical WQ Data", align = "center")), column(2)),
-                               filter.wq.UI("mod.chem.filter")
+                               FILTER_WQ_UI("mod_chem_filter")
                       ),
                       tabPanel("Profile (Res)",
                                fluidRow(column(10, h4("Filter and Export for Reservoir Profile WQ Data", align = "center")), column(2)),
-                               filter.wq.UI("mod.prof.filter")
+                               FILTER_WQ_UI("mod_prof_filter")
                       ),
                       "Hydro and Met",
                       tabPanel("Hydro/Met Data",
@@ -141,26 +148,26 @@ tabPanel("Tributary",
                tabPanel("Time-Series",
                         fluidRow(column(10, h4("Tributary Time-Series Analysis", align = "center")), column(2)),
                         tabsetPanel(
-                          tabPanel("Quabbin", time.UI("mod.trib.quab.time")),
-                          tabPanel("Ware River", time.UI("mod.trib.ware.time")),
-                          tabPanel("Wachusett", time.UI("mod.trib.wach.time"))#,
-                          #tabPanel("All Tribs", time.UI("mod.trib.all.time"))
+                          tabPanel("Quabbin", TIME_WQ_UI("mod_trib_quab_time")),
+                          tabPanel("Ware River", TIME_WQ_UI("mod_trib_ware_time")),
+                          tabPanel("Wachusett", TIME_WQ_UI("mod_trib_wach_time"))#,
+                          #tabPanel("All Tribs", time_UI("mod_trib_all_time"))
                         ) # end tabset Panel
                ), # end tabpanel
-               tabPanel("Regression",
-                        fluidRow(column(10, h4("Tributary Regression Analysis", align = "center")), column(2)),
+               tabPanel("Correlation",
+                        fluidRow(column(10, h4("Tributary Correlation Analysis", align = "center")), column(2)),
                         tabsetPanel(
-                          tabPanel("Quabbin", regress.UI("mod.trib.quab.regr", df.trib.quab)),
-                          tabPanel("Ware River", regress.UI("mod.trib.ware.regr", df.trib.ware)),
-                          tabPanel("Wachusett", regress.UI("mod.trib.wach.regr", df.trib.wach))#,
-                          #tabPanel("All Tribs", regress.UI("mod.trib.all.regr", df.trib.all))
+                          tabPanel("Quabbin", CORRELATION_WQ_UI("mod_trib_quab_regr")),
+                          tabPanel("Ware River", CORRELATION_WQ_UI("mod_trib_ware_regr")),
+                          tabPanel("Wachusett", CORRELATION_WQ_UI("mod_trib_wach_regr"))#,
+                          #tabPanel("All Tribs", CORRELATION_WQ_UI("mod_trib_all_regr"))
                         ) # end tabset Panel
                ), # end tabpanel
                tabPanel("MetaData",
                         fluidRow(column(10, h4("Tributary MetaData", align = "center")), column(2)),
                         tabsetPanel(
-                          tabPanel("Quabbin & Ware", metadata.UI("mod.trib.quab.meta")),
-                          tabPanel("Wachusett", metadata.UI("mod.trib.wach.meta"))
+                          tabPanel("Quabbin & Ware", METADATA_UI("mod_trib_quab_meta")),
+                          tabPanel("Wachusett", METADATA_UI("mod_trib_wach_meta"))
                         ) # end tabset Panel
                ) # end tabpanel
   ) # end navlist panel
@@ -181,19 +188,19 @@ tabPanel("Reservoir",
                 tabPanel("Time-Series",
                          fluidRow(column(10, h4("Bacteria Time-Series Analysis", align = "center")), column(2)),
                          tabsetPanel(
-                           tabPanel("Wachusett", time.UI("mod.bact.wach.time"))
+                           tabPanel("Wachusett", TIME_WQ_UI("mod_bact_wach_time"))
                          ) # end tabset Panel
                 ), # end tabpanel
-                tabPanel("Regression",
-                         fluidRow(column(10, h4("Bacteria Regression Analysis", align = "center")), column(2)),
+                tabPanel("Correlation",
+                         fluidRow(column(10, h4("Bacteria Correlation Analysis", align = "center")), column(2)),
                          tabsetPanel(
-                           tabPanel("Wachusett", regress.UI("mod.bact.wach.regr", df.bact.wach))
+                           tabPanel("Wachusett", CORRELATION_WQ_UI("mod_bact_wach_regr"))
                          ) # end tabset panel
                 ), # end tabpanel
                 tabPanel("MetaData",
                          fluidRow(column(10, h4("Tributary MetaData", align = "center")), column(2)),
                          tabsetPanel(
-                           tabPanel("Wachusett", metadata.UI("mod.bact.wach.meta"))
+                           tabPanel("Wachusett", METADATA_UI("mod_bact_wach_meta"))
                          ) # end tabset Panel
                 ), # end tabpanel
 
@@ -201,22 +208,22 @@ tabPanel("Reservoir",
                 tabPanel("Time-Series",
                          fluidRow(column(10, h4("Chemical Time-Series Analysis", align = "center")), column(2)),
                          tabsetPanel(
-                           tabPanel("Quabbin", time.depth.UI("mod.chem.quab.time")),
-                           tabPanel("Wachusett", time.depth.UI("mod.chem.wach.time"))
+                           tabPanel("Quabbin", TIME_DEPTH_WQ_UI("mod_chem_quab_time")),
+                           tabPanel("Wachusett", TIME_DEPTH_WQ_UI("mod_chem_wach_time"))
                          )
                 ),
-                tabPanel("Regression",
-                         fluidRow(column(10, h4("Chemical Regression Analysis", align = "center")), column(2)),
+                tabPanel("Correlation",
+                         fluidRow(column(10, h4("Chemical Correlation Analysis", align = "center")), column(2)),
                          tabsetPanel(
-                           tabPanel("Quabbin", regress.depth.UI("mod.chem.quab.regr", df.chem.quab)),
-                           tabPanel("Wachusett", regress.depth.UI("mod.chem.wach.regr", df.chem.wach))
+                           tabPanel("Quabbin", CORRELATION_DEPTH_WQ_UI("mod_chem_quab_regr")),
+                           tabPanel("Wachusett", CORRELATION_DEPTH_WQ_UI("mod_chem_wach_regr"))
                          )
                 ),
                 tabPanel("Metadata",
-                         fluidRow(column(10, h4("Chemical MetaData", align = "center")), column(2)),
+                         fluidRow(column(10, h4("Chemical Metadata", align = "center")), column(2)),
                          tabsetPanel(
-                           tabPanel("Quabbin", metadata.UI("mod.chem.quab.meta")),
-                           tabPanel("Wachusett", metadata.UI("mod.chem.wach.meta"))
+                           tabPanel("Quabbin", METADATA_UI("mod_chem_quab_meta")),
+                           tabPanel("Wachusett", METADATA_UI("mod_chem_wach_meta"))
                          ) # end tabset Panel
                 ), # end tabpanel
 
@@ -224,29 +231,29 @@ tabPanel("Reservoir",
                 tabPanel("Heat Map",
                          fluidRow(column(10, h4("Profile Heatmap", align = "center")), column(2)),
                          tabsetPanel(
-                           tabPanel("Quabbin", prof.heatmap.UI("mod.prof.quab.heat", df.prof.quab)),
-                           tabPanel("Wachusett", prof.heatmap.UI("mod.prof.wach.heat", df.prof.wach))
+                           tabPanel("Quabbin", PROF_HEATMAP_UI("mod_prof_quab_heat", df_prof_quab)),
+                           tabPanel("Wachusett", PROF_HEATMAP_UI("mod_prof_wach_heat", df_prof_wach))
                          )
                 ),
                 tabPanel("Line Plot",
                          fluidRow(column(10, h4("Profile Line Plot", align = "center")), column(2)),
                          tabsetPanel(
-                           tabPanel("Quabbin", prof.line.UI("mod.prof.quab.line", df.prof.quab)),
-                           tabPanel("Wachusett", prof.line.UI("mod.prof.wach.line", df.prof.wach))
+                           tabPanel("Quabbin", PROF_LINE_UI("mod_prof_quab_line", df_prof_quab)),
+                           tabPanel("Wachusett", PROF_LINE_UI("mod_prof_wach_line", df_prof_wach))
                          )
                 ),
                 tabPanel("Table and Summary",
                          fluidRow(column(10, h4("Profile Summary", align = "center")), column(2)),
                          tabsetPanel(
-                           tabPanel("Quabbin", prof.summary.UI("mod.prof.quab.sum", df.prof.quab)),
-                           tabPanel("Wachusett", prof.summary.UI("mod.prof.wach.sum", df.prof.wach))
+                           tabPanel("Quabbin", PROF_TABLE_STAT_UI("mod_prof_quab_sum", df_prof_quab)),
+                           tabPanel("Wachusett", PROF_TABLE_STAT_UI("mod_prof_wach_sum", df_prof_wach))
                          )
                 ),
                 tabPanel("Metadata",
-                         fluidRow(column(10, h4("Profile MetaData", align = "center")), column(2)),
+                         fluidRow(column(10, h4("Profile metadat", align = "center")), column(2)),
                          tabsetPanel(
-                           tabPanel("Quabbin", metadata.UI("mod.prof.quab.meta")),
-                           tabPanel("Wachusett", metadata.UI("mod.prof.wach.meta"))
+                           tabPanel("Quabbin", METADATA_UI("mod_prof_quab_meta")),
+                           tabPanel("Wachusett", METADATA_UI("mod_prof_wach_meta"))
                          ) # end tabset Panel
                 ), # end tabpanel
                 
@@ -255,7 +262,7 @@ tabPanel("Reservoir",
                 tabPanel("Phytoplankton",
                          fluidRow(column(10, h4("Phytoplankton Plots and Data", align = "center")), column(2)),
                          tabsetPanel(
-                           tabPanel("Wachusett", Phyto.UI("mod.phyto.wach.plots", df.phyto.wach))
+                           tabPanel("Wachusett", PHYTO_UI("mod_phyto_wach_plots", df_phyto_wach))
                          )
                 )
 
@@ -274,15 +281,15 @@ tabPanel("Map Plot",
 
          navlistPanel(widths = c(2, 10),
                       "Tributaries",
-                      tabPanel("Quabbin", map.plot.UI("mod.trib.quab.map", df = df.trib.quab)),
-                      tabPanel("Ware River", map.plot.UI("mod.trib.ware.map", df = df.trib.ware)),
-                      tabPanel("Wachusett", map.plot.UI("mod.trib.wach.map", df = df.trib.wach)),
-                      tabPanel("All Tribs", map.plot.UI("mod.trib.all.map", df = df.trib.all)),
+                      tabPanel("Quabbin", MAP_PLOT_UI("mod_trib_quab_map", df = df_trib_quab)),
+                      tabPanel("Ware River", MAP_PLOT_UI("mod_trib_ware_map", df = df_trib_ware)),
+                      tabPanel("Wachusett", MAP_PLOT_UI("mod_trib_wach_map", df = df_trib_wach)),
+                      tabPanel("All Tribs", MAP_PLOT_UI("mod_trib_all_map", df = df_trib_all)),
                       "Reservoir Bacteria",
-                      tabPanel("Wachusett", map.plot.UI("mod.bact.wach.map", df = df.bact.wach)),
+                      tabPanel("Wachusett", MAP_PLOT_UI("mod_bact_wach_map", df = df_bact_wach)),
                       "Reservoir Chemical",
-                      tabPanel("Quabbin", map.plot.UI("mod.chem.quab.map", df = df.chem.quab)),
-                      tabPanel("Wachusett", map.plot.UI("mod.chem.wach.map", df = df.chem.wach))
+                      tabPanel("Quabbin", MAP_PLOT_UI("mod_chem_quab_map", df = df_chem_quab)),
+                      tabPanel("Wachusett", MAP_PLOT_UI("mod_chem_wach_map", df = df_chem_wach))
          ) # end navlist
 
 ), # end tabpanel (page)
@@ -318,44 +325,44 @@ tabPanel("Report",
                       tabPanel("Annual WQ",
                                fluidRow(column(10, h4("Annual Water Quality Reports", align = "center")), column(2)),
                                tabsetPanel(
-                                 tabPanel("Quabbin", report.awq.UI("mod.quab.awq", df.trib.quab)),
-                                 tabPanel("Wachusett", report.awq.UI("mod.wach.awq", df.trib.wach))
+                                 tabPanel("Quabbin", REPORT_AWQ_UI("mod_quab_awq", df_trib_quab)),
+                                 tabPanel("Wachusett", REPORT_AWQ_UI("mod_wach_awq", df_trib_wach))
                                ) # end tabset Panel
                       ), # end tabpanel
                       tabPanel("Monthly WQ",
                                fluidRow(column(10, h4("Monthly Water Quality Reports", align = "center")), column(2)),
                                tabsetPanel(
-                                 tabPanel("Quabbin", report.mwq.UI("mod.quab.mwq", df.trib.quab)),
-                                 tabPanel("Wachusett", report.mwq.UI("mod.wach.mwq", df.trib.wach))
+                                 tabPanel("Quabbin", REPORT_MWQ_UI("mod_quab_mwq", df_trib_quab)),
+                                 tabPanel("Wachusett", REPORT_MWQ_UI("mod_wach_mwq", df_trib_wach))
                                ) # end tabset panel
                       ), # end tabpanel
                       "Custom Reports",
                       tabPanel("Tributary",
                                fluidRow(column(10, h4("Tributary Custom Reports", align = "center")), column(2)),
                                tabsetPanel(
-                                 tabPanel("Quabbin", report.custom.UI("mod.trib.quab.rep", df.trib.quab)),
-                                 tabPanel("Ware River", report.custom.UI("mod.trib.ware.rep", df.trib.ware)),
-                                 tabPanel("Wachusett", report.custom.UI("mod.trib.wach.rep", df.trib.wach))
+                                 tabPanel("Quabbin", REPORT_CUSTOM_UI("mod_trib_quab_rep", df_trib_quab)),
+                                 tabPanel("Ware River", REPORT_CUSTOM_UI("mod_trib_ware_rep", df_trib_ware)),
+                                 tabPanel("Wachusett", REPORT_CUSTOM_UI("mod_trib_wach_rep", df_trib_wach))
                                )
                       ),
                       tabPanel("Bacteria (Res)",
                                fluidRow(column(10, h4("Reservoir Bacteria Custom Reports", align = "center")), column(2)),
                                tabsetPanel(
-                                 tabPanel("Wachusett", report.custom.UI("mod.bact.wach.rep", df.bact.wach))
+                                 tabPanel("Wachusett", REPORT_CUSTOM_UI("mod_bact_wach_rep", df_bact_wach))
                                )
                       ),
                       tabPanel("Chemical (Res)",
                                fluidRow(column(10, h4("Reservoir Chemical Custom Reports", align = "center")), column(2)),
                                tabsetPanel(
-                                 tabPanel("Quabbin", report.custom.UI("mod.chem.quab.rep", df.chem.quab)),
-                                 tabPanel("Wachusett", report.custom.UI("mod.chem.wach.rep", df.chem.wach))
+                                 tabPanel("Quabbin", REPORT_CUSTOM_UI("mod_chem_quab_rep", df_chem_quab)),
+                                 tabPanel("Wachusett", REPORT_CUSTOM_UI("mod_chem_wach_rep", df_chem_wach))
                                )
                       ),
                       tabPanel("Profile (Res)",
                                fluidRow(column(10, h4("Profile Custom Reports", align = "center")), column(2)),
                                tabsetPanel(
-                                 tabPanel("Quabbin", report.custom.UI("mod.prof.quab.rep", df.prof.quab)),
-                                 tabPanel("Wachusett", report.custom.UI("mod.prof.wach.rep", df.prof.wach))
+                                 tabPanel("Quabbin", REPORT_CUSTOM_UI("mod_prof_quab_rep", df_prof_quab)),
+                                 tabPanel("Wachusett", REPORT_CUSTOM_UI("mod_prof_wach_rep", df_prof_wach))
                                )
                       ),
                       tabPanel("Phytoplankton",
@@ -384,91 +391,91 @@ tabPanel("Overview",
 server <- function(input, output, session) {
 
 ######################################################
-# Tributary Water Quality Data
+# Home
 
-  callModule(Home, "Home", df.site = df.all.site)
+  callModule(HOME, "Home", df_site = df_all_site)
 
 ###################################################################
 # Filter
   
-  df.trib.filtered <- callModule(filter.wq, "mod.trib.filter", dfs = list(df.trib.wach, df.trib.quab, df.trib.ware))
-  df.bact.filtered <- callModule(filter.wq, "mod.bact.filter", dfs = list(df.bact.wach))
-  df.chem.filtered <- callModule(filter.wq, "mod.chem.filter", dfs = list(df.chem.wach, df.chem.quab))
-  df.prof.filtered <- callModule(filter.wq, "mod.prof.filter", dfs = list(df.prof.quab, df.prof.wach))  # fix site
+  Df_Trib_Filtered <- callModule(FILTER_WQ, "mod_trib_filter", dfs = list(df_trib_wach, df_trib_quab, df_trib_ware))
+  Df_Bact_Filtered <- callModule(FILTER_WQ, "mod_bact_filter", dfs = list(df_bact_wach))
+  Df_Chem_Filtered <- callModule(FILTER_WQ, "mod_chem_filter", dfs = list(df_chem_wach, df_chem_quab))
+  Df_Prof_Filtered <- callModule(FILTER_WQ, "mod_prof_filter", dfs = list(df_prof_quab, df_prof_wach))  # fix site
 
          
 ######################################################
 # Tributary
 
   # Time Series
-  callModule(time, "mod.trib.quab.time", df.full = df.trib.quab, df.filtered = df.trib.filtered[[2]], df.site = df.trib.quab.site)
-  callModule(time, "mod.trib.ware.time", df.full = df.trib.ware, df.filtered = df.trib.filtered[[3]], df.site = df.trib.ware.site)
-  callModule(time, "mod.trib.wach.time", df.full = df.trib.wach, df.filtered = df.trib.filtered[[1]], df.site = df.trib.wach.site)
-  #callModule(time, "mod.trib.all.time", df = df.trib.all, df.site = df.trib.all.site)
+  callModule(TIME_WQ, "mod_trib_quab_time", df_full = df_trib_quab, Df_Filtered = Df_Trib_Filtered[[2]], df_site = df_trib_quab_site)
+  callModule(TIME_WQ, "mod_trib_ware_time", df_full = df_trib_ware, Df_Filtered = Df_Trib_Filtered[[3]], df_site = df_trib_ware_site)
+  callModule(TIME_WQ, "mod_trib_wach_time", df_full = df_trib_wach, Df_Filtered = Df_Trib_Filtered[[1]], df_site = df_trib_wach_site)
+  #callModule(time, "mod_trib_all_time", df = df_trib_all, df_site = df_trib_all_site)
 
-  # Regression
-  callModule(regress, "mod.trib.quab.regr", df = df.trib.quab, df.site = df.trib.quab.site)
-  callModule(regress, "mod.trib.ware.regr", df = df.trib.ware, df.site = df.trib.ware.site)
-  callModule(regress, "mod.trib.wach.regr", df = df.trib.wach, df.site = df.trib.wach.site)
-  #callModule(regress, "mod.trib.all.regr", df = df.trib.all, df.site = df.trib.all.site)
+  # Correlation
+  callModule(CORRELATION_WQ, "mod_trib_quab_regr", df = df_trib_quab, df_site = df_trib_quab_site)
+  callModule(CORRELATION_WQ, "mod_trib_ware_regr", df = df_trib_ware, df_site = df_trib_ware_site)
+  callModule(CORRELATION_WQ, "mod_trib_wach_regr", df = df_trib_wach, df_site = df_trib_wach_site)
+  #callModule(CORRELATION, "mod_trib_all_regr", df = df_trib_all, df_site = df_trib_all_site)
   
   # Metadata
-  callModule(metadata, "mod.trib.quab.meta", df.full = df.trib.quab, df.filtered = df.trib.filtered[[2]], df.site = df.trib.quab.site, df.param = df.quab.param)
-  callModule(metadata, "mod.trib.wach.meta", df.full = df.trib.wach, df.filtered = df.trib.filtered[[1]], df.site = df.trib.wach.site, df.param = df.wq.wach.param, df.flag = df.wq.wach.flag, df.flag.sample = df.wq.wach.flag.sample)
+  callModule(METADATA, "mod_trib_quab_meta", df_full = df_trib_quab, Df_Filtered = Df_Trib_Filtered[[2]], df_site = df_trib_quab_site, df_param = df_quab_param)
+  callModule(METADATA, "mod_trib_wach_meta", df_full = df_trib_wach, Df_Filtered = Df_Trib_Filtered[[1]], df_site = df_trib_wach_site, df_param = df_wq_wach_param, df_flag = df_wq_wach_flag)
 
 #############################################################
 # Reservoir
 
   # Bacteria
-  callModule(time, "mod.bact.wach.time", df.full = df.bact.wach, df.filtered = df.bact.filtered[[1]], df.site = df.bact.wach.site)
+  callModule(TIME_WQ, "mod_bact_wach_time", df_full = df_bact_wach, Df_Filtered = Df_Bact_Filtered[[1]], df_site = df_bact_wach_site)
 
-  callModule(regress, "mod.bact.wach.regr", df = df.bact.wach, df.site = df.bact.wach.site)
+  callModule(CORRELATION_WQ, "mod_bact_wach_regr", df = df_bact_wach, df_site = df_bact_wach_site)
 
-  callModule(metadata, "mod.bact.wach.meta", df.full = df.bact.wach, df.filtered = df.bact.filtered[[1]], df.site = df.bact.wach.site, df.param = df.wq.wach.param, df.flag = df.wq.wach.flag, df.flag.sample = df.wq.wach.flag.sample)
+  callModule(METADATA, "mod_bact_wach_meta", df_full = df_bact_wach, Df_Filtered = Df_Bact_Filtered[[1]], df_site = df_bact_wach_site, df_param = df_wq_wach_param, df_flag = df_wq_wach_flag)
   
   # Chemical
-  callModule(time.depth, "mod.chem.quab.time", df.full = df.chem.quab, df.filtered = df.chem.filtered[[2]], df.site = df.chem.quab.site)
-  callModule(time.depth, "mod.chem.wach.time", df.full = df.chem.wach, df.filtered = df.chem.filtered[[1]], df.site = df.chem.wach.site)
+  callModule(TIME_DEPTH_WQ, "mod_chem_quab_time", df_full = df_chem_quab, Df_Filtered = Df_Chem_Filtered[[2]], df_site = df_chem_quab_site)
+  callModule(TIME_DEPTH_WQ, "mod_chem_wach_time", df_full = df_chem_wach, Df_Filtered = Df_Chem_Filtered[[1]], df_site = df_chem_wach_site)
 
-  callModule(regress.depth, "mod.chem.quab.regr", df = df.chem.quab, df.site = df.chem.quab.site)
-  callModule(regress.depth, "mod.chem.wach.regr", df = df.chem.wach, df.site = df.chem.wach.site)
+  callModule(CORRELATION_DEPTH_WQ, "mod_chem_quab_regr", df = df_chem_quab, df_site = df_chem_quab_site)
+  callModule(CORRELATION_DEPTH_WQ, "mod_chem_wach_regr", df = df_chem_wach, df_site = df_chem_wach_site)
 
-  callModule(metadata, "mod.chem.quab.meta", df.full = df.chem.quab, df.filtered = df.chem.filtered[[2]], df.site = df.chem.quab.site, df.param = df.quab.param)
-  callModule(metadata, "mod.chem.wach.meta",  df.full = df.chem.wach, df.filtered = df.chem.filtered[[1]], df.site = df.prof.wach.site, df.flag.sample = df.aq.wach.flag.sample)
+  callModule(METADATA, "mod_chem_quab_meta", df_full = df_chem_quab, Df_Filtered = Df_Chem_Filtered[[2]], df_site = df_chem_quab_site, df_param = df_quab_param)
+  callModule(METADATA, "mod_chem_wach_meta",  df_full = df_chem_wach, Df_Filtered = Df_Chem_Filtered[[1]], df_site = df_prof_wach_site)
   
   # Profile (physicochemical)
-  callModule(prof.heatmap, "mod.prof.quab.heat", df = df.prof.quab)
-  callModule(prof.heatmap, "mod.prof.wach.heat", df = df.prof.wach)
+  callModule(PROF_HEATMAP, "mod_prof_quab_heat", df = df_prof_quab)
+  callModule(PROF_HEATMAP, "mod_prof_wach_heat", df = df_prof_wach)
 
-  callModule(prof.line, "mod.prof.quab.line", df = df.prof.quab)
-  callModule(prof.line, "mod.prof.wach.line", df = df.prof.wach)
+  callModule(PROF_LINE, "mod_prof_quab_line", df = df_prof_quab)
+  callModule(PROF_LINE, "mod_prof_wach_line", df = df_prof_wach)
 
-  callModule(prof.summary, "mod.prof.quab.sum", df = df.prof.quab)
-  callModule(prof.summary, "mod.prof.wach.sum", df = df.prof.wach)
+  callModule(PROF_TABLE_STAT, "mod_prof_quab_sum", df = df_prof_quab)
+  callModule(PROF_TABLE_STAT, "mod_prof_wach_sum", df = df_prof_wach)
 
   # Change the Data Frames to Profile Data
-  callModule(metadata, "mod.prof.quab.meta", df.full = df.chem.quab, df.filtered = df.chem.filtered[[2]], df.site = df.prof.quab.site, df.param = df.quab.param)
-  callModule(metadata, "mod.prof.wach.meta", df.full = df.chem.wach, df.filtered = df.chem.filtered[[1]], df.site = df.prof.wach.site, df.flag.sample = df.aq.wach.flag.sample)
+  callModule(METADATA, "mod_prof_quab_meta", df_full = df_chem_quab, Df_Filtered = Df_Chem_Filtered[[2]], df_site = df_prof_quab_site, df_param = df_quab_param)
+  callModule(METADATA, "mod_prof_wach_meta", df_full = df_chem_wach, Df_Filtered = Df_Chem_Filtered[[1]], df_site = df_prof_wach_site)
   
   # AquaBio
-  callModule(Phyto, "mod.phyto.wach.plots", df = df.phyto.wach)
-  #callModule(phyto.summary, "mod.phyto.wach.plots", df = df.phyto.wach)
+  callModule(PHYTO, "mod_phyto_wach_plots", df = df_phyto_wach)
+  #callModule(phyto_summary, "mod_phyto_wach_plots", df = df_phyto_wach)
 
 ####################################################################
 # Map Plot
 
   # Trib
-  callModule(map.plot, "mod.trib.quab.map", df.full = df.trib.quab, df.filtered = df.trib.filtered[[2]], df.site = df.trib.quab.site)
-  callModule(map.plot, "mod.trib.ware.map", df.full = df.trib.ware, df.filtered = df.trib.filtered[[3]], df.site = df.trib.ware.site)
-  callModule(map.plot, "mod.trib.wach.map", df.full = df.trib.wach, df.filtered = df.trib.filtered[[1]], df.site = df.trib.wach.site)
-  callModule(map.plot, "mod.trib.all.map", df.full = df.trib.all, df.site = df.trib.all.site)
+  callModule(MAP_PLOT, "mod_trib_quab_map", df_full = df_trib_quab, Df_Filtered = Df_Trib_Filtered[[2]], df_site = df_trib_quab_site)
+  callModule(MAP_PLOT, "mod_trib_ware_map", df_full = df_trib_ware, Df_Filtered = Df_Trib_Filtered[[3]], df_site = df_trib_ware_site)
+  callModule(MAP_PLOT, "mod_trib_wach_map", df_full = df_trib_wach, Df_Filtered = Df_Trib_Filtered[[1]], df_site = df_trib_wach_site)
+  callModule(MAP_PLOT, "mod_trib_all_map", df_full = df_trib_all, Df_Filtered = Df_Trib_Filtered[[1]], df_site = df_trib_all_site)
 
   # Bacteria
-  callModule(map.plot, "mod.bact.wach.map", df.full = df.bact.wach, df.filtered = df.trib.filtered[[1]], df.site = df.bact.wach.site)
+  callModule(MAP_PLOT, "mod_bact_wach_map", df_full = df_bact_wach, Df_Filtered = Df_Trib_Filtered[[1]], df_site = df_bact_wach_site)
 
   # Chemical
-  callModule(map.plot, "mod.chem.quab.map", df.full = df.chem.quab, df.filtered = df.trib.filtered[[2]], df.site = df.chem.quab.site)
-  callModule(map.plot, "mod.chem.wach.map", df.full = df.chem.wach, df.filtered = df.trib.filtered[[1]], df.site = df.chem.wach.site)
+  callModule(MAP_PLOT, "mod_chem_quab_map", df_full = df_chem_quab, Df_Filtered = Df_Trib_Filtered[[2]], df_site = df_chem_quab_site)
+  callModule(MAP_PLOT, "mod_chem_wach_map", df_full = df_chem_wach, Df_Filtered = Df_Trib_Filtered[[1]], df_site = df_chem_wach_site)
 
 ####################################################################
 # Hydrology/Meteorology/Statistics
@@ -476,18 +483,18 @@ server <- function(input, output, session) {
 ####################################################################
 # Reports
 
-  callModule(report.awq, "mod.quab.awq", df.trib = df.trib.quab, df.chem = df.chem.quab, df.prof = df.prof.quab, df.site = df.quab.site)
-  callModule(report.awq, "mod.wach.awq", df.trib = df.trib.wach, df.chem = df.chem.wach, df.prof = df.prof.wach, df.site = df.wach.site)
-  callModule(report.mwq, "mod.quab.mwq", df.trib = df.trib.quab, df.chem = df.chem.quab, df.prof = df.prof.quab, df.site = df.quab.site)
-  callModule(report.mwq, "mod.wach.mwq", df.trib = df.trib.wach, df.chem = df.chem.wach, df.prof = df.prof.wach, df.site = df.wach.site)
-  callModule(report.custom, "mod.trib.quab.rep", df = df.trib.quab, df.site = df.trib.quab.site)
-  callModule(report.custom, "mod.trib.ware.rep", df = df.trib.ware, df.site = df.trib.ware.site)
-  callModule(report.custom, "mod.trib.wach.rep", df = df.trib.wach, df.site = df.trib.wach.site)
-  callModule(report.custom, "mod.bact.wach.rep", df = df.bact.wach, df.site = df.bact.wach.site)
-  callModule(report.custom, "mod.chem.quab.rep", df = df.chem.quab, df.site = df.chem.quab.site)
-  callModule(report.custom, "mod.chem.wach.rep", df = df.chem.wach, df.site = df.chem.wach.site)
-  callModule(report.custom, "mod.prof.quab.rep", df = df.prof.quab, df.site = df.prof.quab.site)
-  callModule(report.custom, "mod.prof.wach.rep", df = df.prof.wach, df.site = df.prof.wach.site)
+  callModule(REPORT_AWQ, "mod_quab_awq", df_trib = df_trib_quab, df_chem = df_chem_quab, df_prof = df_prof_quab, df_site = df_trib_quab_site)
+  callModule(REPORT_AWQ, "mod_wach_awq", df_trib = df_trib_wach, df_chem = df_chem_wach, df_prof = df_prof_wach, df_site = df_trib_wach_site)
+  callModule(REPORT_MWQ, "mod_quab_mwq", df_trib = df_trib_quab, df_chem = df_chem_quab, df_prof = df_prof_quab, df_site = df_trib_quab_site)
+  callModule(REPORT_MWQ, "mod_wach_mwq", df_trib = df_trib_wach, df_chem = df_chem_wach, df_prof = df_prof_wach, df_site = df_trib_wach_site)
+  callModule(REPORT_CUSTOM, "mod_trib_quab_rep", df = df_trib_quab, df_site = df_trib_quab_site)
+  callModule(REPORT_CUSTOM, "mod_trib_ware_rep", df = df_trib_ware, df_site = df_trib_ware_site)
+  callModule(REPORT_CUSTOM, "mod_trib_wach_rep", df = df_trib_wach, df_site = df_trib_wach_site)
+  callModule(REPORT_CUSTOM, "mod_bact_wach_rep", df = df_bact_wach, df_site = df_bact_wach_site)
+  callModule(REPORT_CUSTOM, "mod_chem_quab_rep", df = df_chem_quab, df_site = df_chem_quab_site)
+  callModule(REPORT_CUSTOM, "mod_chem_wach_rep", df = df_chem_wach, df_site = df_chem_wach_site)
+  callModule(REPORT_CUSTOM, "mod_prof_quab_rep", df = df_prof_quab, df_site = df_prof_quab_site)
+  callModule(REPORT_CUSTOM, "mod_prof_wach_rep", df = df_prof_wach, df_site = df_prof_wach_site)
 
 #######################################################################
 

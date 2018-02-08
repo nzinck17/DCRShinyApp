@@ -30,7 +30,7 @@
 # User Interface
 ##############################################################################################################################
 
-map.plot.UI <- function(id, df) { 
+MAP_PLOT_UI <- function(id, df) { 
 
 ns <- NS(id)
 
@@ -56,7 +56,7 @@ tagList(
           tabPanel("Main",
                    br(), br(), # Line Breaks
                    # Choose Filtered or unfiltered data
-                   radioButtons(ns("dfchoice"), "Full or Filtered Data:", 
+                   radioButtons(ns("df_choice"), "Full or Filtered Data:", 
                                 choices = c("full", "filtered"),
                                 inline = TRUE),
                    conditionalPanel(
@@ -72,7 +72,7 @@ tagList(
                    selectInput(ns("stat"), "Value Statistic:",        
                                choices=c("average", "minimum", "maximum", 
                                          "median", "1st quartile", "1st quartile",
-                                         "variance", "stand.dev.","number of samples", "geometric mean"),
+                                         "variance", "stand. dev.","number of samples", "geometric mean"),
                                selected = "average"),
                    hr(),
                    # Date Selection
@@ -81,23 +81,11 @@ tagList(
                    wellPanel(
                    # Year
                      selectInput(ns("year"), "Year:", 
-                                 choices = c("All Years", rev(year(seq(as.Date("1990-1-1"), Sys.Date(), "years")))), 
+                                 choices = c("All Years", rev(year(seq(as.Date("1980-1-1"), Sys.Date(), "years")))), 
                                  selected = "All Years"),
                      # Month
                      selectInput(ns("month"), "Month:", 
                                  choices = c("All Months", month.name[1:12]),
-                                             # January = 1,
-                                             # February = 2,
-                                             # March = 3,
-                                             # April = 4,
-                                             # May = 5,
-                                             # June = 6,
-                                             # July = 7,
-                                             # August = 8,
-                                             # September = 9,
-                                             # October = 10,
-                                             # November = 11,
-                                             # December = 12), 
                                  selected = "All Months")
                    ) # end Well Panel
           ),
@@ -105,7 +93,7 @@ tagList(
           tabPanel("Display Options",
                    br(), br(),
                    # Map Style
-                   selectInput(ns("map.type"), "Map Style:",        
+                   selectInput(ns("map_type"), "Map Style:",        
                                choices=c(providers$Stamen.TonerLite,
                                          providers$CartoDB.Positron,
                                          providers$Esri.NatGeoWorldMap,
@@ -113,19 +101,19 @@ tagList(
                                selected = providers$Stamen.TonerLite), # See Note 4
                    hr(), # Horizontal Rule/Line
                    # Plot Style
-                   radioButtons(ns("plot.type"), "Plot Style:",        
+                   radioButtons(ns("plot_type"), "Plot Style:",        
                                choices=c("Display by Color", "Display by Size"),
                                selected = "Display by Color"),
                    br(),
                    wellPanel(
                      # Color Scheme (Dependent on the Condition of which Plot Style is Selected, see General Note 2)
-                     conditionalPanel(condition = paste0("input['", ns("plot.type"), "'] == 'Display by Color' "),
-                                      radioButtons(ns("color.dynamic"), "Color Scheme:",        
+                     conditionalPanel(condition = paste0("input['", ns("plot_type"), "'] == 'Display by Color' "),
+                                      radioButtons(ns("color_dynamic"), "Color Scheme:",        
                                                    choices=rownames(subset(brewer.pal.info, category %in% c("seq", "div"))),
                                                    inline = TRUE)
                      ),
-                     conditionalPanel(condition = paste0("input['", ns("plot.type"), "'] == 'Display by Size' "),
-                                      radioButtons(ns("color.static"), "Color:",        
+                     conditionalPanel(condition = paste0("input['", ns("plot_type"), "'] == 'Display by Size' "),
+                                      radioButtons(ns("color_static"), "Color:",        
                                                    choices=c("black", "blue", "red"),
                                                    selected = "blue")
                      ),
@@ -142,8 +130,8 @@ tagList(
           ), # end tab - Display options
           # Save Options Tab
           tabPanel("save",
-            radioButtons(ns("plot.size"), "plot Size", c("small", "medium", "large")),
-            downloadButton(ns('plot.save'), "Save Plot")
+            radioButtons(ns("plot_size"), "plot Size", c("small", "medium", "large")),
+            downloadButton(ns('plot_save'), "Save Plot")
           ) # end tab
         ) # end tabset
       ), # end sidebar Panel
@@ -162,38 +150,40 @@ tagList(
 # Thus do not use () in callModule argument for reactives
 # For non reactives wrap with "reactive" to make into a reactive expression.
 
-map.plot <- function(input, output, session, df.full, df.filtered, df.site) {
+MAP_PLOT <- function(input, output, session, df_full, Df_Filtered, df_site) {
 
+  # Create a more condensed Site Location dataframe (with Lat,lomg,site ID)
+  df_site2 <- df_site %>% select(Site, LocationLat, LocationLong)
   
-  ### Dataframe filtered or full based on Selection
-  df <- reactive({
-    if(input$dfchoice == "filtered"){
-      df.filtered()
+  # Dataframe filtered or full based on Selection
+  Df1 <- reactive({
+    if(input$df_choice == "filtered"){
+      Df_Filtered()
     }else{
-      df.full
+      df_full
     }
   })
   
   
-# Reactive Dataframe for data stats
+  ### Reactive Dataframe for data stats
   
-  df.react <- reactive({
+  Df2 <- reactive({
     
     # Filter by Parameter and remove NAs
-    df.temp <- df() %>% 
+    df_temp <- Df1() %>% 
       filter(!is.na(Result), 
              Parameter %in% input$param)
     
     # Filter by Date
     if(input$year != "All Years"){
-      df.temp <- df.temp %>% filter(year(Date) == input$year)
+      df_temp <- df_temp %>% filter(year(Date) == input$year)
     }
     if (input$month != "All Months"){
-      df.temp <- df.temp %>% filter(month.name[month(Date)] == input$month)
+      df_temp <- df_temp %>% filter(month.name[month(Date)] == input$month)
     }
     
     # Group by Site and add any statistics (Make sure this matches with UI options)
-    df.temp <- df.temp %>% group_by(Site) %>%
+    df_temp <- df_temp %>% group_by(Site) %>%
       summarise(`number of samples` = n(),
                 average = mean(Result), 
                 minimum = min(Result), 
@@ -202,61 +192,57 @@ map.plot <- function(input, output, session, df.full, df.filtered, df.site) {
                 median = median(Result),
                 `3rd quartile` = quantile(Result, 0.75),
                 variance = var(Result), 
-                `stand.dev.` = sd(Result),
+                `stand. dev.` = sd(Result),
                 `geometric mean` = gm_mean(Result)) %>%
       gather(Stat, Value, -c(Site)) # Restructuring the Stat Columns into Two new Columns: "Stat" and "Value"
     
-    # Create a more condensed Site Location dataframe (with Lat,lomg,site ID)
-    df.site.temp <- df.site %>% 
-      select(Site, LocationLat, LocationLong)
-    
     # Join the two tables together mathched by site - now includes lat/long info
-    df.temp <- inner_join(df.temp, df.site.temp, "Site") %>%
+    df_temp <- inner_join(df_temp, df_site2, "Site") %>%
       filter(Stat %in% input$stat,
              !is.na(LocationLat), 
              !is.na(LocationLong))
     
     # Setting a 3 digit sig fig for Statistic Values
-    df.temp$Value <- signif(df.temp$Value, 3)
+    df_temp$Value <- signif(df_temp$Value, 3)
     
-    # Assiging df.temp to df.react
-    df.temp
+    # Assiging df.temp to Df2
+    df_temp
     
-  }) # end df.react
+  }) # end Df2
   
   
 # Map - Color Pallete
   
-  colorpal <- reactive({
-    # If statement to prevent potential cras, See Note 1
-    if(nrow(df.react()) > 0){
-      colorNumeric(palette = input$color.dynamic, range(df.react()$Value))
+  Color_Pal <- reactive({
+    # If statement to prevent potential crash, See Note 1
+    if(nrow(Df2()) > 0){
+      colorNumeric(palette = input$color_dynamic, range(Df2()$Value))
     }
     }) # end colorpal
 
   
 # Map - Size "Pallete" - For size legend creation.
   
-  value.min <- reactive({
-    signif(min(df.react()$Value),3)
+  Value_Min <- reactive({
+    signif(min(Df2()$Value),3)
   })
   
-  value.max <- reactive({
-    signif(max(df.react()$Value),3)
+  Value_Max <- reactive({
+    signif(max(Df2()$Value),3)
   })
   
   # Create 8 circles for the legend. change 8 if desired number is different
-  value.list <- reactive({
-    signif(seq(value.min(), value.max(), length.out = 8), 3)
+  Value_List <- reactive({
+    signif(seq(Value_Min(), Value_Max(), length.out = 8), 3)
   })
   
   # Sizing Scheme for the Circles, See Note 2
-  value.scale <- reactive({
-    ((as.numeric(input$radius)*30)+10)/sqrt(value.max())
+  Value_Scale <- reactive({
+    ((as.numeric(input$radius)*30)+10)/sqrt(Value_Max())
   })
   
-  diam.list <- reactive({
-    2*value.scale()*sqrt(value.list())
+  Diam_List <- reactive({
+    2*Value_Scale()*sqrt(Value_List())
   })
   
 
@@ -273,7 +259,7 @@ map.plot <- function(input, output, session, df.full, df.filtered, df.site) {
 # Base Leaflet Map - See Note 3
   
   output$map <- renderLeaflet({
-    leaflet(data = df.site %>% filter(!is.na(LocationLat), !is.na(LocationLong))) %>%
+    leaflet(data = df_site %>% filter(!is.na(LocationLat), !is.na(LocationLong))) %>%
       addProviderTiles(providers$Stamen.TonerLite,  
                        options = providerTileOptions(noWrap = TRUE)) %>%
       fitBounds(~min((LocationLong)), ~min(LocationLat), ~max(LocationLong), ~max(LocationLat))
@@ -285,16 +271,16 @@ map.plot <- function(input, output, session, df.full, df.filtered, df.site) {
   observe({
     
     # if Data Selected is empty, do not add markers. See Note 1
-    if(nrow(df.react()) > 0){
+    if(nrow(Df2()) > 0){
     
       # Color
-      if(input$plot.type == "Display by Color"){
+      if(input$plot_type == "Display by Color"){
        
-        pal <- colorpal()                                # load colorpal function
+        pal <- Color_Pal()                                # load colorpal function
         
-        leafletProxy("map", data = df.react()) %>%
+        leafletProxy("map", data = Df2()) %>%
           clearTiles() %>%
-          addProviderTiles(input$map.type,  
+          addProviderTiles(input$map_type,  
                            options = providerTileOptions(noWrap = TRUE)) %>%
           clearMarkers() %>%
           addCircleMarkers(lng = ~LocationLong, 
@@ -314,31 +300,31 @@ map.plot <- function(input, output, session, df.full, df.filtered, df.site) {
                     opacity = 1)
       }
       # Size
-      if(input$plot.type == "Display by Size"){
+      if(input$plot_type == "Display by Size"){
         
-        leafletProxy("map", data = df.react()) %>%
+        leafletProxy("map", data = Df2()) %>%
           clearTiles() %>%
-          addProviderTiles(input$map.type,  
+          addProviderTiles(input$map_type,  
                            options = providerTileOptions(noWrap = TRUE)) %>%
           clearMarkers() %>%
           addCircleMarkers(lng = ~LocationLong, 
                            lat = ~LocationLat,
-                           radius = ~value.scale()*sqrt(Value), # radius function of Value   
+                           radius = ~Value_Scale()*sqrt(Value), # radius function of Value   
                            weight = 2,                          # weight of the outside circle
-                           color = input$color.static,          # Color of the outside circle
-                           fillColor = input$color.static,      # User selected fill Color
+                           color = input$color_static,          # Color of the outside circle
+                           fillColor = input$color_static,      # User selected fill Color
                            fillOpacity = input$opacity,         # user selected opacity
                            label= ~as.character(Value),         # show Value when hovering
                            popup = ~Site) %>%                   # Show Site name when clicked
           clearControls() %>%
-          addLegendCustom(colors = c(input$color.static, input$color.static, input$color.static), 
-                          labels = value.list(),
-                          sizes = diam.list(),
+          addLegendCustom(colors = c(input$color_static, input$color_static, input$color_static), 
+                          labels = Value_List(),
+                          sizes = Diam_List(),
                           opacity = .7)
       }
     # If no data, then clear the existing circleMarkers and legend  
     } else {
-      leafletProxy("map", data = df.react()) %>%
+      leafletProxy("map", data = Df2()) %>%
         clearMarkers() %>%
         clearControls()
     }

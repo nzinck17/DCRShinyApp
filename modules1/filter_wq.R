@@ -16,7 +16,7 @@
 # User Interface
 ##############################################################################################################################
 
-filter.wq.UI <- function(id) {
+FILTER_WQ_UI <- function(id) {
   
   ns <- NS(id) # see General Note 1
   
@@ -36,28 +36,28 @@ filter.wq.UI <- function(id) {
                ), # end Well Panel
                wellPanel(
                  # Month
-                 checkboxSelectAll.UI(ns("month"))
+                 CHECKBOX_SELECT_ALL_UI(ns("Month"))
                ), # end Well Panel
                wellPanel(
                  # Year
-                 selectInputSelectAll.UI(ns("year"))
+                 SELECT_SELECT_ALL_UI(ns("Year"))
                ) # end Well Panel
         ), # end Column
         column(4,
                # Flag Selection
                wellPanel(
-                 selectInputSelectAll.UI(ns("flag"))
+                 SELECT_SELECT_ALL_UI(ns("flag"))
                ), # end Well Panel
                # storm Sample Selection
                wellPanel(
-                 checkboxSelectAll.UI(ns("storm"))
+                 CHECKBOX_SELECT_ALL_UI(ns("storm"))
                ), # end Well Panel
                # Text - Number of Samples or "Select a site"
                wellPanel(
-                 h5(textOutput(ns("text.no.month"))),
-                 h5(textOutput(ns("text.no.year"))),
-                 h5(textOutput(ns("text.no.flag"))),
-                 h5(textOutput(ns("text.no.storm")))
+                 h5(textOutput(ns("text_no_month"))),
+                 h5(textOutput(ns("text_no_year"))),
+                 h5(textOutput(ns("text_no_flag"))),
+                 h5(textOutput(ns("text_no_storm")))
                ) # end Well Panel
         ), # end column
         column(4,
@@ -65,10 +65,10 @@ filter.wq.UI <- function(id) {
                wellPanel(
                  strong("Meteoro/Hydro Filter 1"), # Bold Text
                  br(), br(),
-                 radioButtons(ns("met.option.1"), label = NULL, 
+                 radioButtons(ns("met_option_1"), label = NULL, 
                               choices = c("off", "on", "group"), 
                               inline = TRUE),
-                 selectInput(ns("met.param.1"), label = NULL, 
+                 selectInput(ns("met_param_1"), label = NULL, 
                              choices = c("Wind Speed", 
                                          "Wind Direction", 
                                          "Precipitation - 24 hrs",
@@ -81,16 +81,16 @@ filter.wq.UI <- function(id) {
                                          "Flow - Quinapoxet",
                                          "Flow - Stillwater"),
                              selected = "Wind Speed"),
-                 sliderInput(ns("met.value.1"), "Value Range:", min = 0, max = 12, value = c(0,12), step = 0.5)
+                 sliderInput(ns("met_value_1"), "Value Range:", min = 0, max = 12, value = c(0,12), step = 0.5)
                ), # end Well Panel
                # Meteoro/Hydro Filter 2
                wellPanel(
                  strong("Meteoro/Hydro Filter 2"), # Bold Text
                  br(), br(),
-                 radioButtons(ns("met.option.2"), label = NULL, 
+                 radioButtons(ns("met_option_2"), label = NULL, 
                               choices = c("off", "on", "group"), 
                               inline = TRUE),
-                 selectInput(ns("met.param.2"), label = NULL, 
+                 selectInput(ns("met_param_2"), label = NULL, 
                              choices = c("Wind Speed", 
                                          "Wind Direction", 
                                          "Precipitation - 24 hrs",
@@ -103,7 +103,7 @@ filter.wq.UI <- function(id) {
                                          "Flow - Quinapoxet",
                                          "Flow - Stillwater"),
                              selected = "Precipitation - 24 hrs"),
-                 sliderInput(ns("met.value.2"), "Value Range:", min = 0, max = 12, value = c(0,12), step = 0.5)
+                 sliderInput(ns("met_value_2"), "Value Range:", min = 0, max = 12, value = c(0,12), step = 0.5)
                ) # end Well Panel
         ) # end column
       ) # end fluidrow     
@@ -119,14 +119,12 @@ filter.wq.UI <- function(id) {
 # This module does not take any reactive expressions. Changes will have to be made to accmodate reactive expressions
 # dfs is a list of dataframes
 
-filter.wq <- function(input, output, session, dfs, col) { 
+FILTER_WQ <- function(input, output, session, dfs, col) { 
 
-  
-  
   ### Month Selection
   
   # server
-  month.input <- callModule(checkboxSelectAll, "month",
+  Month <- callModule(CHECKBOX_SELECT_ALL, "month",
                             label = "Months:",
                             choices = reactive({month.name}), 
                             selected = reactive({month.name}), 
@@ -135,96 +133,81 @@ filter.wq <- function(input, output, session, dfs, col) {
                             inline = TRUE)
   
   
-  
   ### Year Selection
   
   # Choices
-  year.choices <- c(rev(year(seq(as.Date("1990-1-1"), Sys.Date(), "years"))))
+  year_choices <- c(rev(year(seq(as.Date("1980-01-01"), Sys.Date(), "years"))))
   
   # Server
-  year.input <- callModule(selectInputSelectAll, "year", 
+  Year <- callModule(SELECT_SELECT_ALL, "year", 
                            label = "Years:", 
-                           choices = reactive({year.choices}), 
-                           selected = reactive({year.choices}), 
+                           choices = reactive({year_choices}), 
+                           selected = reactive({year_choices}), 
                            colwidth = 3,
                            hidden = TRUE)
-  
-  
-  
-
-  
   
   
   ### Flag Selection
 
   # Choices
-  flag.choices <- dfs[[1]]$FlagCode %>% factor() %>% levels()
+  flag_choices <- dfs[[1]]$FlagCode %>% factor() %>% levels()
 
   # Server
-  flag <- callModule(selectInputSelectAll, "flag",
+  Flag <- callModule(SELECT_SELECT_ALL, "flag",
                      label = "Flags:",
-                     choices = reactive({flag.choices}),
-                     selected = reactive({flag.choices}),
+                     choices = reactive({flag_choices}),
+                     selected = reactive({flag_choices}),
                      colwidth = 3,
                      hidden = TRUE)
-
-
 
 
   ### Storm Selection
 
   # Choices
-  storm.choices <- dfs[[1]]$StormSample %>% factor() %>% levels()
+  storm_choices <- dfs[[1]]$StormSample %>% factor() %>% levels()
 
   # Server
-  storm <- callModule(checkboxSelectAll, "storm",
+  Storm <- callModule(CHECKBOX_SELECT_ALL, "storm",
                       label = "Storm Sample:",
-                      choices = reactive({storm.choices}),
-                      selected = reactive({storm.choices}),
+                      choices = reactive({storm_choices}),
+                      selected = reactive({storm_choices}),
                       hidden = TRUE)
-  
-  
-  
-
-  
   
   
   ### Reactive List of (non-reactive) Dataframes - filter for selected site, param, value range, date, and remove rows with NA for Result
   
-  df.react.list <- reactive({
+  Df_List <- reactive({
     
-    req(input$date, month.input(), year.input()) #, flag(), storm() # See General Note _
+    req(input$date, Month(), Year()) #, Flag(), Storm() # See General Note _
     
     dfs %>% lapply(. %>% filter(Date > input$date[1], Date < input$date[2],
-                                as.character(month(Date, label = TRUE, abbr = FALSE)) %in% month.input(),
-                                year(Date) %in% year.input(),
-                                #FlagCode %in% flag(),
-                                #StormSample %in% storm(),
+                                as.character(month(Date, label = TRUE, abbr = FALSE)) %in% Month(),
+                                year(Date) %in% Year(),
+                                #FlagCode %in% Flag(),
+                                #StormSample %in% Storm(),
                                 !is.na(Result)))
-    
   })
   
    
-  
   ### Texts
   
-  output$text.no.month <- renderText({
-    req(is.null(month.input()))
+  output$text_no_month <- renderText({
+    req(is.null(Month()))
     "- Please Select Months"
   })
   
-  output$text.no.year <- renderText({
-    req(is.null(year.input()))
+  output$text_no_year <- renderText({
+    req(is.null(Year()))
     "- Please Select Years"
   })
   
-  output$text.no.flag <- renderText({
-    req(is.null(flag()))
+  output$text_no_flag <- renderText({
+    req(is.null(Flag()))
     "- Please Select Flag Types"
   })
 
-  output$text.no.storm <- renderText({
-    req(is.null(storm()))
+  output$text_no_storm <- renderText({
+    req(is.null(Storm()))
     "- Please Select Storm Sample Types"
   })
 
@@ -232,12 +215,9 @@ filter.wq <- function(input, output, session, dfs, col) {
   ### Return List of Reactive Dataframes
   # a Reactive List Expression is converted to a (Non-reactive) List of Reactive Expressions
   
-  return(list(reactive({df.react.list()[[1]]}),
-              reactive({df.react.list()[[2]]}),
-              reactive({df.react.list()[[3]]})))
-  
-  
-
+  return(list(reactive({Df_List()[[1]]}),
+              reactive({Df_List()[[2]]}),
+              reactive({Df_List()[[3]]})))
   
   
 } # end Server Function

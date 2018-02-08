@@ -16,7 +16,7 @@
 # User Interface
 ##############################################################################################################################
 
-plot.regress.UI <- function(id) {
+PLOT_CORR_WQ_UI <- function(id) {
   
   ns <- NS(id) # see General Note 1
   
@@ -30,7 +30,7 @@ plot.regress.UI <- function(id) {
              tabsetPanel(
                tabPanel("Display Options", br(), br(),
                         column(2,
-                               radioButtons(ns("plot.display.theme"), "Theme:", 
+                               radioButtons(ns("plot_display_theme"), "Theme:", 
                                             choices= c("Gray", 
                                                        "Black and White",  
                                                        "Line Draw", 
@@ -40,75 +40,75 @@ plot.regress.UI <- function(id) {
                                                        "Classic"))
                         ), # end column
                         column(2,
-                               checkboxGroupInput(ns("plot.display.log"), "Log-Scale :", 
+                               checkboxGroupInput(ns("plot_display_log"), "Log-Scale :", 
                                                   choices= c("X Axis",
                                                              "Y Axis"))
                         ), # end column
                         column(2,
-                               sliderInput(ns("plot.display.opacity"), "Opacity:", min = 0, max = 1, value = 1, step = 0.1),
-                               sliderInput(ns("plot.display.jitter"), "Jitter:", min = 0, max = 1, value = 0, step = 0.1),
-                               sliderInput(ns("plot.display.psize"), "Point Size:", min = 0.5, max = 4, value = 1.5, step = 0.5)
+                               sliderInput(ns("plot_display_opacity"), "Opacity:", min = 0, max = 1, value = 1, step = 0.1),
+                               sliderInput(ns("plot_display_jitter"), "Jitter:", min = 0, max = 1, value = 0, step = 0.1),
+                               sliderInput(ns("plot_display_psize"), "Point Size:", min = 0.5, max = 4, value = 1.5, step = 0.5)
                         ) # end column
                ), # end Tab Panel
                tabPanel("Trends and Lines", br(), br(),
                         column(2,
-                               radioButtons(ns("plot.line.trend"), "Add Trendline:", 
+                               radioButtons(ns("plot_line_trend"), "Add Trendline:", 
                                             choices= c("None",
                                                        "Linear" = "lm",
                                                        "Curve" = "loess")),
-                               checkboxInput(ns("plot.line.trend.ribbon"), "Show Conf.Ribbon"),
-                               sliderInput(ns("plot.line.trend.size"), "Line Thickness:",
+                               checkboxInput(ns("plot_line_trend_ribbon"), "Show Conf. Ribbon"),
+                               sliderInput(ns("plot_line_trend_size"), "Line Thickness:",
                                            min = 0.5, max = 3, value = 1, step = 0.5)
                         ), # end column
                         column(1),
                         column(2,
                                strong("Non-Detection Level:"),
-                               checkboxInput(ns("plot.line.nd"),"Show Line"),
-                               radioButtons(ns("plot.line.nd.type"), "Line Type",
+                               checkboxInput(ns("plot_line_nd"),"Show Line"),
+                               radioButtons(ns("plot_line_nd_type"), "Line Type",
                                             choices = c("solid", "dash", "dotted")),
-                               sliderInput(ns("plot.line.nd.size"), "Line Thickness:",
+                               sliderInput(ns("plot_line_nd_size"), "Line Thickness:",
                                            min = 0.5, max = 3, value = 1, step = 0.5)
                         ), # end column
                         column(2,
                                strong("Reporting Limit:"),
-                               checkboxInput(ns("plot.line.rl"), "Show Line"),
-                               radioButtons(ns("plot.line.rl.type"), "Line Type",
+                               checkboxInput(ns("plot_line_rl"), "Show Line"),
+                               radioButtons(ns("plot_line_rl_type"), "Line Type",
                                             choices = c("solid", "dash", "dotted")),
-                               sliderInput(ns("plot.line.rl.size"), "Line Thickness:",
+                               sliderInput(ns("plot_line_rl_size"), "Line Thickness:",
                                            min = 0.5, max = 3, value = 1, step = 0.5)
                         ), # end column
                         column(2,
                                strong("Performace Standard:"),
-                               checkboxInput(ns("plot.line.ps"), "Show Line"),
-                               radioButtons(ns("plot.line.ps.type"), "Line Type",
+                               checkboxInput(ns("plot_line_ps"), "Show Line"),
+                               radioButtons(ns("plot_line_ps_type"), "Line Type",
                                             choices = c("solid", "dash", "dotted")),
-                               sliderInput(ns("plot.line.ps.size"), "Line Thickness:",
+                               sliderInput(ns("plot_line_ps_size"), "Line Thickness:",
                                            min = 0.5, max = 3, value = 1, step = 0.5)
                         ) # end column
                ),
                tabPanel("Title and Axis Labels", br(), br(),
                         column(3,
-                               radioButtons(ns("plot.title"), "Title Options:", 
+                               radioButtons(ns("plot_title"), "Title Options:", 
                                             choices= c("None", "Auto", "Custom"),
                                             selected = "Auto"),
-                               textInput(ns("plot.title.text"), "")
+                               textInput(ns("plot_title_text"), "")
                         ), # end column
                         column(3,
-                               radioButtons(ns("plot.xlab"), "X Label Options:", 
+                               radioButtons(ns("plot_xlab"), "X Label Options:", 
                                             choices= c("None", "Auto", "Custom"),
                                             selected = "Auto"),
-                               textInput(ns("plot.xlab.text"), "")
+                               textInput(ns("plot_xlab_text"), "")
                         ), # end column
                         column(3,
-                               radioButtons(ns("plot.ylab"), "Y Label Options:", 
+                               radioButtons(ns("plot_ylab"), "Y Label Options:", 
                                             choices= c("None", "Auto", "Custom"),
                                             selected = "Auto"),
-                               textInput(ns("plot.ylab.text"), "")
+                               textInput(ns("plot_ylab_text"), "")
                         ) # end column
                ), # end Tab Panel
                tabPanel("Grouping (Color/Shape)", br(), br(),
                         column(3,
-                               radioButtons(ns("plot.color"), label = "Group with Colors:", 
+                               radioButtons(ns("plot_color"), label = "Group with Colors:", 
                                             choices = c("None" = 1, 
                                                         "Site" = "Site",
                                                         "met/hydro filter 1 (select group)" = "met1",
@@ -118,7 +118,7 @@ plot.regress.UI <- function(id) {
                         ), # end column
                         # new column
                         column(3,
-                               radioButtons(ns("plot.shape"), label = "Group with Shapes:", 
+                               radioButtons(ns("plot_shape"), label = "Group with Shapes:", 
                                             choices = c("None" = 1, 
                                                         "Site" = "Site",
                                                         "met/hydro filter 1 (select group)" = "met1",
@@ -129,22 +129,22 @@ plot.regress.UI <- function(id) {
                ), # tabPanel
                tabPanel("Save Plot", br(), br(),
                         column(2,
-                               downloadButton(ns('save.plot'), "Save Plot")
+                               downloadButton(ns('save_plot'), "Save Plot")
                         ),
                         column(2,
-                               radioButtons(ns("plot.save.size"), "Plot Size:", 
+                               radioButtons(ns("plot_save_size"), "Plot Size:", 
                                             choices= c("small",
                                                        "medium",
                                                        "large"))
                         ),
                         column(2,
-                               radioButtons(ns("plot.save.type"), "File Type:", 
+                               radioButtons(ns("plot_save_type"), "File Type:", 
                                             choices= c("pdf",
                                                        "jpg",
                                                        "png"))
                         ),
                         column(2,
-                               checkboxGroupInput(ns("plot.save.grid"), "Gridline Override:", 
+                               checkboxGroupInput(ns("plot_save_grid"), "Gridline Override:", 
                                                   choices= c("major gridlines",
                                                              "minor gridlines"))
                         ) # end column
@@ -164,56 +164,56 @@ plot.regress.UI <- function(id) {
 # Server Function
 ##############################################################################################################################
 
-plot.regress <- function(input, output, session, df) {
+PLOT_CORR_WQ <- function(input, output, session, Df) {
   
   
 ### Text For Plot
   
   # Site Text
-  text.site <- reactive({
-    df() %>% .$Site %>% factor() %>% levels() %>% paste()
+  text_site <- reactive({
+    Df()$Site %>% factor() %>% levels() %>% paste()
   })
   
   # X Param Text
-  x.text.param <- reactive({
-    df() %>% .$x.Parameter %>% factor() %>% levels() %>% paste()
+  x_text_param <- reactive({
+    Df()$x_Parameter %>% factor() %>% levels() %>% paste()
   })
   
   # X Units Text
-  x.text.units <- reactive({
-    df() %>% .$x.Units %>% factor() %>% levels() %>% paste()
+  x_text_units <- reactive({
+    Df()$x_Units %>% factor() %>% levels() %>% paste()
   })
   
   # Y Param Text
-  y.text.param <- reactive({
-    df() %>% .$y.Parameter %>% factor() %>% levels() %>% paste()
+  y_text_param <- reactive({
+    Df()$y_Parameter %>% factor() %>% levels() %>% paste()
   })
   
   # Y Units Text
-  y.text.units <- reactive({
-    df() %>% .$y.Units %>% factor() %>% levels() %>% paste()
+  y_text_units <- reactive({
+    Df()$y_Units %>% factor() %>% levels() %>% paste()
   })
   
   # Date Text - Start
-  text.date.start <- reactive({
-    df() %>% .$Date %>% min(na.rm = TRUE) %>% paste()
+  text_date_start <- reactive({
+    Df()$Date %>% min(na.rm = TRUE) %>% paste()
   })
   
   # Date Text - End
-  text.date.end <- reactive({
-    df() %>% .$Date %>% max(na.rm = TRUE) %>% paste()
+  text_date_end <- reactive({
+    Df()$Date %>% max(na.rm = TRUE) %>% paste()
   })
   
 ### Other Pre Plot
   
   # Jitter Scheme Factor Calculation 
   
-  jitter.x <- reactive({
-    input$plot.display.jitter*IQR(df()$x.Result)*0.06
+  jitter_x <- reactive({
+    input$plot_display_jitter*IQR(Df()$x_Result)*0.06
   })
   
-  jitter.y <- reactive({
-    input$plot.display.jitter*IQR(df()$y.Result)*0.06
+  jitter_y <- reactive({
+    input$plot_display_jitter*IQR(Df()$y_Result)*0.06
   })
 
 ### PLOT
@@ -223,158 +223,158 @@ plot.regress <- function(input, output, session, df) {
   p <- reactive({
     
     # Features in which all plot options have in common
-    p <- ggplot(df(), aes(x = x.Result, y = y.Result))
+    p <- ggplot(Df(), aes(x = x_Result, y = y_Result))
       
 
 # Display Tab
     
     # Theme based on selection
-    if(input$plot.display.theme == "Gray"){
+    if(input$plot_display_theme == "Gray"){
       p <- p + theme_gray()
     }    
-    if(input$plot.display.theme == "Black and White"){
+    if(input$plot_display_theme == "Black and White"){
       p <- p + theme_bw()
     }
-    if(input$plot.display.theme == "Line Draw"){
+    if(input$plot_display_theme == "Line Draw"){
       p <- p + theme_linedraw()
     }
-    if(input$plot.display.theme == "Light"){
+    if(input$plot_display_theme == "Light"){
       p <- p + theme_light()
     }
-    if(input$plot.display.theme == "Dark"){
+    if(input$plot_display_theme == "Dark"){
       p <- p + theme_dark()
     }
-    if(input$plot.display.theme == "Minimal"){
+    if(input$plot_display_theme == "Minimal"){
       p <- p + theme_minimal()
     }
-    if(input$plot.display.theme == "Classic"){
+    if(input$plot_display_theme == "Classic"){
       p <- p + theme_classic()
     }
 
     # Log Scale
-    if("X Axis" %in% input$plot.display.log){
+    if("X Axis" %in% input$plot_display_log){
       p <- p + scale_x_log10()
     }
-    if("Y Axis" %in% input$plot.display.log){
+    if("Y Axis" %in% input$plot_display_log){
       p <- p + scale_y_log10()
     }
     
 # Grouping and Trendline
     
     # Group by both Color and Shape when both selected
-    if(input$plot.color != 1 & input$plot.shape != 1){
-      p <- p + geom_point(aes_string(color = input$plot.color, shape = input$plot.shape), 
-                          size = input$plot.display.psize,
-                          alpha = input$plot.display.opacity,
-                          position = position_jitter(width = jitter.x(), height = jitter.y()))
-      if(input$plot.line.trend != "None"){
-        p <- p + geom_smooth(method = input$plot.line.trend, 
-                             size = input$plot.line.trend.size,
-                             se = input$plot.line.trend.ribbon,
-                             aes_string(color = input$plot.color, linetype = input$plot.shape))
+    if(input$plot_color != 1 & input$plot_shape != 1){
+      p <- p + geom_point(aes_string(color = input$plot_color, shape = input$plot_shape), 
+                          size = input$plot_display_psize,
+                          alpha = input$plot_display_opacity,
+                          position = position_jitter(width = jitter_x(), height = jitter_y()))
+      if(input$plot_line_trend != "None"){
+        p <- p + geom_smooth(method = input$plot_line_trend, 
+                             size = input$plot_line_trend_size,
+                             se = input$plot_line_trend_ribbon,
+                             aes_string(color = input$plot_color, linetype = input$plot_shape))
       }
     }
     # Group by only Color when only color grouping is selected
-    else if (input$plot.color != 1){
-      p <- p + geom_point(aes_string(color = input$plot.color), 
-                          size = input$plot.display.psize,
-                          alpha = input$plot.display.opacity,
-                          position = position_jitter(width = jitter.x(), height = jitter.y()))
-      if(input$plot.line.trend != "None"){
-        p <- p + geom_smooth(method = input$plot.line.trend, 
-                             size = input$plot.line.trend.size,
-                             se = input$plot.line.trend.ribbon,
-                             aes_string(color = input$plot.color))
+    else if (input$plot_color != 1){
+      p <- p + geom_point(aes_string(color = input$plot_color), 
+                          size = input$plot_display_psize,
+                          alpha = input$plot_display_opacity,
+                          position = position_jitter(width = jitter_x(), height = jitter_y()))
+      if(input$plot_line_trend != "None"){
+        p <- p + geom_smooth(method = input$plot_line_trend, 
+                             size = input$plot_line_trend_size,
+                             se = input$plot_line_trend_ribbon,
+                             aes_string(color = input$plot_color))
       }
     } 
     # Group by only Shape when only shape grouping is selected 
-    else if (input$plot.shape != 1){
-      p <- p + geom_point(aes_string(shape = input$plot.shape), 
-                          size = input$plot.display.psize,
-                          alpha = input$plot.display.opacity,
-                          position = position_jitter(width = jitter.x(), height = jitter.y()))
-      if(input$plot.line.trend != "None"){
-        p <- p + geom_smooth(method = input$plot.line.trend, 
-                             size = input$plot.line.trend.size,
-                             se = input$plot.line.trend.ribbon,
-                             aes_string(linetype = input$plot.shape))
+    else if (input$plot_shape != 1){
+      p <- p + geom_point(aes_string(shape = input$plot_shape), 
+                          size = input$plot_display_psize,
+                          alpha = input$plot_display_opacity,
+                          position = position_jitter(width = jitter_x(), height = jitter_y()))
+      if(input$plot_line_trend != "None"){
+        p <- p + geom_smooth(method = input$plot_line_trend, 
+                             size = input$plot_line_trend_size,
+                             se = input$plot_line_trend_ribbon,
+                             aes_string(linetype = input$plot_shape))
       }
     } 
     # No Grouping Selected
     else {
-      p <- p + geom_point(size = input$plot.display.psize,
-                          alpha = input$plot.display.opacity,
-                          position = position_jitter(width = jitter.x(), height = jitter.y()))
-      if(input$plot.line.trend != "None"){
-        p <- p + geom_smooth(method = input$plot.line.trend, 
-                             size = input$plot.line.trend.size,
-                             se = input$plot.line.trend.ribbon)
+      p <- p + geom_point(size = input$plot_display_psize,
+                          alpha = input$plot_display_opacity,
+                          position = position_jitter(width = jitter_x(), height = jitter_y()))
+      if(input$plot_line_trend != "None"){
+        p <- p + geom_smooth(method = input$plot_line_trend, 
+                             size = input$plot_line_trend_size,
+                             se = input$plot_line_trend_ribbon)
       }
     }
     
     # Facet for Sites if no grouping for site is selected and number of sites is greater than 1
-    if(input$plot.color != "Site" & input$plot.shape != "Site" & length(c(input$site)) > 1){
+    if(input$plot_color != "Site" & input$plot_shape != "Site" & length(c(input$site)) > 1){
       p <- p + facet_wrap(~LocationLabel, ncol = ceiling(length(c(input$site))/4))
     } 
 
 # Add Lines
     
     # Show Non-Detect Level
-    if(input$plot.line.nd == TRUE){
+    if(input$plot_line_nd == TRUE){
       p <- p + geom_hline(yintercept = 2, 
-                          linetype = input$plot.line.nd.type,
-                          size = input$plot.line.nd.size)
+                          linetype = input$plot_line_nd_type,
+                          size = input$plot_line_nd_size)
     }
     
     # Show Reprting Limit
-    if(input$plot.line.rl == TRUE){
+    if(input$plot_line_rl == TRUE){
       p <- p + geom_hline(yintercept = 3, 
-                          linetype = input$plot.line.rl.type,
-                          size = input$plot.line.rl.size)
+                          linetype = input$plot_line_rl_type,
+                          size = input$plot_line_rl_size)
     }
     
     # Performance Standard
-    if(input$plot.line.ps == TRUE){
+    if(input$plot_line_ps == TRUE){
       p <- p + geom_hline(yintercept = 4, 
-                          linetype = input$plot.line.ps.type,
-                          size = input$plot.line.ps.size)
+                          linetype = input$plot_line_ps_type,
+                          size = input$plot_line_ps_size)
     }
 
 
 # Title and Axis Lables
     
     # Title
-    if(input$plot.title == "None"){
+    if(input$plot_title == "None"){
       p <- p + ggtitle("")
     }
-    if(input$plot.title == "Auto"){
-      p <- p + ggtitle(paste(y.text.param(), "vs", x.text.param(), "at", text.site(), 
-                             "from", text.date.start(), "to", text.date.end(), sep= " "))
+    if(input$plot_title == "Auto"){
+      p <- p + ggtitle(paste(y_text_param(), "vs", x_text_param(), "at", text_site(), 
+                             "from", text_date_start(), "to", text_date_end(), sep= " "))
     }
-    if(input$plot.title == "Custom"){
-      p <- p + ggtitle(input$plot.title.text)
+    if(input$plot_title == "Custom"){
+      p <- p + ggtitle(input$plot_title_text)
     }
     
     # X Axis
-    if(input$plot.xlab == "None"){
+    if(input$plot_xlab == "None"){
       p <- p + xlab("")
     }
-    if(input$plot.xlab == "Auto"){
-      p <- p + xlab(paste(x.text.param(), " (", x.text.units(),")", sep= ""))
+    if(input$plot_xlab == "Auto"){
+      p <- p + xlab(paste(x_text_param(), " (", x_text_units(),")", sep= ""))
     }
-    if(input$plot.xlab == "Custom"){
-      p <- p + xlab(input$plot.xlab.text)
+    if(input$plot_xlab == "Custom"){
+      p <- p + xlab(input$plot_xlab_text)
     }
     
     # Y Axis
-    if(input$plot.ylab == "None"){
+    if(input$plot_ylab == "None"){
       p <- p + ylab("")
     }
-    if(input$plot.ylab == "Auto"){
-      p <- p + ylab(paste(y.text.param(), " (", y.text.units(),")", sep= ""))
+    if(input$plot_ylab == "Auto"){
+      p <- p + ylab(paste(y_text_param(), " (", y_text_units(),")", sep= ""))
     }
-    if(input$plot.ylab == "Custom"){
-      p <- p + ylab(input$plot.ylab.text)
+    if(input$plot_ylab == "Custom"){
+      p <- p + ylab(input$plot_ylab_text)
     }
     
 # Save Options
@@ -383,10 +383,10 @@ plot.regress <- function(input, output, session, df) {
     p <- p + theme(plot.margin = unit(c(0.2, 0.2, 0.2, 0.5), "in"))
     
     # Gridlines for saving options
-    if("major gridlines" %in% input$plot.save.grid){
+    if("major gridlines" %in% input$plot_save_grid){
       p <- p + theme(panel.grid.major = element_line())
     }
-    if("minor gridlines" %in% input$plot.save.grid){
+    if("minor gridlines" %in% input$plot_save_grid){
       p <- p + theme(panel.grid.minor = element_line())
     }
     
@@ -404,8 +404,8 @@ plot.regress <- function(input, output, session, df) {
   
   # Plot Print
   
-  output$save.plot <- downloadHandler(
-    filename = function (){paste(text.param(),' Site ', text.site(),' from ', text.date.start(),' to ', text.date.end(), '.png', sep='')},
+  output$save_plot <- downloadHandler(
+    filename = function (){paste(text_param(),' Site ', text_site(),' from ', text_date_start(),' to ', text_date_end(), '.png', sep='')},
     content = function(file) {ggsave(file, plot = p(), device = "png")},
     contentType = 'image/png'
   )

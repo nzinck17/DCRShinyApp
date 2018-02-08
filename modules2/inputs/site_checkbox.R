@@ -13,7 +13,7 @@
 # User Interface
 ##############################################################################################################################
 
-site.checkbox.UI <- function(id) {
+SITE_CHECKBOX_UI <- function(id) {
   
   ns <- NS(id) # see General Note 1
   
@@ -22,13 +22,13 @@ site.checkbox.UI <- function(id) {
       column(6,
              # Site Selection
              wellPanel(
-               uiOutput(ns("site.primary.ui"))
+               uiOutput(ns("site_primary_ui"))
              )
       ),
       column(6,
              wellPanel(
-               uiOutput(ns("site.nonprimary.category.ui")),
-               uiOutput(ns("site.nonprimary.ui"))
+               uiOutput(ns("site_nonprimary_category_ui")),
+               uiOutput(ns("site_nonprimary_ui"))
              ) # end Well Panel
       )
     )
@@ -41,72 +41,62 @@ site.checkbox.UI <- function(id) {
 # Server Function
 ##############################################################################################################################
 
-# Note that Argument "df"  needs to be a reactive expression, not a resolved value. 
+# Note that Argument "Df"  needs to be a reactive expression, not a resolved value. 
 # Thus do not use () in callModule argument for reactives
 # For non reactives wrap with "reactive" to make into a reactive expression.
 
-site.checkbox <- function(input, output, session, df, selectall = FALSE, colwidth = 3) { 
+SITE_CHECKBOX <- function(input, output, session, Df, selectall = FALSE, colwidth = 3) { 
   
 
   ### Site - Primary
   
   # List
-  site.primary.choices <- reactive({
-    df() %>% filter(LocationCategory == "Primary Active") %>%
+  Site_Primary_Choices <- reactive({
+    Df() %>% filter(LocationCategory == "Primary Active") %>%
     .$LocationLabel %>% factor() %>% levels()
   })
   
-  selected <- reactive({
+  Selected <- reactive({
     if(selectall == FALSE){
       NULL
     }else{
-      site.primary.choices()
+      Site_Primary_Choices()
     }
   })
 
   # UI
-  output$site.primary.ui <- renderUI({
+  output$site_primary_ui <- renderUI({
     ns <- session$ns # see General Note 1
-    checkboxSelectAll.UI(ns("site.primary"))
+    CHECKBOX_SELECT_ALL_UI(ns("site_primary"))
   })
   
   # Server
-  site.primary <- callModule(checkboxSelectAll, "site.primary",
+  Site_Primary <- callModule(CHECKBOX_SELECT_ALL, "site_primary",
                              label =  "Primary Active Sites:",
-                             choices = site.primary.choices,
-                             selected = selected,
+                             choices = Site_Primary_Choices,
+                             selected = Selected,
                              colwidth = colwidth)
 
   
   
   ### Site - Non Primary Categories
   
-  site.nonprimary.category.choices <- reactive({
-  
-  #df.temp <- df()
-  
-  # Change LocationCateogory NA to "NA" to show up in App
-  
-
-  #df.temp$LocationCategory <- as.character(df.temp$LocationCategory)
-  #df.temp$LocationCategory[is.na(df.temp$LocationCategory)] <- "NA"
-  
   # List
-  df() %>% filter(LocationCategory != "Primary Active") %>%
-    .$LocationCategory %>% factor(exclude = FALSE) %>% levels()
-  
+  Site_Nonprimary_Category_Choices <- reactive({
+    Df() %>% filter(LocationCategory != "Primary Active") %>%
+      .$LocationCategory %>% factor(exclude = FALSE) %>% levels()
   })
   
   # UI
-  output$site.nonprimary.category.ui <- renderUI({
+  output$site_nonprimary_category_ui <- renderUI({
     ns <- session$ns # see General Note 1
-    checkboxSelectAll.UI(ns("site.nonprimary.category"))
+    CHECKBOX_SELECT_ALL_UI(ns("site_nonprimary_category"))
   })
   
   # Server
-  site.nonprimary.category <- callModule(checkboxSelectAll, "site.nonprimary.category",
+  Site_Nonprimary_Category <- callModule(CHECKBOX_SELECT_ALL, "site_nonprimary_category",
                                          label = "Show Other Categories:",
-                                         choices = site.nonprimary.category.choices,
+                                         choices = Site_Nonprimary_Category_Choices,
                                          colwidth = colwidth)
   
   
@@ -114,32 +104,32 @@ site.checkbox <- function(input, output, session, df, selectall = FALSE, colwidt
   ### Site - NonPrimary Sites
   
   # List
-  site.nonprimary.choices <- reactive({
+  Site_Nonprimary_Choices <- reactive({
     
-    df() %>%
-      filter(LocationCategory %in% site.nonprimary.category()) %>%
+    Df() %>%
+      filter(LocationCategory %in% Site_Nonprimary_Category()) %>%
       .$LocationLabel %>%
       factor() %>%
       levels()
   })
   
   # UI
-  output$site.nonprimary.ui <- renderUI({
+  output$site_nonprimary_ui <- renderUI({
     ns <- session$ns # see General Note 1
-    checkboxSelectAll.UI(ns("site.nonprimary"))
+    CHECKBOX_SELECT_ALL_UI(ns("site_nonprimary"))
   })
   
   
   # Server
-  site.nonprimary <- callModule(checkboxSelectAll, "site.nonprimary",
+  Site_Nonprimary <- callModule(CHECKBOX_SELECT_ALL, "site_nonprimary",
                                 label = "Sites:",
-                                choices = site.nonprimary.choices,
+                                choices = Site_Nonprimary_Choices,
                                 colwidth = colwidth)
   
   
   
   ### Return selected site list "site" from callModule
-  return(reactive({c(site.primary(), site.nonprimary())}))
+  return(reactive({c(Site_Primary(), Site_Nonprimary())}))
 
 } # end Server Function
 
