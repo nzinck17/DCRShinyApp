@@ -21,25 +21,15 @@ HOME_UI <- function(id) {
 ns <- NS(id)
 
 tagList(
-  
-  # CSS for map / map legend
-  tags$head(
-    tags$style(type = "text/css", "html, body {width:100%;height:100%}",
-               ".leaflet .legend i{
-               border-radius:50%;
-               width: 10px;
-               height: 10px;
-               margin-top: 4px;
-                }
-          ") # end tags style
-  ), # end tags head
-  # end CSS
-  
-  fluidRow( 
-    leafletOutput(ns("map"), height = 700)
+  fluidRow(
+    tags$style(type = "text/css", "#Home-map {height: calc(100vh - 210px) !important;}"),
+    leafletOutput(ns("map")) #height = 700
   ),
-  fluidRow( 
-    br(), h3("click on a site for info")
+  fluidRow(
+    br(),
+    column(3, imageOutput(ns("dcr_image"), height = 80), align = "left"),
+    column(6, imageOutput(ns("wave_image"), height = 80), align = "center"),
+    column(3, imageOutput(ns("umass_image"), height = 80), align = "right")
   )
 )
 
@@ -118,6 +108,28 @@ HOME <- function(input, output, session, df_site) {
       )
       
   })
+  
+  
+  # DCR IMAGE
+  output$dcr_image <- renderImage({
+    list(src = "images/DCR.jpg",
+         width= "160",
+         height= "80")
+  }, deleteFile = FALSE)
+  
+  # WAVE IMAGE
+  output$wave_image <- renderImage({
+    list(src = "images/WAVE.jpg",
+          width= "360",
+          height= "80")
+  }, deleteFile = FALSE)
+  
+  # UMass IMAGE
+  output$umass_image <- renderImage({
+    list(src = "images/UMass.png",
+         width= "240",
+         height= "80")
+  }, deleteFile = FALSE)
   
 
 } # end Server Function
