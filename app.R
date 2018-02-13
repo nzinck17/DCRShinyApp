@@ -16,7 +16,7 @@
 # Load Libraries and Script (Sources, Modules, and Functions)
 #####################################################################################################
 
-### ipak function
+## ipak function
  ipak <- function(pkg){
    new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
    if (length(new.pkg))
@@ -25,12 +25,24 @@
  }
 
 #### NOTE - Shiny must be installed and loaded in the LaunchAppGitHub.R script - any other packages requred should be listed below
-packages <- c("shiny", "rmarkdown", "knitr", "tidyverse", "lubridate", "plotly", "leaflet", "RColorBrewer", 
-              "DT", "akima", "odbc", "DBI", "scales", "stringr", "cowplot", "shinythemes")
+packages <- c("shiny", "rmarkdown", "knitr", "tidyverse", "lubridate", "plotly", "leaflet", "RColorBrewer",
+              "DT", "akima", "odbc", "DBI", "scales", "stringr", "cowplot", "shinythemes","rgdal")
 ipak(packages)
-### Run/Source Scripts that load data
 
-source("Sources/load_MS_Access_data.R")
+## Fetch all of the cached rds data for the app:
+    # Directory with saved .rds files
+    datadir <- "//env.govt.state.ma.us/enterprise/DCR-WestBoylston-WKGRP/WatershedJAH/EQStaff/WQDatabase/R-Shared/WQApp/data"
+    # Make a list of all the .rds files using full path
+    rds_files <- list.files(datadir,full.names = TRUE ,pattern = "\\.rds$")
+    # Make a list of the df names by eliminating extension from files
+    df_names <- gsub(".rds", "", list.files(datadir))
+    # create an object that contains all of the rds files
+    data <- lapply(rds_files, readRDS)
+    # name each df in the data object appropriately
+    names(data) <- df_names
+    # Extract each element of the data object into the global environment
+    list2env(data ,.GlobalEnv)
+
 #source("sources/Settings.R")
 
 ### Load Primary Modules
@@ -106,10 +118,10 @@ tabPanel("Home",
 # Filter
 
 tabPanel("Filter",
-         
+
          # Title
          fluidRow(br(), br(), br(), br(), h2("Filter Data", align = "center"), br()),
-         
+
          navlistPanel(widths = c(2, 10),
                       "Water Quality Data",
                       tabPanel("Tributary",
@@ -256,8 +268,8 @@ tabPanel("Reservoir",
                            tabPanel("Wachusett", METADATA_UI("mod_prof_wach_meta"))
                          ) # end tabset Panel
                 ), # end tabpanel
-                
-                
+
+
                 "Biological",
                 tabPanel("Phytoplankton",
                          fluidRow(column(10, h4("Phytoplankton Plots and Data", align = "center")), column(2)),
@@ -397,13 +409,13 @@ server <- function(input, output, session) {
 
 ###################################################################
 # Filter
-  
+
   Df_Trib_Filtered <- callModule(FILTER_WQ, "mod_trib_filter", dfs = list(df_trib_wach, df_trib_quab, df_trib_ware))
   Df_Bact_Filtered <- callModule(FILTER_WQ, "mod_bact_filter", dfs = list(df_bact_wach))
   Df_Chem_Filtered <- callModule(FILTER_WQ, "mod_chem_filter", dfs = list(df_chem_wach, df_chem_quab))
   Df_Prof_Filtered <- callModule(FILTER_WQ, "mod_prof_filter", dfs = list(df_prof_quab, df_prof_wach))  # fix site
 
-         
+
 ######################################################
 # Tributary
 
@@ -418,7 +430,7 @@ server <- function(input, output, session) {
   callModule(CORRELATION_WQ, "mod_trib_ware_regr", df = df_trib_ware, df_site = df_trib_ware_site)
   callModule(CORRELATION_WQ, "mod_trib_wach_regr", df = df_trib_wach, df_site = df_trib_wach_site)
   #callModule(CORRELATION, "mod_trib_all_regr", df = df_trib_all, df_site = df_trib_all_site)
-  
+
   # Metadata
   callModule(METADATA, "mod_trib_quab_meta", df_full = df_trib_quab, Df_Filtered = Df_Trib_Filtered[[2]], df_site = df_trib_quab_site, df_param = df_quab_param)
   callModule(METADATA, "mod_trib_wach_meta", df_full = df_trib_wach, Df_Filtered = Df_Trib_Filtered[[1]], df_site = df_trib_wach_site, df_param = df_wq_wach_param, df_flag = df_wq_wach_flag)
@@ -432,7 +444,7 @@ server <- function(input, output, session) {
   callModule(CORRELATION_WQ, "mod_bact_wach_regr", df = df_bact_wach, df_site = df_bact_wach_site)
 
   callModule(METADATA, "mod_bact_wach_meta", df_full = df_bact_wach, Df_Filtered = Df_Bact_Filtered[[1]], df_site = df_bact_wach_site, df_param = df_wq_wach_param, df_flag = df_wq_wach_flag)
-  
+
   # Chemical
   callModule(TIME_DEPTH_WQ, "mod_chem_quab_time", df_full = df_chem_quab, Df_Filtered = Df_Chem_Filtered[[2]], df_site = df_chem_quab_site)
   callModule(TIME_DEPTH_WQ, "mod_chem_wach_time", df_full = df_chem_wach, Df_Filtered = Df_Chem_Filtered[[1]], df_site = df_chem_wach_site)
@@ -442,7 +454,7 @@ server <- function(input, output, session) {
 
   callModule(METADATA, "mod_chem_quab_meta", df_full = df_chem_quab, Df_Filtered = Df_Chem_Filtered[[2]], df_site = df_chem_quab_site, df_param = df_quab_param)
   callModule(METADATA, "mod_chem_wach_meta",  df_full = df_chem_wach, Df_Filtered = Df_Chem_Filtered[[1]], df_site = df_prof_wach_site)
-  
+
   # Profile (physicochemical)
   callModule(PROF_HEATMAP, "mod_prof_quab_heat", df = df_prof_quab)
   callModule(PROF_HEATMAP, "mod_prof_wach_heat", df = df_prof_wach)
@@ -456,7 +468,7 @@ server <- function(input, output, session) {
   # Change the Data Frames to Profile Data
   callModule(METADATA, "mod_prof_quab_meta", df_full = df_chem_quab, Df_Filtered = Df_Chem_Filtered[[2]], df_site = df_prof_quab_site, df_param = df_quab_param)
   callModule(METADATA, "mod_prof_wach_meta", df_full = df_chem_wach, Df_Filtered = Df_Chem_Filtered[[1]], df_site = df_prof_wach_site)
-  
+
   # AquaBio
   callModule(PHYTO, "mod_phyto_wach_plots", df = df_phyto_wach)
   #callModule(phyto_summary, "mod_phyto_wach_plots", df = df_phyto_wach)
