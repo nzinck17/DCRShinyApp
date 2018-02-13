@@ -297,7 +297,7 @@ df_chem_wach_site <- df_chem_prof_wach_site %>% filter(!is.na(LocationDepth))
 
 # Quabbin Profile (Need to find Sites)
 df_prof_quab_site <- df_chem_quab_site
-  
+
 # Wachusett Profile
 df_prof_wach_site <- df_chem_prof_wach_site %>% filter(is.na(LocationDepth))
 

@@ -163,6 +163,7 @@ TIME_WQ <- function(input, output, session, df_full, Df_Filtered, df_site) {
   
   # Column Selection
   Df_Table <- reactive({
+    req(input$column)
     Df2() %>% select(c(input$column))
   })
 

@@ -73,6 +73,8 @@ source("modules2/inputs/param_checkbox.R")
 source("modules2/inputs/date_select.R")
 source("modules2/inputs/checkbox_select_all.R")
 source("modules2/inputs/select_select_all.R")
+source("modules2/inputs/plot_display_options.R")
+source("modules2/inputs/plot_title_and_labels.R")
 
 # Outputs
 source("modules2/outputs/plot_time_wq.R")
@@ -99,7 +101,7 @@ source("functions/phyto_plots.R")
 ##################################  User Interface  ###############################
 ###################################################################################
 
-ui <- navbarPage("DCR", position = "fixed-top", inverse = TRUE, collapsible = TRUE, theme = shinytheme("cerulean"), #
+ui <- navbarPage("WAVE", position = "fixed-top", inverse = TRUE, collapsible = TRUE, theme = shinytheme("cerulean"), #
 
 ######################################################
 # Home Page
@@ -107,8 +109,7 @@ ui <- navbarPage("DCR", position = "fixed-top", inverse = TRUE, collapsible = TR
 tabPanel("Home",
 
   # Title
-  fluidRow(br(), br(), br(), br(), h2("Water Quality Data Management System", align = "center")),
-  fluidRow(h3("Department of Conservation and Recreation", align = "center"), br()),
+  fluidRow(br(), br(), h3("Watershed data Analysis and Visualization Environment", align = "center")),
   HOME_UI("Home")
 
 ),
