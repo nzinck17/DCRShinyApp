@@ -20,7 +20,6 @@ PLOT_DISPLAY_OPTIONS_UI <- function(id) {
   ns <- NS(id) # see General Note 1
   
   tagList(
-    
     fluidRow(
       column(3,
              wellPanel(
@@ -38,42 +37,54 @@ PLOT_DISPLAY_OPTIONS_UI <- function(id) {
                            min = 0, max = 5, value = 1, step = 1)
              )
       ), # end column
-      column(3,
-             strong("Horizontal Line 1:"),
-             textInput(ns("hline1_int"), "Y intercepts"),
-             h5("multiple numbers seperated with comma"),
-             radioButtons(ns("hline1_type"), "Line Type",
-                          choices = c("solid", "dash", "dotted")),
-             sliderInput(ns("hline1_size"), "Thickness:",
-                         min = 0, max = 3, value = 1, step = 0.25),
-             sliderInput(ns("hline1_alpha"), "Transparency:",
-                         min = 0, max = 1, value = 1, step = 0.1)
-      ), # end column
-      column(3,
-             strong("Horizontal Line 2:"),
-             textInput(ns("hline2_int"), "Y intercepts"),
-             h5("multiple numbers seperated with comma"),
-             radioButtons(ns("hline2_type"), "Line Type",
-                          choices = c("solid", "dash", "dotted")),
-             sliderInput(ns("hline2_size"), "Thickness:",
-                         min = 0, max = 3, value = 1, step = 0.25),
-             sliderInput(ns("hline2_alpha"), "Transparency:",
-                         min = 0, max = 1, value = 1, step = 0.1)
-      ), # end column
-      column(3,
-             strong("Vertical Line:"),
-             textInput(ns("vline_int"), "Y intercepts"),
-             h5("multiple numbers seperated with comma"),
-             radioButtons(ns("vline_type"), "Line Type",
-                          choices = c("solid", "dash", "dotted")),
-             sliderInput(ns("vline_size"), "Thickness:",
-                         min = 0, max = 3, value = 1, step = 0.25),
-             sliderInput(ns("vline_alpha"), "Transparency:",
-                         min = 0, max = 1, value = 1, step = 0.1)
-      ) # end column
-    )
-  )
-}
+      column(9,
+             wellPanel(
+               fluidRow(
+                 column(4,
+                        strong("Horizontal Line 1:"),
+                        textInput(ns("hline1_int"), "Location of Y intercept(s)"),
+                        h5("multiple numbers seperated with comma"),
+                        radioButtons(ns("hline1_type"), "Line Type",
+                                     choices = c("solid", "dashed", "dotted"),
+                                     inline = TRUE),
+                        sliderInput(ns("hline1_size"), "Thickness:",
+                                    min = 0, max = 3, value = 1, step = 0.25),
+                        sliderInput(ns("hline1_alpha"), "Transparency:",
+                                    min = 0, max = 1, value = 1, step = 0.1),
+                        textInput(ns("hline1_text"), "Text")
+                 ), # end column
+                 column(4,
+                        strong("Horizontal Line 2:"),
+                        textInput(ns("hline2_int"), "Location of Y intercept(s)"),
+                        h5("multiple numbers seperated with comma"),
+                        radioButtons(ns("hline2_type"), "Line Type",
+                                     choices = c("solid", "dashed", "dotted"),
+                                     inline = TRUE),
+                        sliderInput(ns("hline2_size"), "Thickness:",
+                                    min = 0, max = 3, value = 1, step = 0.25),
+                        sliderInput(ns("hline2_alpha"), "Transparency:",
+                                    min = 0, max = 1, value = 1, step = 0.1),
+                        textInput(ns("hline2_text"), "Text")
+                 ), # end column
+                 column(4,
+                        strong("Vertical Line:"),
+                        textInput(ns("vline_int"), "Location of Y intercept(s)"),
+                        h5("multiple numbers seperated with comma"),
+                        radioButtons(ns("vline_type"), "Line Type",
+                                     choices = c("solid", "dashed", "dotted"),
+                                     inline = TRUE),
+                        sliderInput(ns("vline_size"), "Thickness:",
+                                    min = 0, max = 3, value = 1, step = 0.25),
+                        sliderInput(ns("vline_alpha"), "Transparency:",
+                                    min = 0, max = 1, value = 1, step = 0.1),
+                        textInput(ns("vline_text"), "Text")
+                 ) # end column
+               ) # end fluidRow
+             ) # end well
+      ) # end col
+    ) # end fluidrow
+  ) # end taglist
+} # end UI function
 
 
 ##############################################################################################################################

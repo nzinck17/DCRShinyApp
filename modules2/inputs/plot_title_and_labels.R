@@ -15,40 +15,41 @@
 # User Interface
 ##############################################################################################################################
 
-PLOT_TITLE_AND_LABELS_UI <- function(id, sec_y_axis = FALSE) {
+PLOT_TITLE_AND_LABELS_UI <- function(id) {
   
   ns <- NS(id) # see General Note 1
   
   tagList(
-    
-    fluidRow(
-      column(3,
-             radioButtons(ns("title"), "Title Options:",
-                          choices= c("None", "Auto", "Custom"),
-                          selected = "Auto"),
-             textInput(ns("title_text"), "")
-      ), # end column
-      column(3,
-             radioButtons(ns("x_lab"), "X Label Options:",
-                          choices= c("None", "Auto", "Custom"),
-                          selected = "Auto"),
-             textInput(ns("xlab_text"), "")
-      ), # end column
-      column(3,
-             radioButtons(ns("y_lab"), "Y Label Options:",
-                          choices= c("None", "Auto", "Custom"),
-                          selected = "Auto"),
-             textInput(ns("ylab_text"), "")
-      ), # end column
-      column(3,
-             conditionalPanel(
-               condition = "sec_y_axis == TRUE", 
-               radioButtons(ns("y2_lab"), "Y Label Options:",
+    wellPanel(
+      fluidRow(
+        column(3,
+               radioButtons(ns("title"), "Title Options:",
                             choices= c("None", "Auto", "Custom"),
                             selected = "Auto"),
-               textInput(ns("y2_lab_text"), "")
-             )
-      ) # end column
+               textInput(ns("title_text"), "")
+        ), # end column
+        column(3,
+               radioButtons(ns("x_lab"), "X Label Options:",
+                            choices= c("None", "Auto", "Custom"),
+                            selected = "Auto"),
+               textInput(ns("x_lab_text"), "")
+        ), # end column
+        column(3,
+               radioButtons(ns("y_lab"), "Y Label Options:",
+                            choices= c("None", "Auto", "Custom"),
+                            selected = "Auto"),
+               textInput(ns("y_lab_text"), "")
+        ), # end column
+        column(3,
+               conditionalPanel(
+                 condition = "sec_y_axis == TRUE", 
+                 radioButtons(ns("y2_lab"), "Y Label Options:",
+                              choices= c("None", "Auto", "Custom"),
+                              selected = "Auto"),
+                 textInput(ns("y2_lab_text"), "")
+               )
+        ) # end column
+      )
     )
   )
 }
@@ -62,7 +63,7 @@ PLOT_TITLE_AND_LABELS_UI <- function(id, sec_y_axis = FALSE) {
 # Thus do not use () in callModule argument for reactives
 # For non reactives wrap with "reactive" to make into a reactive expression.
 
-PLOT_TITLE_AND_LABELS <- function(input, output, session, P, Title_Auto, X_Lab_Auto, Y_Lab_Auto, Y2_Lab_Auto = NULL) {
+PLOT_TITLE_AND_LABELS <- function(input, output, session, P, Title_Auto, X_Lab_Auto, Y_Lab_Auto, sec_y_axis = FALSE, Y2_Lab_Auto = NULL) {
   
   ns <- session$ns # see General Note 1
   
@@ -80,18 +81,20 @@ PLOT_TITLE_AND_LABELS <- function(input, output, session, P, Title_Auto, X_Lab_A
       p <- p + ggtitle(Title_Auto())
     }
     if(input$title == "Custom"){
-      p <- p + ggtitle(input$plot_title_text)
+      p <- p + ggtitle(input$title_text)
     }
+    
+    p <- p + theme(plot.title = element_text(hjust = 0.5))
     
     # X Axis Label
     if(input$x_lab == "None"){
       p <- p + xlab("")
     }
     if(input$x_lab == "Auto"){
-      p <- p + xlab(X_Lab_Auto)
+      p <- p + xlab(X_Lab_Auto())
     }
     if(input$x_lab == "Custom"){
-      p <- p + xlab(input$plot_xlab_text)
+      p <- p + xlab(input$x_lab_text)
     }
     
     # Y Axis Label
@@ -99,32 +102,45 @@ PLOT_TITLE_AND_LABELS <- function(input, output, session, P, Title_Auto, X_Lab_A
       p <- p + ylab("")
     }
     if(input$y_lab == "Auto"){
-      p <- p + ylab(Y_Lab_Auto)
+      p <- p + ylab(Y_Lab_Auto())
     }
     if(input$y_lab == "Custom"){
-      p <- p + ylab(input$plot_ylab_text)
+      p <- p + ylab(input$y_lab_text)
     }
     
     p
     
   })
   
+  output$sec_y_axis_ui <- renderUI({
+    if(sec_y_axis == TRUE){
+      tagList(
+        radioButtons(ns("y2_lab"), "Y Label Options:",
+                     choices= c("None", "Auto", "Custom"),
+                     selected = "Auto"),
+        textInput(ns("y2_lab_text"), "")
+      )
+    }
+  })
+  
+  # Do not suspend rendering when Main tab is not selected
+  outputOptions(output, "sec_y_axis_ui", suspendWhenHidden = FALSE)
+  
   # Secondary Y-axis
   Y2_Lab <- reactive({
-    if(!is.null(Y2_Lab_Auto())){
+    req(input$y2_lab)
+    if(sec_y_axis == TRUE){
       if(input$y2_lab == "None"){
         ""
       }
       if(input$y2_lab == "Auto"){
-        Y2_Lab_Auto
+        Y2_Lab_Auto()
       }
       if(input$y2_lab == "Custom"){
         input$y2_lab_text
       }else{
         "the renderUI is delayed!"
       }
-    } else{
-      "Add an Automatic Title!"
     }
   })
 
