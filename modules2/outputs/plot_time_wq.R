@@ -44,13 +44,7 @@ PLOT_TIME_WQ_UI <- function(id) {
                                    )
                                  ),
                                  wellPanel(
-                                   checkboxGroupInput(ns("axis"), "Axis Options:",
-                                                      choices= c("Log-scale Y-Axis",
-                                                                 "Y-axis start at zero"))
-                                 ),
-                                 wellPanel(
-                                   sliderInput(ns("point_size"), "Point Size:",
-                                               min = 0.5, max = 4, value = 1.5, step = 0.5)
+                                   uiOutput(ns("axis_ui"))
                                  )
                           ), # end column
                           column(4,
@@ -67,20 +61,16 @@ PLOT_TIME_WQ_UI <- function(id) {
                                  ),
                                  wellPanel(
                                    fluidRow(
-                                     radioButtons(ns("point_shape"), "Point Shape (when not grouped by shape):",
-                                                  choices = c("circle" = 16,
-                                                              "square" = 15,
-                                                              "triangle" = 17,
-                                                              "diamond" = 18),
-                                                  inline = TRUE),
-                                     radioButtons(ns("point_color1"), "Point Color of Primary Axis (when not grouped by color):",
-                                                  choices = c("black", "blue", "red", "green"),
-                                                  inline = TRUE),
+                                     uiOutput(ns("point_shape_ui")),
+                                     uiOutput(ns("point_color1_ui")),
                                      radioButtons(ns("point_color2"), "Point Color of Secondary Axis (when not grouped by color):",
                                                   choices = c("black", "blue", "red", "green"),
                                                   selected = "green",
-                                                  inline = TRUE)
+                                                  inline = TRUE),
+                                     sliderInput(ns("point_size"), "Point Size:",
+                                                 min = 0.5, max = 4, value = 1.5, step = 0.5)
                                    )
+                                   
                                  )
                           ), # end column
                           column(4,
@@ -114,12 +104,16 @@ PLOT_TIME_WQ_UI <- function(id) {
                                  )
                           ) # end column
                ), # end Tab Panel
-               ### More Display Options
-               tabPanel("More Display Options", br(), br(),
-                        PLOT_DISPLAY_OPTIONS_UI(ns("more_display"))
+               ### More Display Options 1
+               tabPanel("Theme and H-lines", br(), br(),
+                        PLOT_THEME_AND_HLINE_UI(ns("more_display_1"))
+               ),
+               ### More Display Options 2
+               tabPanel("Texts and V-lines", br(), br(),
+                        PLOT_TEXT_AND_VLINES_TIME_UI(ns("text_vline"))
                ),
                ### Titles and Axis Labels
-               tabPanel("Title and Axis Labels", br(), br(),
+               tabPanel("Title and Labels", br(), br(),
                         PLOT_TITLE_AND_LABELS_UI(ns("title_label"))
                ), # end Tab Panel
                ### Save Plot
@@ -137,17 +131,27 @@ PLOT_TIME_WQ_UI <- function(id) {
                                                 min = 3, max = 17, step = 0.25)
                                    
                             ),
-                            column(2,
+                            column(3,
                                    radioButtons(ns("save_type"), "File Type:",
                                                 choices= c("pdf",
                                                            "jpg",
-                                                           "png"))
-                            ),
-                            column(2,
+                                                           "png"),
+                                                inline = TRUE),
                                    checkboxGroupInput(ns("save_grid"), "Gridline Override:",
                                                       choices= c("major gridlines",
                                                                  "minor gridlines"))
-                            ) # end column
+                            ),
+                            column(3,
+                                   sliderInput(ns("margin_top"), "adjust top margin",
+                                               min = 0, max = 1.5, value = 0.2, step = 0.1),
+                                   sliderInput(ns("margin_right"), "adjust right margin",
+                                               min = 0, max = 1.5, value = 0.2, step = 0.1),
+                                   sliderInput(ns("margin_bottom"), "adjust bottom margin",
+                                               min = 0, max = 1.5, value = 0.2, step = 0.1),
+                                   sliderInput(ns("margin_left"), "adjust left margin",
+                                               min = 0, max = 1.5, value = 0.5, step = 0.1)
+                            )
+                            
                           )
                         )
                ) # tab panel
@@ -181,7 +185,7 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
   # Parameter Axis Choice for Primary Axis
   output$param1_ui <- renderUI({
     if(Df() %>% summarise(n()) %>% unlist() != 0){
-      radioButtons(ns("param1"), "Primary Y-Axis Parameter",
+      radioButtons(ns("param1"), "Parameter 1 - Primary Y-Axis",
                    choices = Param())
     }
   })
@@ -192,18 +196,23 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
   observe({
     
     # save previously selected value
-    isolate({save_selected <- input$param1})
+    isolate({
+      if(input$param1 %in% c(Param())){
+        save_selected <- input$param1
+      }else{
+        save_selected <- NULL
+      }
+    })
     
-    updateRadioButtons(session, inputId = "param1", #label = "Primary Y-Axis Parameter", 
+    updateRadioButtons(session, inputId = "param1", 
                       choices = Param(),
                       selected = save_selected)
-    
   })
   
   # Parameter Axis Choice for Secondary Axis
   output$param2_ui <- renderUI({
-    radioButtons(ns("param2"), "Secondary Y-Axis Parameter",
-                 choices = c("None", Param()),
+    radioButtons(ns("param2"), "Parameter 2 - Secondary Y-Axis",
+                 choices = c(Param(), "None"),
                  selected = "None")
   })
   
@@ -213,10 +222,16 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
   observe({
     
     # save previously selected value
-    isolate({save_selected <- input$param2})
+    isolate({
+      if(input$param2 %in% c(Param(), "None")){
+        save_selected <- input$param2
+      }else{
+        save_selected <- "None"
+      }
+    })
     
-    updateRadioButtons(session, inputId = "param2", #label = "Primary Y-Axis Parameter", 
-                      choices = c("None", Param()),
+    updateRadioButtons(session, inputId = "param2",
+                      choices = c(Param(), "None"),
                       selected = save_selected)
     
   })
@@ -247,13 +262,13 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
   })
   
   # Flag List
-  Site <- reactive({
-    if(input$param2 == "None"){
-      Df1()$Site %>% factor() %>% levels()
-    } else{
-      unique(Df1()$Site %>% factor() %>% levels(), Df2()$Site %>% factor() %>% levels())
-    }
-  })
+  # Flag <- reactive({
+  #   if(input$param2 == "None"){
+  #     Df1()$Site %>% factor() %>% levels()
+  #   } else{
+  #     unique(Df1()$Site %>% factor() %>% levels(), Df2()$Site %>% factor() %>% levels())
+  #   }
+  # })
   
   # Color Grouping UI
   output$group_color_ui <- renderUI({
@@ -311,18 +326,67 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
   # })
 
   
+  # Axis UI - only show options for 1 Parameter plot
+  output$axis_ui <- renderUI({
+    req(input$param2 == "None")
+    #if(input$param2 == "None"){
+    checkboxGroupInput(ns("axis"), "Axis Options:",
+                       choices= c("Log-scale Y-Axis",
+                                  "Y-axis start at zero"))
+    #}
+  })
+  
+  
+  # Point Shape UI - only show options for 1 Parameter plot
+  output$point_shape_ui <- renderUI({
+    req(input$param2)
+    if(input$param2 == "None" & input$group_shape == "None/Parameter"){
+      radioButtons(ns("point_shape"), "Point Shape (when not grouped by shape):",
+                   choices = c("circle" = 16,
+                               "square" = 15,
+                               "triangle" = 17,
+                               "diamond" = 18),
+                   inline = TRUE)
+    }
+  })
+  
+  # Point Color 1 UI - only show options when color = None
+  output$point_color1_ui <- renderUI({
+    req(input$param2)
+    if(input$param2 != "None" | input$group_color == "None"){
+      radioButtons(ns("point_color1"), "Point Color of Primary Axis (when not grouped by color):",
+                   choices = c("black", "blue", "red", "green"),
+                   inline = TRUE)
+    }
+  })
+  
+  # # Point Color 1 UI - only show options when color = None
+  # output$point_color2_ui <- renderUI({
+  #   req(input$param2)
+  #   if(input$param2 != "None"){
+  #     radioButtons(ns("point_color1"), "Point Color of Primary Axis (when not grouped by color):",
+  #                  choices = c("black", "blue", "red", "green"),
+  #                  inline = TRUE)
+  #   }
+  # })
+
+  
+########################################################################
+### Plot 
+  
+  
   ### Plot Outputs 
   
   # ONe Y-axis interactive Plotly plot
   output$plot1 <- renderPlotly({
     req(input$param2 == "None")
-    ggplotly(P4())
+    ggplotly(P5())
   })
   
   # Two Y-axis ggplot static plot
   output$plot2 <- renderPlot({
     req(input$param2 != "None")
-    P4()
+    P5()
   })
   
   output$plot_ui <- renderUI({
@@ -344,9 +408,7 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
   # Main Plot Scripts
   P1 <- reactive({
     
-    # Features all plots have in common (This is unfortunetly a small list haha)
-    
-    ### One Parameter Plots - Primary Y axis only
+    ############# One Parameter Plots - Primary Y axis only ######################################
     
     if(input$param2 == "None"){
       
@@ -431,7 +493,22 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
         p <- p + facet_wrap(~Site, ncol = ceiling(length(c(Site()))/4))
       }
       
-      ### Two Parameter Plots - Primary and Secondary Y axes'
+      # Log Scale and Y-axis start at zero
+      if(input$param2 == "None"){
+        if("Log-scale Y-Axis" %in% input$axis){
+          p <- p + scale_y_log10()
+        } else {
+          if("Y-axis start at zero" %in% input$axis){
+            ymax <- max(Df1()$Result, na.rm = TRUE)
+            p <- p + scale_y_continuous(limits = c(0,ymax))
+          } else {
+            p <- p + scale_y_continuous()
+          }
+        }
+        # Secondary and Primary Axis (2 Parameter Plots)
+      }
+      
+      ############# Two Parameter Plots - Primary and Secondary Y axes' ######################
     } else{
       
       p <- ggplot()
@@ -522,65 +599,52 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
 
   
   # Display OPtions Tab
-  P2 <- callModule(PLOT_DISPLAY_OPTIONS, "more_display", 
-                   P = P1, 
-                   Df1 = Df1, 
-                   Df2 = Df2, 
+  P2 <- callModule(PLOT_THEME_AND_HLINE, "more_display_1",
+                   P = P1,
+                   Df1 = Df1,
+                   Df2 = Df2,
                    x = "as.POSIXct(Date)", y = "Result")
+  
+  # Display OPtions Tab
+  P3 <- callModule(PLOT_TEXT_AND_VLINES_TIME, "text_vline",
+                   P = P2,
+                   Df1 = Df1)
   
   
   # Title and Labels - returns a list of two reactive expressions. One a plot object and one a text string Sec. Axis label
-  P3 <- callModule(PLOT_TITLE_AND_LABELS, "title_label", 
-                   P = P2, 
+  P4 <- callModule(PLOT_TITLE_AND_LABELS, "title_label",
+                   P = P3,
                    Title_Auto = Plot_Name, # error w/o reactive?
-                   X_Lab_Auto = reactive({"Date"}), 
-                   Y_Lab_Auto = reactive({paste(Text_Param1(), " (", Text_Units1(),")", sep= "")}), 
+                   X_Lab_Auto = reactive({"Date"}),
+                   Y_Lab_Auto = reactive({paste(Text_Param1(), " (", Text_Units1(),")", sep= "")}),
                    sec_y_axis = TRUE,
                    Y2_Lab_Auto = reactive({paste(Text_Param2(), " (", Text_Units2(),")", sep= "")}))
   
   
-  # Log Axis Scripts
-  P4 <- reactive({
+  # Extra Additions for Secondary Axis
+  P5 <- reactive({
     
-    p <- P3$Plot()
+    p <- P4$Plot()
     
-    # Primary Axis Only
-    if(input$param2 == "None"){
-      if("Log-scale Y-Axis" %in% input$axis){
-        p <- p + scale_y_log10()
-      } else {
-        if("Y-axis start at zero" %in% input$axis){
-          ymax <- max(Df1()$Result, na.rm = TRUE)
-          p <- p + scale_y_continuous(limits = c(0,ymax))
-        } else {
-          p <- p + scale_y_continuous()
-        }
-      }
-      # Secondary and Primary Axis (2 Parameter Plots)
-    } else{
-
-      # Log Scale
-      if("Log-scale Y-Axis" %in% input$display_axis){
-        p <- p + scale_y_log10(sec.axis = sec_axis(~./Mult(), breaks = trans_breaks('log10', function(x) 10^x),
-                                                   name = "hey")) #P3$Y2_Lab()
-      } else{
-        if("Y-axis start at zero" %in% input$display_axis){
-          p <- p + scale_y_continuous(breaks = pretty_breaks(),limits = c(0,y1max),
-                                      sec.axis = sec_axis(~./Mult(), breaks = pretty_breaks(), 
-                                                          name = "hey"))
-        } else {
-          p <- p + scale_y_continuous(breaks = pretty_breaks(),
-                                      sec.axis = sec_axis(~./Mult(), breaks = pretty_breaks(), 
-                                                          name = "howdy"))
-        }
-      }
+    # Secondary Axis Only
+    # ylim?
+    
+    if(input$param2 != "None"){
+      p <- p + scale_y_continuous(breaks = pretty_breaks(),
+                                  sec.axis = sec_axis(~./Mult(), breaks = pretty_breaks(), 
+                                                      name = P4$Y2_Lab()))
       p <- p + theme(text = element_text(size = 15))
+      
     }
 
     # Save Options
     
     # Size dependent? Change size for saving?
-    p <- p + theme(plot.margin = unit(c(0.2, 0.2, 0.2, 0.5), "in"))
+    p <- p + theme(plot.margin = unit(c(input$margin_top, 
+                                        input$margin_right, 
+                                        input$margin_bottom, 
+                                        input$margin_left), 
+                                      "in"))
     
     # Gridlines for saving options - nonplotly inage
     if("major gridlines" %in% input$save_grid){
@@ -593,30 +657,17 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
     p 
     
   }) # end Plot
-
-  # Multiplier for Secondary Y axis
+  
   Mult <- reactive({
     
-    # Scalars for Secondary Y-axis
-    y1min <- min(Df1()$Result, na.rm = TRUE)
-    y2min <- min(Df2()$Result, na.rm = TRUE)
     y1max <- max(Df1()$Result, na.rm = TRUE)
     y2max <- max(Df2()$Result, na.rm = TRUE)
     
-    # Two Y-axis Log Scale adn non-Lod Scale
-    if("Log-scale Y-Axis" %in% input$axis){
-      mult <- exp(log(y1max  - y1min) / log(y2max - y2min))
-    } else{
-      if("Y-axis start at zero" %in% input$display_axis){
-        mult <- y1max / y2max 
-      } else {
-        mult <- (y1max  - y1min) / (y2max - y2min)
-      }
-    }
-  
-    mult
-    
+    y1max / y2max 
+
   })
+  
+
   
 
   
@@ -665,7 +716,7 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
 
   output$save_plot <- downloadHandler(
     filename = function(){Filename()},
-    content = function(file){ggsave(file, plot = P4(), 
+    content = function(file){ggsave(file, plot = P5(), 
                                     width = input$save_width,
                                     height = input$save_height,
                                     device = input$save_type)}#,

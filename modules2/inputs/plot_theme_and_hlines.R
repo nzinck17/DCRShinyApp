@@ -15,7 +15,7 @@
 # User Interface
 ##############################################################################################################################
 
-PLOT_DISPLAY_OPTIONS_UI <- function(id) {
+PLOT_THEME_AND_HLINE_UI <- function(id) {
   
   ns <- NS(id) # see General Note 1
   
@@ -30,11 +30,7 @@ PLOT_DISPLAY_OPTIONS_UI <- function(id) {
                                        "Light",
                                        "Dark",
                                        "Minimal",
-                                       "Classic")),
-               sliderInput(ns("psize"), "Point Size:",
-                           min = 0.5, max = 4, value = 1.5, step = 0.5),
-               sliderInput(ns("pshape"), "Point Shape:",
-                           min = 0, max = 5, value = 1, step = 1)
+                                       "Classic"))
              )
       ), # end column
       column(9,
@@ -42,6 +38,7 @@ PLOT_DISPLAY_OPTIONS_UI <- function(id) {
                fluidRow(
                  column(4,
                         strong("Horizontal Line 1:"),
+                        checkboxInput(ns("hline1"), "Show Line"),
                         textInput(ns("hline1_int"), "Location of Y intercept(s)"),
                         h5("multiple numbers seperated with comma"),
                         radioButtons(ns("hline1_type"), "Line Type",
@@ -50,11 +47,11 @@ PLOT_DISPLAY_OPTIONS_UI <- function(id) {
                         sliderInput(ns("hline1_size"), "Thickness:",
                                     min = 0, max = 3, value = 1, step = 0.25),
                         sliderInput(ns("hline1_alpha"), "Transparency:",
-                                    min = 0, max = 1, value = 1, step = 0.1),
-                        textInput(ns("hline1_text"), "Text")
+                                    min = 0, max = 1, value = 1, step = 0.1)
                  ), # end column
                  column(4,
                         strong("Horizontal Line 2:"),
+                        checkboxInput(ns("hline2"), "Show Line"),
                         textInput(ns("hline2_int"), "Location of Y intercept(s)"),
                         h5("multiple numbers seperated with comma"),
                         radioButtons(ns("hline2_type"), "Line Type",
@@ -63,21 +60,20 @@ PLOT_DISPLAY_OPTIONS_UI <- function(id) {
                         sliderInput(ns("hline2_size"), "Thickness:",
                                     min = 0, max = 3, value = 1, step = 0.25),
                         sliderInput(ns("hline2_alpha"), "Transparency:",
-                                    min = 0, max = 1, value = 1, step = 0.1),
-                        textInput(ns("hline2_text"), "Text")
+                                    min = 0, max = 1, value = 1, step = 0.1)
                  ), # end column
                  column(4,
-                        strong("Vertical Line:"),
-                        textInput(ns("vline_int"), "Location of Y intercept(s)"),
+                        strong("Horizontal Line 3:"),
+                        checkboxInput(ns("hline3"), "Show Line"),
+                        textInput(ns("hline3_int"), "Location of Y intercept(s)"),
                         h5("multiple numbers seperated with comma"),
-                        radioButtons(ns("vline_type"), "Line Type",
+                        radioButtons(ns("hline3_type"), "Line Type",
                                      choices = c("solid", "dashed", "dotted"),
                                      inline = TRUE),
-                        sliderInput(ns("vline_size"), "Thickness:",
+                        sliderInput(ns("hline3_size"), "Thickness:",
                                     min = 0, max = 3, value = 1, step = 0.25),
-                        sliderInput(ns("vline_alpha"), "Transparency:",
-                                    min = 0, max = 1, value = 1, step = 0.1),
-                        textInput(ns("vline_text"), "Text")
+                        sliderInput(ns("hline3_alpha"), "Transparency:",
+                                    min = 0, max = 1, value = 1, step = 0.1)
                  ) # end column
                ) # end fluidRow
              ) # end well
@@ -95,7 +91,7 @@ PLOT_DISPLAY_OPTIONS_UI <- function(id) {
 # Thus do not use () in callModule argument for reactives
 # For non reactives wrap with "reactive" to make into a reactive expression.
 
-PLOT_DISPLAY_OPTIONS <- function(input, output, session, P, Df1, Df2, x, y) {
+PLOT_THEME_AND_HLINE <- function(input, output, session, P, Df1, Df2, x, y) {
   
   ns <- session$ns # see General Note 1
   
@@ -133,8 +129,8 @@ PLOT_DISPLAY_OPTIONS <- function(input, output, session, P, Df1, Df2, x, y) {
     ### Add Lines
     
     # Horizontal Line 1
-    if(isTruthy(input$hline1_int)){
-      p <- p + geom_hline(data = Df1(), aes_string(x = x, y = y),
+    if(input$hline1 == TRUE){
+      p <- p + geom_hline(data = Df1(),
                           yintercept = Hline1_Int(),
                           linetype = input$hline1_type,
                           size = input$hline1_size,
@@ -142,21 +138,21 @@ PLOT_DISPLAY_OPTIONS <- function(input, output, session, P, Df1, Df2, x, y) {
     }
     
     # Horizontal Line 2
-    if(isTruthy(input$hline2_int)){
-      p <- p + geom_hline(data = Df1(), aes_string(x = x, y = y),
+    if(input$hline2 == TRUE){
+      p <- p + geom_hline(data = Df1(), 
                           yintercept = Hline2_Int(),
                           linetype = input$hline2_type,
                           size = input$hline2_size,
                           alpha = input$hline2_alpha)
     }
     
-    # Vertical Line 1
-    if(isTruthy(input$vline_int)){
-      p <- p + geom_vline(data = Df1(), aes_string(x = x, y = y),
-                          xintercept = Vline_Int(),
-                          linetype = input$vline_type,
-                          size = input$vline_size,
-                          alpha = input$vline_alpha)
+    # Horizontal Line 1
+    if(input$hline3 == TRUE){
+      p <- p + geom_hline(data = Df1(), 
+                          yintercept = Hline3_Int(),
+                          linetype = input$hline3_type,
+                          size = input$hline3_size,
+                          alpha = input$hline3_alpha)
     }
     
   p
@@ -179,12 +175,14 @@ PLOT_DISPLAY_OPTIONS <- function(input, output, session, P, Df1, Df2, x, y) {
       as.numeric()
   })
   
-  Vline_Int <- reactive({
-    req(input$vline_int)
-    str_split(input$vline_int, ",") %>% 
+  Hline3_Int <- reactive({
+    req(input$hline3_int)
+    str_split(input$hline3_int, ",") %>% 
       unlist() %>%
       as.numeric()
   })
+  
+
   
   # include text input
   

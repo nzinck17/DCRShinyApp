@@ -61,8 +61,11 @@ source("modules2/inputs/param_checkbox.R")
 source("modules2/inputs/date_select.R")
 source("modules2/inputs/checkbox_select_all.R")
 source("modules2/inputs/select_select_all.R")
-source("modules2/inputs/plot_display_options.R")
+source("modules2/inputs/plot_theme_and_hlines.R")
+source("modules2/inputs/plot_text_and_vlines_time.R")
+#source("modules2/inputs/plot_text_and_vlines_corr.R")
 source("modules2/inputs/plot_title_and_labels.R")
+#source("modules2/inputs/plot_save.R")
 
 # Outputs
 source("modules2/outputs/plot_time_wq.R")
