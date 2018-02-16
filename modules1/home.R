@@ -90,7 +90,20 @@ HOME <- function(input, output, session, df_site) {
       addProviderTiles(providers$Esri.WorldImagery,  #  Stamen.TonerLite
                        options = providerTileOptions(noWrap = TRUE)
       ) %>%
-
+      addCircleMarkers(
+        lng = ~LocationLong, lat = ~LocationLat,
+        label=~LocationLabel,
+        popup = ~paste("ID =", Site, "<br/>",
+                       "Description =", LocationDescription, "<br/>",
+                       "Lat = ", LocationLat, "<br/>",
+                       "Long = ", LocationLong, "<br/>",
+                       "Elev = ", LocationElevFt, "ft"),
+        color = ~pal(MapFactor),
+        radius = 5,
+        weight = 3,
+        opacity = 0.8,
+        fillOpacity = 0.4
+      ) %>%
       addPolygons(data = QWW,
                   layerId = QWW,
                   color = "#00008B",
@@ -99,21 +112,6 @@ HOME <- function(input, output, session, df_site) {
                   fillColor = "#00008B",
                   highlightOptions = highlightOptions(color = "white", weight = 2,
                                                       bringToFront = TRUE)) %>%
-
-      addCircleMarkers(
-                 lng = ~LocationLong, lat = ~LocationLat,
-                 label=~LocationLabel,
-                 popup = ~paste("ID =", Site, "<br/>",
-                                "Description =", LocationDescription, "<br/>",
-                                "Lat = ", LocationLat, "<br/>",
-                                "Long = ", LocationLong, "<br/>",
-                                "Elev = ", LocationElevFt, "ft"),
-                 color = ~pal(MapFactor),
-                 radius = 5,
-                 weight = 3,
-                 opacity = 0.8,
-                 fillOpacity = 0.4
-      ) %>%
       addLegend(
                 position = "bottomleft",
                 values = ~MapFactor,
@@ -124,22 +122,22 @@ HOME <- function(input, output, session, df_site) {
       )
 
   })
-  
-  
+
+
   # DCR IMAGE
   output$dcr_image <- renderImage({
     list(src = "images/DCR.jpg",
          width= "160",
          height= "80")
   }, deleteFile = FALSE)
-  
+
   # WAVE IMAGE
   output$wave_image <- renderImage({
     list(src = "images/WAVE.jpg",
           width= "360",
           height= "80")
   }, deleteFile = FALSE)
-  
+
   # UMass IMAGE
   output$umass_image <- renderImage({
     list(src = "images/UMass.png",
