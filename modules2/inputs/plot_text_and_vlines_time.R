@@ -20,88 +20,100 @@ PLOT_TEXT_AND_VLINES_TIME_UI <- function(id) {
   ns <- NS(id) # see General Note 1
   
   tagList(
-    fluidRow(
-      column(2,
-             wellPanel(
-               strong("Custom Text 1"),
-               checkboxInput(ns("text1"), "Show Text"),
-               textInput(ns("text1_text"), "Text"),
-               dateInput(ns("text1_x"), "X Location", value = Sys.Date()),
-               sliderInput(ns("text1_x_adj"), "adjust X location",
-                           min = -5, max = 5, value = 0, step = 0.25),
-               numericInput(ns("text1_y"), "Y Locatoin", value = 0),
-               sliderInput(ns("text1_y_adj"), "adjust Y location",
-                           min = -5, max = 5, value = 0, step = 0.25)
-             )
-      ),
-      column(2,
-             wellPanel(
-               strong("Custom Text 2"),
-               checkboxInput(ns("text2"), "Show Text"),
-               textInput(ns("text2_text"), "Text"),
-               dateInput(ns("text2_x"), "X Location", value = Sys.Date()),
-               sliderInput(ns("text2_x_adj"), "adjust X location",
-                           min = -5, max = 5, value = 0, step = 0.25),
-               numericInput(ns("text2_y"), "Y Locatoin", value = 0),
-               sliderInput(ns("text2_y_adj"), "adjust Y location",
-                           min = -5, max = 5, value = 0, step = 0.25)
-             )
-      ),
-      column(2,
-             wellPanel(
-               strong("Custom Text 3"),
-               checkboxInput(ns("text3"), "Show Text"),
-               textInput(ns("text3_text"), "Text"),
-               dateInput(ns("text3_x"), "X Location", value = Sys.Date()),
-               sliderInput(ns("text3_x_adj"), "adjust X location",
-                           min = -5, max = 5, value = 0, step = 0.25),
-               numericInput(ns("text3_y"), "Y Locatoin", value = 0),
-               sliderInput(ns("text3_y_adj"), "adjust Y location",
-                           min = -5, max = 5, value = 0, step = 0.25)
-             )
-      ),
-      column(2,
-             wellPanel(
-               strong("Custom Text 4"),
-               checkboxInput(ns("text4"), "Show Text"),
-               textInput(ns("text4_text"), "Text"),
-               dateInput(ns("text4_x"), "X Location", value = Sys.Date()),
-               sliderInput(ns("text4_x_adj"), "adjust X location",
-                           min = -5, max = 5, value = 0, step = 0.25),
-               numericInput(ns("text4_y"), "Y Locatoin", value = 0),
-               sliderInput(ns("text4_y_adj"), "adjust Y location",
-                           min = -5, max = 5, value = 0, step = 0.25)
-             )
-      ),
-      column(2,
-             wellPanel(
-               strong("Vertical Line 1"),
-               checkboxInput(ns("vline1"), "Show Line"),
-               dateInput(ns("vline1_int"), "X intercept", value = Sys.Date()),
-               radioButtons(ns("vline1_type"), "Line Type",
-                            choices = c("solid", "dashed", "dotted"),
-                            inline = TRUE),
-               sliderInput(ns("vline1_size"), "Thickness:",
-                           min = 0, max = 3, value = 1, step = 0.25),
-               sliderInput(ns("vline1_alpha"), "Transparency:",
-                           min = 0, max = 1, value = 1, step = 0.1)
-             )
-      ),
-      column(2,
-             wellPanel(
-               strong("Vertical Line 2"),
-               checkboxInput(ns("vline2"), "Show Line"),
-               dateInput(ns("vline2_int"), "X intercept", value = Sys.Date()),
-               radioButtons(ns("vline2_type"), "Line Type",
-                            choices = c("solid", "dashed", "dotted"),
-                            inline = TRUE),
-               sliderInput(ns("vline2_size"), "Thickness:",
-                           min = 0, max = 3, value = 1, step = 0.25),
-               sliderInput(ns("vline2_alpha"), "Transparency:",
-                           min = 0, max = 1, value = 1, step = 0.1)
-             )
-      ) # end col
-    ) # end fluidrow
+    column(8,
+           wellPanel(
+             h4("Text", align = "center"),
+             fluidRow(
+               column(3,
+                      wellPanel(
+                        strong("Custom Text 1"),
+                        checkboxInput(ns("text1"), "Show Text"),
+                        textInput(ns("text1_text"), "Text"),
+                        dateInput(ns("text1_x"), "X Location", value = Sys.Date()),
+                        sliderInput(ns("text1_x_adj"), "adjust X location",
+                                    min = -5, max = 5, value = 0, step = 0.25),
+                        numericInput(ns("text1_y"), "Y Locatoin", value = 0),
+                        sliderInput(ns("text1_y_adj"), "adjust Y location",
+                                    min = -5, max = 5, value = 0, step = 0.25)
+                      )
+               ),
+               column(3,
+                      wellPanel(
+                        strong("Custom Text 2"),
+                        checkboxInput(ns("text2"), "Show Text"),
+                        textInput(ns("text2_text"), "Text"),
+                        dateInput(ns("text2_x"), "X Location", value = Sys.Date()),
+                        sliderInput(ns("text2_x_adj"), "adjust X location",
+                                    min = -5, max = 5, value = 0, step = 0.25),
+                        numericInput(ns("text2_y"), "Y Locatoin", value = 0),
+                        sliderInput(ns("text2_y_adj"), "adjust Y location",
+                                    min = -5, max = 5, value = 0, step = 0.25)
+                      )
+               ),
+               column(3,
+                      wellPanel(
+                        strong("Custom Text 3"),
+                        checkboxInput(ns("text3"), "Show Text"),
+                        textInput(ns("text3_text"), "Text"),
+                        dateInput(ns("text3_x"), "X Location", value = Sys.Date()),
+                        sliderInput(ns("text3_x_adj"), "adjust X location",
+                                    min = -5, max = 5, value = 0, step = 0.25),
+                        numericInput(ns("text3_y"), "Y Locatoin", value = 0),
+                        sliderInput(ns("text3_y_adj"), "adjust Y location",
+                                    min = -5, max = 5, value = 0, step = 0.25)
+                      )
+               ),
+               column(3,
+                      wellPanel(
+                        strong("Custom Text 4"),
+                        checkboxInput(ns("text4"), "Show Text"),
+                        textInput(ns("text4_text"), "Text"),
+                        dateInput(ns("text4_x"), "X Location", value = Sys.Date()),
+                        sliderInput(ns("text4_x_adj"), "adjust X location",
+                                    min = -5, max = 5, value = 0, step = 0.25),
+                        numericInput(ns("text4_y"), "Y Locatoin", value = 0),
+                        sliderInput(ns("text4_y_adj"), "adjust Y location",
+                                    min = -5, max = 5, value = 0, step = 0.25)
+                      )
+               )
+             ) # end fluidRow
+      ) # end wellPanel
+    ), # end column
+    column(4,
+           wellPanel(
+             h4("Vertical Lines", align = "center"),
+             fluidRow(
+               column(6,
+                      wellPanel(
+                        strong("Vertical Line 1"),
+                        checkboxInput(ns("vline1"), "Show Line"),
+                        dateInput(ns("vline1_int"), "X intercept", value = Sys.Date()),
+                        radioButtons(ns("vline1_type"), "Line Type",
+                                     choices = c("solid", "dashed", "dotted"),
+                                     inline = TRUE),
+                        sliderInput(ns("vline1_size"), "Thickness:",
+                                    min = 0, max = 3, value = 1, step = 0.25),
+                        sliderInput(ns("vline1_alpha"), "Transparency:",
+                                    min = 0, max = 1, value = 1, step = 0.1)
+                      )
+               ),
+               column(6,
+                      wellPanel(
+                        strong("Vertical Line 2"),
+                        checkboxInput(ns("vline2"), "Show Line"),
+                        dateInput(ns("vline2_int"), "X intercept", value = Sys.Date()),
+                        radioButtons(ns("vline2_type"), "Line Type",
+                                     choices = c("solid", "dashed", "dotted"),
+                                     inline = TRUE),
+                        sliderInput(ns("vline2_size"), "Thickness:",
+                                    min = 0, max = 3, value = 1, step = 0.25),
+                        sliderInput(ns("vline2_alpha"), "Transparency:",
+                                    min = 0, max = 1, value = 1, step = 0.1)
+                      )
+               ) # end col
+             ) # end FluidRow
+           ) # end Wellpanel
+    ) # end Column
   ) # end taglist
 } # end UI function
 

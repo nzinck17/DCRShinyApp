@@ -91,17 +91,33 @@ source("functions/phyto_plots.R")
 ###################################################################################
 ##################################  User Interface  ###############################
 ###################################################################################
-
-ui <- navbarPage("WAVE", position = "fixed-top", inverse = TRUE, collapsible = TRUE, theme = shinytheme("cerulean"), #
+#               font-family: 'Lobster', cursive;
+ui <- tagList(
+  # Creates padding at top for navBar space due to "fixed-top" position
+  tags$style(type='text/css', 
+             'body {padding-top: 70px;}',
+             'h2 {
+               font-family: "Arial Black";
+               font-weight: 500;
+               line-height: 1.1;
+               color: #0C4B91;
+             }'
+             ),
+  
+  navbarPage(NULL, position = "fixed-top", inverse = TRUE, collapsible = TRUE, theme = shinytheme("cerulean"), 
+             windowTitle = "WAVE", footer = uiOutput("footer_ui"),
 
 ######################################################
 # Home Page
 
 tabPanel("Home",
-
-  # Title
-  fluidRow(br(), br(), h3("Watershed data Analysis and Visualization Environment", align = "center")),
-  HOME_UI("Home")
+         
+         fluidRow(
+           column(3, imageOutput("dcr_image", height = 80), align = "left"),
+           column(6, imageOutput("wave_image1", height = 80), align = "center"),
+           column(3, imageOutput("umass_image", height = 80), align = "right")
+         ),
+         HOME_UI("home")
 
 ),
 
@@ -112,29 +128,31 @@ tabPanel("Home",
 tabPanel("Filter",
          
          # Title
-         fluidRow(br(), br(), br(), br(), h2("Filter Data", align = "center"), br()),
-         
+         fluidRow(
+                  column(2, imageOutput("wave_image2", height = 50), align = "center"),
+                  column(10, h2("Filter Data", align = "center"))
+                  ),
          navlistPanel(widths = c(2, 10),
                       "Water Quality Data",
                       tabPanel("Tributary",
-                               fluidRow(column(10, h4("Filter and Export for Tributary WQ Data", align = "center")), column(2)),
+                               fluidRow(h4("Filter and Export for Tributary WQ Data", align = "center")),
                                FILTER_WQ_UI("mod_trib_filter")
                       ),
                       tabPanel("Bacteria (Res)",
-                               fluidRow(column(10, h4("Filter and Export for Reservoir Bacteria WQ Data", align = "center")), column(2)),
+                               fluidRow(h4("Filter and Export for Reservoir Bacteria WQ Data", align = "center")),
                                FILTER_WQ_UI("mod_bact_filter")
                       ),
                       tabPanel("Chemical (Res)",
-                               fluidRow(column(10, h4("Filter and Export for Reservoir Chemical WQ Data", align = "center")), column(2)),
+                               fluidRow(h4("Filter and Export for Reservoir Chemical WQ Data", align = "center")),
                                FILTER_WQ_UI("mod_chem_filter")
                       ),
                       tabPanel("Profile (Res)",
-                               fluidRow(column(10, h4("Filter and Export for Reservoir Profile WQ Data", align = "center")), column(2)),
+                               fluidRow(h4("Filter and Export for Reservoir Profile WQ Data", align = "center")),
                                FILTER_WQ_UI("mod_prof_filter")
                       ),
                       "Hydro and Met",
                       tabPanel("Hydro/Met Data",
-                               fluidRow(column(10, h4("Filter and Export for Hydro and Met Data", align = "center")), column(2))
+                               fluidRow(h4("Filter and Export for Hydro and Met Data", align = "center"))
                       )
          ) # end navlist
 ),
@@ -145,12 +163,15 @@ tabPanel("Filter",
 
 tabPanel("Tributary",
 
+         
   # Title
-  fluidRow(br(), br(), br(), br(), h2("Tributary Water Quality Data", align = "center"), br()),
-
+  fluidRow(
+           column(2, imageOutput("wave_image3", height = 50), align = "center"),
+           column(10, h2("Tributary Water Quality Data", align = "center"))
+  ),
   navlistPanel(widths = c(2, 10),
                tabPanel("Time-Series",
-                        fluidRow(column(10, h4("Tributary Time-Series Analysis", align = "center")), column(2)),
+                        fluidRow(h4("Tributary Time-Series Analysis", align = "center")),
                         tabsetPanel(
                           tabPanel("Quabbin", TIME_WQ_UI("mod_trib_quab_time")),
                           tabPanel("Ware River", TIME_WQ_UI("mod_trib_ware_time")),
@@ -159,7 +180,7 @@ tabPanel("Tributary",
                         ) # end tabset Panel
                ), # end tabpanel
                tabPanel("Correlation",
-                        fluidRow(column(10, h4("Tributary Correlation Analysis", align = "center")), column(2)),
+                        fluidRow(h4("Tributary Correlation Analysis", align = "center")),
                         tabsetPanel(
                           tabPanel("Quabbin", CORRELATION_WQ_UI("mod_trib_quab_regr")),
                           tabPanel("Ware River", CORRELATION_WQ_UI("mod_trib_ware_regr")),
@@ -168,7 +189,7 @@ tabPanel("Tributary",
                         ) # end tabset Panel
                ), # end tabpanel
                tabPanel("MetaData",
-                        fluidRow(column(10, h4("Tributary MetaData", align = "center")), column(2)),
+                        fluidRow(h4("Tributary MetaData", align = "center")),
                         tabsetPanel(
                           tabPanel("Quabbin & Ware", METADATA_UI("mod_trib_quab_meta")),
                           tabPanel("Wachusett", METADATA_UI("mod_trib_wach_meta"))
@@ -183,26 +204,28 @@ tabPanel("Tributary",
 # Reservoir
 
 tabPanel("Reservoir",
-
+         
    # Title
-   fluidRow(br(), br(), br(), br(), h2("Reservoir Water Quality Data", align = "center"), br()),
-
+   fluidRow(
+            column(2, imageOutput("wave_image4", height = 50), align = "center"),
+            column(10, h2("Reservoir Water Quality Data", align = "center"))
+   ),
    navlistPanel(widths = c(2, 10),
                 "Bacteria",
                 tabPanel("Time-Series",
-                         fluidRow(column(10, h4("Bacteria Time-Series Analysis", align = "center")), column(2)),
+                         fluidRow(h4("Bacteria Time-Series Analysis", align = "center")),
                          tabsetPanel(
                            tabPanel("Wachusett", TIME_WQ_UI("mod_bact_wach_time"))
                          ) # end tabset Panel
                 ), # end tabpanel
                 tabPanel("Correlation",
-                         fluidRow(column(10, h4("Bacteria Correlation Analysis", align = "center")), column(2)),
+                         fluidRow(h4("Bacteria Correlation Analysis", align = "center")),
                          tabsetPanel(
                            tabPanel("Wachusett", CORRELATION_WQ_UI("mod_bact_wach_regr"))
                          ) # end tabset panel
                 ), # end tabpanel
                 tabPanel("MetaData",
-                         fluidRow(column(10, h4("Tributary MetaData", align = "center")), column(2)),
+                         fluidRow(h4("Tributary MetaData", align = "center")),
                          tabsetPanel(
                            tabPanel("Wachusett", METADATA_UI("mod_bact_wach_meta"))
                          ) # end tabset Panel
@@ -210,21 +233,21 @@ tabPanel("Reservoir",
 
                 "Chemistry",
                 tabPanel("Time-Series",
-                         fluidRow(column(10, h4("Chemical Time-Series Analysis", align = "center")), column(2)),
+                         fluidRow(h4("Chemical Time-Series Analysis", align = "center")),
                          tabsetPanel(
                            tabPanel("Quabbin", TIME_DEPTH_WQ_UI("mod_chem_quab_time")),
                            tabPanel("Wachusett", TIME_DEPTH_WQ_UI("mod_chem_wach_time"))
                          )
                 ),
                 tabPanel("Correlation",
-                         fluidRow(column(10, h4("Chemical Correlation Analysis", align = "center")), column(2)),
+                         fluidRow(h4("Chemical Correlation Analysis", align = "center")),
                          tabsetPanel(
                            tabPanel("Quabbin", CORRELATION_DEPTH_WQ_UI("mod_chem_quab_regr")),
                            tabPanel("Wachusett", CORRELATION_DEPTH_WQ_UI("mod_chem_wach_regr"))
                          )
                 ),
                 tabPanel("Metadata",
-                         fluidRow(column(10, h4("Chemical Metadata", align = "center")), column(2)),
+                         fluidRow(h4("Chemical Metadata", align = "center")),
                          tabsetPanel(
                            tabPanel("Quabbin", METADATA_UI("mod_chem_quab_meta")),
                            tabPanel("Wachusett", METADATA_UI("mod_chem_wach_meta"))
@@ -233,28 +256,28 @@ tabPanel("Reservoir",
 
                 "Profile (physicochemical)",
                 tabPanel("Heat Map",
-                         fluidRow(column(10, h4("Profile Heatmap", align = "center")), column(2)),
+                         fluidRow(h4("Profile Heatmap", align = "center")),
                          tabsetPanel(
                            tabPanel("Quabbin", PROF_HEATMAP_UI("mod_prof_quab_heat", df_prof_quab)),
                            tabPanel("Wachusett", PROF_HEATMAP_UI("mod_prof_wach_heat", df_prof_wach))
                          )
                 ),
                 tabPanel("Line Plot",
-                         fluidRow(column(10, h4("Profile Line Plot", align = "center")), column(2)),
+                         fluidRow(h4("Profile Line Plot", align = "center")),
                          tabsetPanel(
                            tabPanel("Quabbin", PROF_LINE_UI("mod_prof_quab_line", df_prof_quab)),
                            tabPanel("Wachusett", PROF_LINE_UI("mod_prof_wach_line", df_prof_wach))
                          )
                 ),
                 tabPanel("Table and Summary",
-                         fluidRow(column(10, h4("Profile Summary", align = "center")), column(2)),
+                         fluidRow(h4("Profile Summary", align = "center")),
                          tabsetPanel(
                            tabPanel("Quabbin", PROF_TABLE_STAT_UI("mod_prof_quab_sum", df_prof_quab)),
                            tabPanel("Wachusett", PROF_TABLE_STAT_UI("mod_prof_wach_sum", df_prof_wach))
                          )
                 ),
                 tabPanel("Metadata",
-                         fluidRow(column(10, h4("Profile metadat", align = "center")), column(2)),
+                         fluidRow(h4("Profile metadat", align = "center")),
                          tabsetPanel(
                            tabPanel("Quabbin", METADATA_UI("mod_prof_quab_meta")),
                            tabPanel("Wachusett", METADATA_UI("mod_prof_wach_meta"))
@@ -264,7 +287,7 @@ tabPanel("Reservoir",
                 
                 "Biological",
                 tabPanel("Phytoplankton",
-                         fluidRow(column(10, h4("Phytoplankton Plots and Data", align = "center")), column(2)),
+                         fluidRow(h4("Phytoplankton Plots and Data", align = "center")),
                          tabsetPanel(
                            tabPanel("Wachusett", PHYTO_UI("mod_phyto_wach_plots", df_phyto_wach))
                          )
@@ -279,10 +302,12 @@ tabPanel("Reservoir",
 # Map
 
 tabPanel("Map Plot",
-
+         
          # Title
-         fluidRow(br(), br(), br(), br(), h2("Map Plot", align = "center"), br()),
-
+         fluidRow(
+                  column(2, imageOutput("wave_image5", height = 50), align = "center"),
+                  column(10, h2("Geospatial Plots", align = "center"))
+         ),
          navlistPanel(widths = c(2, 10),
                       "Tributaries",
                       tabPanel("Quabbin", MAP_PLOT_UI("mod_trib_quab_map", df = df_trib_quab)),
@@ -303,27 +328,36 @@ tabPanel("Map Plot",
 # Hydrology/Meteorology
 
 tabPanel("Met/Hydro",
-
+         
          # Title
-         fluidRow(br(), br(), br(), br(), h2("Hydrology and Meteorology Data", align = "center"), br())
+         fluidRow(
+                  column(2, imageOutput("wave_image6", height = 50), align = "center"),
+                  column(10, h2("Hydrology and Meteorology Data", align = "center"))
+         )
 ),
 
 ####################################################################
 # Forestry
 
 tabPanel("Forestry",
-
+         
          # Title
-         fluidRow(br(), br(), br(), br(), h2("Forestry Data", align = "center"), br())
+         fluidRow(
+                  column(2, imageOutput("wave_image7", height = 50), align = "center"),
+                  column(10, h2("Forestry Data", align = "center"))
+         )
 ),
 
 #########################################################
 # Reports
 
 tabPanel("Report",
+         
          # Title
-         fluidRow(br(), br(), br(), br(), h2("Report Generation Tool", align = "center"), br()),
-
+         fluidRow(
+                  column(2, imageOutput("wave_image8", height = 50), align = "center"),
+                  column(10, h2("Report Generation", align = "center"))
+         ),
          navlistPanel(widths = c(2, 10),
                       "Preset Reports",
                       tabPanel("Annual WQ",
@@ -374,17 +408,10 @@ tabPanel("Report",
                       )
          ) # end navlist
 
-), # end tabpanel (page)
-
-#######################################################
-# Overview
-
-tabPanel("Overview",
-         # Title
-         fluidRow(br(), br(), br(), br(), h2("Overview", align = "center"), br())
-)
+) # end tabpanel (page)
 
 #########################################################
+) # end tagList
 
 ) # end UI
 
@@ -397,7 +424,7 @@ server <- function(input, output, session) {
 ######################################################
 # Home
 
-  callModule(HOME, "Home", df_site = df_all_site)
+  callModule(HOME, "home", df_site = df_all_site)
 
 ###################################################################
 # Filter
@@ -475,11 +502,11 @@ server <- function(input, output, session) {
   callModule(MAP_PLOT, "mod_trib_all_map", df_full = df_trib_all, Df_Filtered = Df_Trib_Filtered[[1]], df_site = df_trib_all_site)
 
   # Bacteria
-  callModule(MAP_PLOT, "mod_bact_wach_map", df_full = df_bact_wach, Df_Filtered = Df_Trib_Filtered[[1]], df_site = df_bact_wach_site)
+  callModule(MAP_PLOT, "mod_bact_wach_map", df_full = df_bact_wach, Df_Filtered = Df_Bact_Filtered[[1]], df_site = df_bact_wach_site)
 
   # Chemical
-  callModule(MAP_PLOT, "mod_chem_quab_map", df_full = df_chem_quab, Df_Filtered = Df_Trib_Filtered[[2]], df_site = df_chem_quab_site)
-  callModule(MAP_PLOT, "mod_chem_wach_map", df_full = df_chem_wach, Df_Filtered = Df_Trib_Filtered[[1]], df_site = df_chem_wach_site)
+  callModule(MAP_PLOT, "mod_chem_quab_map", df_full = df_chem_quab, Df_Filtered = Df_Chem_Filtered[[2]], df_site = df_chem_quab_site)
+  callModule(MAP_PLOT, "mod_chem_wach_map", df_full = df_chem_wach, Df_Filtered = Df_Chem_Filtered[[1]], df_site = df_chem_wach_site)
 
 ####################################################################
 # Hydrology/Meteorology/Statistics
@@ -501,7 +528,108 @@ server <- function(input, output, session) {
   callModule(REPORT_CUSTOM, "mod_prof_wach_rep", df = df_prof_wach, df_site = df_prof_wach_site)
 
 #######################################################################
+# Footer
+  
+  output$footer_ui <- renderUI({
+    
+    update_date <- "Coming Soon"
+    
+    text_db <- paste("Data last updated:", update_date)
+    
+    tagList(
+      hr(),
+      column(4,
+             strong(text_db),
+             br()
+      ),
+      column(8,
+             tags$div(tags$em("Created by Nick Zinck, University of Massachusetts; and Dan Crocker, Massachusetts Department of Conservation and Recreation"), align = "right"),
+             br()
+      )
+    )
+  })
+  
+#######################################################################
+# Images
+  
+  # DCR IMAGE
+  output$dcr_image <- renderImage({
+    list(src = "images/DCR.jpg",
+         width= "160",
+         height= "80")
+  }, deleteFile = FALSE)
+  
+  # UMass IMAGE
+  output$umass_image <- renderImage({
+    list(src = "images/UMass.png",
+         width= "240",
+         height= "80")
+  }, deleteFile = FALSE)
+  
+  # WAVE IMAGE 1
+  output$wave_image1 <- renderImage({
+    list(src = "images/WAVE.jpg",
+         width= "360",
+         height= "80")
+  }, deleteFile = FALSE)
+  
+  # WAVE IMAGE 2
+  output$wave_image2 <- renderImage({
+    list(src = "images/WAVE.jpg",
+         width= "225",
+         height= "50")
+  }, deleteFile = FALSE)
+  
+  # WAVE IMAGE 3
+  output$wave_image3 <- renderImage({
+    list(src = "images/WAVE.jpg",
+         width= "225",
+         height= "50")
+  }, deleteFile = FALSE)
+  
+  # WAVE IMAGE 4
+  output$wave_image4 <- renderImage({
+    list(src = "images/WAVE.jpg",
+         width= "225",
+         height= "50")
+  }, deleteFile = FALSE)
+  
+  # WAVE IMAGE 5
+  output$wave_image5 <- renderImage({
+    list(src = "images/WAVE.jpg",
+         width= "225",
+         height= "50")
+  }, deleteFile = FALSE)
+  
+  
+  # WAVE IMAGE 6
+  output$wave_image6 <- renderImage({
+    list(src = "images/WAVE.jpg",
+         width= "225",
+         height= "50")
+  }, deleteFile = FALSE)
+  
+  
+  # WAVE IMAGE 7
+  output$wave_image7 <- renderImage({
+    list(src = "images/WAVE.jpg",
+         width= "225",
+         height= "50")
+  }, deleteFile = FALSE)
+  
+  
+  # WAVE IMAGE 8
+  output$wave_image8 <- renderImage({
+    list(src = "images/WAVE.jpg",
+         width= "225",
+         height= "50")
+  }, deleteFile = FALSE)
+  
+  
 
+  
+  
+  
 # Code to stop app when browser session window closes
 session$onSessionEnded(function() {
       stopApp()

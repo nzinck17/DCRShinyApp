@@ -190,7 +190,7 @@ TIME_WQ <- function(input, output, session, df_full, Df_Filtered, df_site) {
   
   ### Texts
   
-  # Text - Select Site
+  # Text - Filtered Data
   output$text_filtered <- renderText({
     req(input$df_choice == "filtered") # See General Note 1
     'This Dataset has been filtered and therefore some observations (data points) may be excluded.\n See "Filtered tab"'

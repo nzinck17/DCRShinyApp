@@ -34,73 +34,67 @@ PLOT_TIME_WQ_UI <- function(id) {
                tabPanel("Main Options", br(), br(),
                           column(4,
                                  wellPanel(
-                                   fluidRow(
-                                     column(6,
-                                            uiOutput(ns("param1_ui"))
-                                     ),
-                                     column(6,
-                                            uiOutput(ns("param2_ui"))
+                                   h4("Axes", align = "center"),
+                                   wellPanel(
+                                     fluidRow(
+                                       column(6,
+                                              uiOutput(ns("param1_ui"))
+                                       ),
+                                       column(6,
+                                              uiOutput(ns("param2_ui"))
+                                       )
                                      )
-                                   )
-                                 ),
-                                 wellPanel(
+                                   ),
                                    uiOutput(ns("axis_ui"))
                                  )
                           ), # end column
                           column(4,
                                  wellPanel(
-                                   fluidRow(
-                                     column(6,
-                                            uiOutput(ns("group_color_ui"))
-                                     ), # end column
-                                     # new column
-                                     column(6,
-                                            uiOutput(ns("group_shape_ui"))
-                                     ) # end column
+                                   h4("Colors and Shapes", align = "center"),
+                                   wellPanel(
+                                     fluidRow(
+                                       column(6,
+                                              uiOutput(ns("group_color_ui"))
+                                       ), # end column
+                                       # new column
+                                       column(6,
+                                              uiOutput(ns("group_shape_ui"))
+                                       ) # end column
+                                     )
+                                   ),
+                                   wellPanel(
+                                     fluidRow(
+                                       uiOutput(ns("point_color1_ui")),
+                                       uiOutput(ns("point_color2_ui")),
+                                       sliderInput(ns("point_size"), "Point Size:",
+                                                   min = 0.5, max = 4, value = 1.5, step = 0.5)
+                                     )
+                                     
                                    )
-                                 ),
-                                 wellPanel(
-                                   fluidRow(
-                                     uiOutput(ns("point_shape_ui")),
-                                     uiOutput(ns("point_color1_ui")),
-                                     radioButtons(ns("point_color2"), "Point Color of Secondary Axis (when not grouped by color):",
-                                                  choices = c("black", "blue", "red", "green"),
-                                                  selected = "green",
-                                                  inline = TRUE),
-                                     sliderInput(ns("point_size"), "Point Size:",
-                                                 min = 0.5, max = 4, value = 1.5, step = 0.5)
-                                   )
-                                   
                                  )
                           ), # end column
                           column(4,
                                  wellPanel(
-                                   fluidRow(
-                                     strong("Trend Line(s)"),
-                                     checkboxInput(ns("trend_show"), "Show Trendline")
-                                   ),
-                                   fluidRow(
-                                     column(6,
-                                            radioButtons(ns("trend_type"), "Trendline Type",
-                                                         choices= c("Linear" = "lm",
-                                                                    "Loess" = "loess",
-                                                                    "Generalized Additive" = "gam"))
-                                     ),
-                                     column(6,
-                                            strong("Confidence Ribbon"),
-                                            checkboxInput(ns("trend_ribbon"), "Show Conf. Ribbon"),
-                                            radioButtons(ns("trend_conf"), NULL,
-                                                         choices= c(0.90,0.95,0.99))
-                                     )
-                                   ),
-                                   radioButtons(ns("trend_line"), "Line Type (when not grouped by shape)",
-                                                choices = c("solid", "dashed", "dotted"),
-                                                inline = TRUE),
-                                   sliderInput(ns("trend_size"), "Line Thickness:",
-                                               min = 0, max = 3, value = 1, step = 0.25),
-                                   sliderInput(ns("trend_alpha"), "Line Opacity:",
-                                               min = 0, max = 1, value = .1, step = 0.1)
-
+                                   h4("Trend Lines", align = "center"),
+                                   wellPanel(
+                                       checkboxInput(ns("trend_show"), "Show Trendline(s)"),
+                                       radioButtons(ns("trend_type"), "Trendline Type",
+                                                    choices= c("Linear" = "lm",
+                                                               "Loess" = "loess",
+                                                               "Generalized Additive" = "gam"),
+                                                    inline = TRUE),
+                                       strong("Confidence Ribbon"),
+                                       checkboxInput(ns("trend_ribbon"), "Show Conf. Ribbon"),
+                                       radioButtons(ns("trend_conf"), NULL,
+                                                    choices= c(0.90,0.95,0.99),
+                                                    inline = TRUE),
+                                     uiOutput(ns("trend_line_ui")),
+                                     sliderInput(ns("trend_size"), "Line Thickness:",
+                                                 min = 0, max = 3, value = 1, step = 0.25),
+                                     sliderInput(ns("trend_alpha"), "Line Opacity:",
+                                                 min = 0, max = 1, value = .1, step = 0.1)
+                                     
+                                   )
                                  )
                           ) # end column
                ), # end Tab Panel
@@ -120,40 +114,41 @@ PLOT_TIME_WQ_UI <- function(id) {
                tabPanel("Save Plot", br(), br(),
                         wellPanel(
                           fluidRow(
-                            column(2,
-                                   downloadButton(ns('save_plot'), "Save Plot")
-                            ),
                             column(3,
-                                   numericInput(ns("save_width"), "Plot Width (inches):", 7,
-                                                min = 3, max = 17, step = 0.25),
-                                   
-                                   numericInput(ns("save_height"), "Plot Height (inches):", 5,
-                                                min = 3, max = 17, step = 0.25)
-                                   
-                            ),
-                            column(3,
+                                   downloadButton(ns('save_plot'), "Save Plot"),
+                                   br(),
                                    radioButtons(ns("save_type"), "File Type:",
                                                 choices= c("pdf",
                                                            "jpg",
                                                            "png"),
                                                 inline = TRUE),
+                                   br(),
                                    checkboxGroupInput(ns("save_grid"), "Gridline Override:",
                                                       choices= c("major gridlines",
                                                                  "minor gridlines"))
                             ),
                             column(3,
-                                   sliderInput(ns("margin_top"), "adjust top margin",
+                                   numericInput(ns("save_width"), "Plot Width (inches):", 11,
+                                                min = 5, max = 20, step = 0.5),
+                                   
+                                   numericInput(ns("save_height"), "Plot Height (inches):", 8.5,
+                                                min = 5, max = 20, step = 0.5)
+                                   
+                            ),
+                            column(3,
+                                   sliderInput(ns("plot_margin_top"), "adjust top margin",
                                                min = 0, max = 1.5, value = 0.2, step = 0.1),
-                                   sliderInput(ns("margin_right"), "adjust right margin",
-                                               min = 0, max = 1.5, value = 0.2, step = 0.1),
-                                   sliderInput(ns("margin_bottom"), "adjust bottom margin",
-                                               min = 0, max = 1.5, value = 0.2, step = 0.1),
-                                   sliderInput(ns("margin_left"), "adjust left margin",
-                                               min = 0, max = 1.5, value = 0.5, step = 0.1)
+                                   sliderInput(ns("plot_margin_bottom"), "adjust bottom margin",
+                                               min = 0, max = 1.5, value = 0.2, step = 0.1)
+                            ),
+                            column(3,
+                                   sliderInput(ns("plot_margin_left"), "adjust left margin",
+                                               min = 0, max = 1.5, value = 0.5, step = 0.1),
+                                   sliderInput(ns("plot_margin_right"), "adjust right margin",
+                                               min = 0, max = 1.5, value = 0.2, step = 0.1)
                             )
-                            
-                          )
-                        )
+                          ) # fluidRow
+                        ) # wellPanel
                ) # tab panel
              ) # end tabSet Panel
       ), # end Column
@@ -329,46 +324,38 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
   # Axis UI - only show options for 1 Parameter plot
   output$axis_ui <- renderUI({
     req(input$param2 == "None")
-    #if(input$param2 == "None"){
-    checkboxGroupInput(ns("axis"), "Axis Options:",
-                       choices= c("Log-scale Y-Axis",
-                                  "Y-axis start at zero"))
-    #}
-  })
-  
-  
-  # Point Shape UI - only show options for 1 Parameter plot
-  output$point_shape_ui <- renderUI({
-    req(input$param2)
-    if(input$param2 == "None" & input$group_shape == "None/Parameter"){
-      radioButtons(ns("point_shape"), "Point Shape (when not grouped by shape):",
-                   choices = c("circle" = 16,
-                               "square" = 15,
-                               "triangle" = 17,
-                               "diamond" = 18),
-                   inline = TRUE)
-    }
+    wellPanel(
+      checkboxGroupInput(ns("axis"), "Axis Options:",
+                         choices= c("Log-scale Y-Axis",
+                                    "Y-axis start at zero"))
+    )
   })
   
   # Point Color 1 UI - only show options when color = None
   output$point_color1_ui <- renderUI({
-    req(input$param2)
-    if(input$param2 != "None" | input$group_color == "None"){
-      radioButtons(ns("point_color1"), "Point Color of Primary Axis (when not grouped by color):",
+    req(input$param2 != "None" | input$group_color == "None")
+      radioButtons(ns("point_color1"), "Color of Primary Axis:",
                    choices = c("black", "blue", "red", "green"),
                    inline = TRUE)
-    }
   })
   
-  # # Point Color 1 UI - only show options when color = None
-  # output$point_color2_ui <- renderUI({
-  #   req(input$param2)
-  #   if(input$param2 != "None"){
-  #     radioButtons(ns("point_color1"), "Point Color of Primary Axis (when not grouped by color):",
-  #                  choices = c("black", "blue", "red", "green"),
-  #                  inline = TRUE)
-  #   }
-  # })
+  # Point Color 2 UI - only show options when color = None
+  output$point_color2_ui <- renderUI({
+    req(input$param2 != "None")
+      radioButtons(ns("point_color2"), "Color of Secondary Axis:",
+                   choices = c("black", "blue", "red", "green"),
+                   selected = "green",
+                   inline = TRUE)
+  })
+
+  # Point Color 2 UI - only show options when color = None
+  output$trend_line_ui <- renderUI({
+    req(input$group_shape == "None/Parameter")
+    radioButtons(ns("trend_line"), "Line Type (when not grouped by shape)",
+                 choices = c("solid", "dashed", "dotted"),
+                 inline = TRUE)
+  })
+  
 
   
 ########################################################################
@@ -437,7 +424,7 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
         p <- p + geom_point(aes_string(x = "as.POSIXct(Date)", 
                                        y = "Result", 
                                        color = input$group_color), 
-                            shape = input$point_shape,
+                            shape = 16,
                             size = input$point_size)
         if(input$trend_show == TRUE){
           p <- p + geom_smooth(aes_string(x = "as.POSIXct(Date)", 
@@ -473,7 +460,7 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
         p <- p + geom_point(aes_string(x = "as.POSIXct(Date)", 
                                        y = "Result"),
                             color = input$point_color1,
-                            shape = input$point_shape,
+                            shape = 16,
                             size = input$point_size)
         if(input$trend_show == TRUE){
           p <- p + geom_smooth(aes_string(x = "as.POSIXct(Date)", 
@@ -589,6 +576,7 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
       
     }
     
+    ### All Plots #####
     p <- p + scale_x_datetime(breaks = pretty_breaks(n=12))
     
     p
@@ -597,7 +585,6 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
       
       
 
-  
   # Display OPtions Tab
   P2 <- callModule(PLOT_THEME_AND_HLINE, "more_display_1",
                    P = P1,
@@ -635,15 +622,19 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
                                                       name = P4$Y2_Lab()))
       p <- p + theme(text = element_text(size = 15))
       
+      p <- p + theme(axis.text.y = element_text(colour = input$point_color1),
+                     axis.text.y.right = element_text(colour = input$point_color2))
+      
     }
 
-    # Save Options
+    
+    ### Save Options
     
     # Size dependent? Change size for saving?
-    p <- p + theme(plot.margin = unit(c(input$margin_top, 
-                                        input$margin_right, 
-                                        input$margin_bottom, 
-                                        input$margin_left), 
+    p <- p + theme(plot.margin = unit(c(input$plot_margin_top, 
+                                        input$plot_margin_right, 
+                                        input$plot_margin_bottom, 
+                                        input$plot_margin_left), 
                                       "in"))
     
     # Gridlines for saving options - nonplotly inage
@@ -654,8 +645,9 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
       p <- p + theme(panel.grid.minor = element_line())
     }
     
+          
     p 
-    
+          
   }) # end Plot
   
   Mult <- reactive({
@@ -667,9 +659,6 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
 
   })
   
-
-  
-
   
   ### Texts For Plot
   
@@ -719,53 +708,10 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
     content = function(file){ggsave(file, plot = P5(), 
                                     width = input$save_width,
                                     height = input$save_height,
-                                    device = input$save_type)}#,
-    #contentType = 'image/png'
+                                    device = input$save_type)}
   )
 
 
 } # end Server Function
 
 
-
-### Attempts at adding an actual shape legend for 2 parameters
-
-### Method 1
-
-# p2 <- data_frame(Col1 = c("Param1", "Param2"), Col2 = c(1, 2)) %>% ggplot() +
-#   geom_point(aes(x = Col2, y = Col2,  shape = Col1))
-# 
-# p2.leg <- get_legend(p2)
-# 
-# 
-# lay <- rbind(c(1,1,1,1,3),
-#              c(1,1,1,1,2),
-#              c(1,1,1,1,2),
-#              c(1,1,1,1,2),
-#              c(1,1,1,1,2),
-#              c(1,1,1,1,2),
-#              c(1,1,1,1,2))
-# 
-# p1.plot <- p() + guides(colour=FALSE)
-# 
-# p1.leg <- get_legend(p())
-# 
-# p1.plot
-# 
-# grid.arrange(grobs = list(p1.plot, p2.leg, p1.leg), layout_matrix = lay)
-
-### Method 2
-
-# annotate("text", xleg[2], 1.1*max(c(y1max, y2max)),
-#          label = text.param1(), hjust = 0, nudge_x = 0.05) +
-# annotate("text", xleg[2], 1.05*max(c(y1max, y2max)),
-#          label = text.param2(), hjust = 0, nudge_x = 0.05) +
-# annotate("point", xleg[1], 1.1*max(c(y1max, y2max)),
-#          shape = 16) +
-# annotate("point", xleg[1], 1.05*max(c(y1max, y2max)),
-#          shape = 17)
-# xleg <- quantile(
-#   seq(min(c(as.POSIXct(Df1()$Date), as.POSIXct(Df2()$Date)), na.rm = TRUE),
-#       max(c(as.POSIXct(Df1()$Date), as.POSIXct(Df2()$Date)), na.rm = TRUE), 
-#       by = "day"), 
-#   c(.92, .95))
