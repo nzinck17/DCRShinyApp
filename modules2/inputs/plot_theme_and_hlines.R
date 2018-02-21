@@ -20,8 +20,15 @@ PLOT_THEME_AND_HLINE_UI <- function(id) {
   ns <- NS(id) # see General Note 1
   
   tagList(
-    fluidRow(
-      column(3,
+    column(3,
+           wellPanel(
+             h4("Display", align = "center"),
+             wellPanel(
+               radioButtons(ns("gplotly"), "Interactive or Static?",
+                            choices = c("interactive Plot (Plotly)" = TRUE,
+                                        "Static Plot" = FALSE)),
+               p("Interactive Plot (Plotly) can be a distorted version of the plot that will saved")
+             ),
              wellPanel(
                radioButtons(ns("theme"), "Theme:",
                             choices= c("Gray",
@@ -32,11 +39,14 @@ PLOT_THEME_AND_HLINE_UI <- function(id) {
                                        "Minimal",
                                        "Classic"))
              )
-      ), # end column
-      column(9,
-             wellPanel(
-               fluidRow(
-                 column(4,
+           )
+    ),
+    column(9,
+           wellPanel(
+             fluidRow(
+               h4("Horizontal Lines", align = "center"),
+               column(4,
+                      wellPanel(
                         strong("Horizontal Line 1:"),
                         checkboxInput(ns("hline1"), "Show Line"),
                         textInput(ns("hline1_int"), "Location of Y intercept(s)"),
@@ -48,8 +58,10 @@ PLOT_THEME_AND_HLINE_UI <- function(id) {
                                     min = 0, max = 3, value = 1, step = 0.25),
                         sliderInput(ns("hline1_alpha"), "Transparency:",
                                     min = 0, max = 1, value = 1, step = 0.1)
-                 ), # end column
-                 column(4,
+                      )
+               ), # end column
+               column(4,
+                      wellPanel(
                         strong("Horizontal Line 2:"),
                         checkboxInput(ns("hline2"), "Show Line"),
                         textInput(ns("hline2_int"), "Location of Y intercept(s)"),
@@ -61,8 +73,10 @@ PLOT_THEME_AND_HLINE_UI <- function(id) {
                                     min = 0, max = 3, value = 1, step = 0.25),
                         sliderInput(ns("hline2_alpha"), "Transparency:",
                                     min = 0, max = 1, value = 1, step = 0.1)
-                 ), # end column
-                 column(4,
+                      )
+               ), # end column
+               column(4,
+                      wellPanel(
                         strong("Horizontal Line 3:"),
                         checkboxInput(ns("hline3"), "Show Line"),
                         textInput(ns("hline3_int"), "Location of Y intercept(s)"),
@@ -74,11 +88,11 @@ PLOT_THEME_AND_HLINE_UI <- function(id) {
                                     min = 0, max = 3, value = 1, step = 0.25),
                         sliderInput(ns("hline3_alpha"), "Transparency:",
                                     min = 0, max = 1, value = 1, step = 0.1)
-                 ) # end column
-               ) # end fluidRow
-             ) # end well
-      ) # end col
-    ) # end fluidrow
+                      )
+               ) # end column
+             ) # end fluidRow
+           ) # end well
+    ) # end col
   ) # end taglist
 } # end UI function
 
@@ -186,7 +200,7 @@ PLOT_THEME_AND_HLINE <- function(input, output, session, P, Df1, Df2, x, y) {
   
   # include text input
   
-return(P1)
+return(list(Plot = P1, Gplotly = reactive({input$gplotly})))
   
 } # end Server Function
 

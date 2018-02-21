@@ -27,136 +27,92 @@ PLOT_TIME_WQ_UI <- function(id) {
     ),
     # Plot Options
     fluidRow(br(), br()),
-    fluidRow(
-      column(11,
-             tabsetPanel(
-               ### Main Options
-               tabPanel("Main Options", br(), br(),
-                          column(4,
-                                 wellPanel(
-                                   h4("Axes", align = "center"),
-                                   wellPanel(
-                                     fluidRow(
-                                       column(6,
-                                              uiOutput(ns("param1_ui"))
-                                       ),
-                                       column(6,
-                                              uiOutput(ns("param2_ui"))
-                                       )
-                                     )
-                                   ),
-                                   uiOutput(ns("axis_ui"))
-                                 )
-                          ), # end column
-                          column(4,
-                                 wellPanel(
-                                   h4("Colors and Shapes", align = "center"),
-                                   wellPanel(
-                                     fluidRow(
-                                       column(6,
-                                              uiOutput(ns("group_color_ui"))
-                                       ), # end column
-                                       # new column
-                                       column(6,
-                                              uiOutput(ns("group_shape_ui"))
-                                       ) # end column
-                                     )
-                                   ),
-                                   wellPanel(
-                                     fluidRow(
-                                       uiOutput(ns("point_color1_ui")),
-                                       uiOutput(ns("point_color2_ui")),
-                                       sliderInput(ns("point_size"), "Point Size:",
-                                                   min = 0.5, max = 4, value = 1.5, step = 0.5)
-                                     )
-                                     
-                                   )
-                                 )
-                          ), # end column
-                          column(4,
-                                 wellPanel(
-                                   h4("Trend Lines", align = "center"),
-                                   wellPanel(
-                                       checkboxInput(ns("trend_show"), "Show Trendline(s)"),
-                                       radioButtons(ns("trend_type"), "Trendline Type",
-                                                    choices= c("Linear" = "lm",
-                                                               "Loess" = "loess",
-                                                               "Generalized Additive" = "gam"),
-                                                    inline = TRUE),
-                                       strong("Confidence Ribbon"),
-                                       checkboxInput(ns("trend_ribbon"), "Show Conf. Ribbon"),
-                                       radioButtons(ns("trend_conf"), NULL,
-                                                    choices= c(0.90,0.95,0.99),
-                                                    inline = TRUE),
-                                     uiOutput(ns("trend_line_ui")),
-                                     sliderInput(ns("trend_size"), "Line Thickness:",
-                                                 min = 0, max = 3, value = 1, step = 0.25),
-                                     sliderInput(ns("trend_alpha"), "Line Opacity:",
-                                                 min = 0, max = 1, value = .1, step = 0.1)
-                                     
-                                   )
-                                 )
-                          ) # end column
-               ), # end Tab Panel
-               ### More Display Options 1
-               tabPanel("Theme and H-lines", br(), br(),
-                        PLOT_THEME_AND_HLINE_UI(ns("more_display_1"))
-               ),
-               ### More Display Options 2
-               tabPanel("Texts and V-lines", br(), br(),
-                        PLOT_TEXT_AND_VLINES_TIME_UI(ns("text_vline"))
-               ),
-               ### Titles and Axis Labels
-               tabPanel("Title and Labels", br(), br(),
-                        PLOT_TITLE_AND_LABELS_UI(ns("title_label"))
-               ), # end Tab Panel
-               ### Save Plot
-               tabPanel("Save Plot", br(), br(),
+    tabsetPanel(
+      ### Main Options
+      tabPanel("Main Options", br(), br(),
+               column(4,
+                      wellPanel(
+                        h4("Axes", align = "center"),
                         wellPanel(
                           fluidRow(
-                            column(3,
-                                   downloadButton(ns('save_plot'), "Save Plot"),
-                                   br(),
-                                   radioButtons(ns("save_type"), "File Type:",
-                                                choices= c("pdf",
-                                                           "jpg",
-                                                           "png"),
-                                                inline = TRUE),
-                                   br(),
-                                   checkboxGroupInput(ns("save_grid"), "Gridline Override:",
-                                                      choices= c("major gridlines",
-                                                                 "minor gridlines"))
+                            column(6,
+                                   uiOutput(ns("param1_ui"))
                             ),
-                            column(3,
-                                   numericInput(ns("save_width"), "Plot Width (inches):", 11,
-                                                min = 5, max = 20, step = 0.5),
-                                   
-                                   numericInput(ns("save_height"), "Plot Height (inches):", 8.5,
-                                                min = 5, max = 20, step = 0.5)
-                                   
-                            ),
-                            column(3,
-                                   sliderInput(ns("plot_margin_top"), "adjust top margin",
-                                               min = 0, max = 1.5, value = 0.2, step = 0.1),
-                                   sliderInput(ns("plot_margin_bottom"), "adjust bottom margin",
-                                               min = 0, max = 1.5, value = 0.2, step = 0.1)
-                            ),
-                            column(3,
-                                   sliderInput(ns("plot_margin_left"), "adjust left margin",
-                                               min = 0, max = 1.5, value = 0.5, step = 0.1),
-                                   sliderInput(ns("plot_margin_right"), "adjust right margin",
-                                               min = 0, max = 1.5, value = 0.2, step = 0.1)
+                            column(6,
+                                   uiOutput(ns("param2_ui"))
                             )
-                          ) # fluidRow
-                        ) # wellPanel
-               ) # tab panel
-             ) # end tabSet Panel
-      ), # end Column
-      # extend the page with a right column of blank rows (hack at keeping the page the same height no matter the tab open)
-      column(1, br(), br(), br(), br(), br(), br(), br(), br(), br(), br(), br(),
-             br(), br(), br(), br(), br(), br(), br(), br(), br(), br(), br(), br()
-      )
-    ) # Fluid Row
+                          )
+                        ),
+                        uiOutput(ns("axis_ui"))
+                      )
+               ), # end column
+               column(4,
+                      wellPanel(
+                        h4("Colors and Shapes", align = "center"),
+                        wellPanel(
+                          fluidRow(
+                            column(6,
+                                   uiOutput(ns("group_color_ui"))
+                            ), # end column
+                            # new column
+                            column(6,
+                                   uiOutput(ns("group_shape_ui"))
+                            ) # end column
+                          )
+                        ),
+                        wellPanel(
+                          fluidRow(
+                            uiOutput(ns("point_color1_ui")),
+                            uiOutput(ns("point_color2_ui")),
+                            sliderInput(ns("point_size"), "Point Size:",
+                                        min = 0.5, max = 4, value = 1.5, step = 0.5)
+                          )
+                          
+                        )
+                      )
+               ), # end column
+               column(4,
+                      wellPanel(
+                        h4("Trend Lines", align = "center"),
+                        wellPanel(
+                          checkboxInput(ns("trend_show"), "Show Trendline(s)"),
+                          radioButtons(ns("trend_type"), "Trendline Type",
+                                       choices= c("Linear" = "lm",
+                                                  "Loess" = "loess",
+                                                  "Generalized Additive" = "gam"),
+                                       inline = TRUE),
+                          strong("Confidence Ribbon"),
+                          checkboxInput(ns("trend_ribbon"), "Show Conf. Ribbon"),
+                          radioButtons(ns("trend_conf"), NULL,
+                                       choices= c(0.90,0.95,0.99),
+                                       inline = TRUE),
+                          uiOutput(ns("trend_line_ui")),
+                          sliderInput(ns("trend_size"), "Line Thickness:",
+                                      min = 0, max = 3, value = 1, step = 0.25),
+                          sliderInput(ns("trend_alpha"), "Line Opacity:",
+                                      min = 0, max = 1, value = .1, step = 0.1)
+                          
+                        )
+                      )
+               ) # end column
+      ), # end Tab Panel
+      ### More Display Options 1
+      tabPanel("Theme and H-lines", br(), br(),
+               PLOT_THEME_AND_HLINE_UI(ns("theme_hline"))
+      ),
+      ### More Display Options 2
+      tabPanel("Texts and V-lines", br(), br(),
+               PLOT_TEXT_AND_VLINES_TIME_UI(ns("text_vline"))
+      ),
+      ### Titles and Axis Labels
+      tabPanel("Title and Labels", br(), br(),
+               PLOT_TITLE_AND_LABELS_UI(ns("title_label"))
+      ), # end Tab Panel
+      ### Save Plot
+      tabPanel("Save Plot", br(), br(),
+               PLOT_SAVE_UI(ns("save"))
+      ) # tab panel
+    ) # end tabSet Panel
   ) # end taglist
 } # end UI function
 
@@ -173,9 +129,36 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
 
   ns <- session$ns # see General Note 1
   
+##################### Main Reactive Expressions
   
   # Find Choices for Sites and Param (could make it so plot.time module server function accepts this instead (probably faster)
   Param <- reactive({Df()$Parameter %>% factor() %>% levels()})
+  
+  # Two Dataframes (Primary and Secondary Axis)
+  
+  Df1 <- reactive({
+    req(input$param1)
+    Df() %>% filter(Parameter %in% input$param1)})
+  
+  Df2 <- reactive({
+    req(input$param1) # param1 not param2 in req() becuase param2 always has "None" option
+    if(input$param2 != "None"){
+      Df() %>% filter(Parameter %in% input$param2)
+    }else{
+      NULL
+    }
+  })
+  
+  # Site List  - Primary Axis Only Plots
+  Site <- reactive({
+    if(input$param2 == "None"){
+      Df1()$Site %>% factor() %>% levels()
+    } else{
+      unique(Df1()$Site %>% factor() %>% levels(), Df2()$Site %>% factor() %>% levels())
+    }
+  })
+  
+############# Rendered User Interface
 
   # Parameter Axis Choice for Primary Axis
   output$param1_ui <- renderUI({
@@ -232,29 +215,7 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
   })
 
   
-  # Two Dataframes (Primary and Secondary Axis)
-  
-  Df1 <- reactive({
-    req(input$param1)
-    Df() %>% filter(Parameter %in% input$param1)})
-  
-  Df2 <- reactive({
-    req(input$param1) # param1 not param2 in req() becuase param2 always has "None" option
-    if(input$param2 != "None"){
-      Df() %>% filter(Parameter %in% input$param2)
-    }else{
-      NULL
-    }
-  })
-  
-  # Site List  - Primary Axis Only Plots
-  Site <- reactive({
-    if(input$param2 == "None"){
-      Df1()$Site %>% factor() %>% levels()
-    } else{
-      unique(Df1()$Site %>% factor() %>% levels(), Df2()$Site %>% factor() %>% levels())
-    }
-  })
+
   
   # Flag List
   # Flag <- reactive({
@@ -348,7 +309,7 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
                    inline = TRUE)
   })
 
-  # Point Color 2 UI - only show options when color = None
+  # Trend Line - only show options when shape = None/Parameter
   output$trend_line_ui <- renderUI({
     req(input$group_shape == "None/Parameter")
     radioButtons(ns("trend_line"), "Line Type (when not grouped by shape)",
@@ -359,38 +320,49 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
 
   
 ########################################################################
-### Plot 
+### Plot UI
   
   
   ### Plot Outputs 
   
   # ONe Y-axis interactive Plotly plot
-  output$plot1 <- renderPlotly({
-    req(input$param2 == "None")
-    ggplotly(P5())
+  output$plot1_inter <- renderPlotly({
+    req(input$param2 == "None")# & P2$Gplotly() == TRUE)
+    ggplotly(P5(), tooltip = c("y", "colour", "shape"))
+  })
+  
+  # ONe Y-axis static Plot
+  output$plot1_static <- renderPlot({
+    req(input$param2 == "None") # & P2$Gplotly() == FALSE)
+    P5() + theme(text = element_text(size = 15))
   })
   
   # Two Y-axis ggplot static plot
   output$plot2 <- renderPlot({
     req(input$param2 != "None")
-    P5()
+    P5() + theme(text = element_text(size = 15))
   })
   
   output$plot_ui <- renderUI({
     req(input$param1, input$param2)
-    if(input$param2 == "None"){
-      plotlyOutput(ns("plot1"), width = "100%", height = 600)
-    } else{
+    
+    if(input$param2 != "None"){
       tagList(
         plotOutput(ns("plot2"), width = "100%", height = 600),
         h4(textOutput(ns("plot2text")))
       )
-    }
+    } else if(input$param2 == "None"& P2$Gplotly() == TRUE){
+        plotlyOutput(ns("plot1_inter"), width = "100%", height = 600)
+    }else{
+        plotOutput(ns("plot1_static"), width = "100%", height = 600)
+    } 
+
   })
   
   
   
-  ### Plot Creation
+#########################################################################
+# Plot Creation
   
   # Main Plot Scripts
   P1 <- reactive({
@@ -586,7 +558,7 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
       
 
   # Display OPtions Tab
-  P2 <- callModule(PLOT_THEME_AND_HLINE, "more_display_1",
+  P2 <- callModule(PLOT_THEME_AND_HLINE, "theme_hline",
                    P = P1,
                    Df1 = Df1,
                    Df2 = Df2,
@@ -594,7 +566,7 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
   
   # Display OPtions Tab
   P3 <- callModule(PLOT_TEXT_AND_VLINES_TIME, "text_vline",
-                   P = P2,
+                   P = P2$Plot,
                    Df1 = Df1)
   
   
@@ -608,48 +580,35 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
                    Y2_Lab_Auto = reactive({paste(Text_Param2(), " (", Text_Units2(),")", sep= "")}))
   
   
-  # Extra Additions for Secondary Axis
+  # Secondary Axis Only (Post Axis Label Naming)
   P5 <- reactive({
     
     p <- P4$Plot()
     
     # Secondary Axis Only
-    # ylim?
-    
     if(input$param2 != "None"){
-      p <- p + scale_y_continuous(breaks = pretty_breaks(),
+      p <- p + scale_y_continuous(breaks = pretty_breaks(), # ylim?
                                   sec.axis = sec_axis(~./Mult(), breaks = pretty_breaks(), 
                                                       name = P4$Y2_Lab()))
-      p <- p + theme(text = element_text(size = 15))
+      # p <- p + theme(text = element_text(size = 15))
       
       p <- p + theme(axis.text.y = element_text(colour = input$point_color1),
                      axis.text.y.right = element_text(colour = input$point_color2))
       
     }
-
     
-    ### Save Options
-    
-    # Size dependent? Change size for saving?
-    p <- p + theme(plot.margin = unit(c(input$plot_margin_top, 
-                                        input$plot_margin_right, 
-                                        input$plot_margin_bottom, 
-                                        input$plot_margin_left), 
-                                      "in"))
-    
-    # Gridlines for saving options - nonplotly inage
-    if("major gridlines" %in% input$save_grid){
-      p <- p + theme(panel.grid.major = element_line())
-    }
-    if("minor gridlines" %in% input$save_grid){
-      p <- p + theme(panel.grid.minor = element_line())
-    }
-    
-          
     p 
           
-  }) # end Plot
+  }) # end P5
   
+  
+  # Save Tab and Download Function
+  callModule(PLOT_SAVE, "save",
+             P = P5,
+             Plot_Name = Plot_Name)
+  
+  
+  # Multiplier for Secondary Y-axis
   Mult <- reactive({
     
     y1max <- max(Df1()$Result, na.rm = TRUE)
@@ -693,23 +652,7 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
   # legend for double y-axis plot
   output$plot2text <- renderText({
     paste(input$point_color1, "=", Text_Param1(), " , ", input$point_color2, "=", Text_Param2())
-    })
-
-  # Filename
-  
-  Filename <- reactive({
-    paste0(Plot_Name(), ".", input$save_type)
   })
-  
-  # Plot Print
-
-  output$save_plot <- downloadHandler(
-    filename = function(){Filename()},
-    content = function(file){ggsave(file, plot = P5(), 
-                                    width = input$save_width,
-                                    height = input$save_height,
-                                    device = input$save_type)}
-  )
 
 
 } # end Server Function

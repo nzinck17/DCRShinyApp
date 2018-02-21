@@ -15,13 +15,65 @@
 # User Interface
 ##############################################################################################################################
 
-PLOT_TITLE_AND_LABELS_UI <- function(id, sec_y_axis = FALSE) {
+PLOT_SAVE_UI <- function(id) {
   
   ns <- NS(id) # see General Note 1
   
   tagList(
-    
-    fluidRow(
+    column(6,
+           wellPanel(
+             h4("Save", align = "center"),
+
+               fluidRow(
+                 column(6,
+                        radioButtons(ns("save_type"), "File Type:",
+                                     choices= c("pdf",
+                                                "jpg",
+                                                "png"),
+                                     inline = TRUE),
+                        br(),
+                        checkboxGroupInput(ns("save_grid"), "Gridline Override:",
+                                           choices= c("major gridlines",
+                                                      "minor gridlines"))
+                 ),
+                 column(6,
+                        numericInput(ns("save_width"), "Plot Width (inches):", 11,
+                                     min = 5, max = 20, step = 0.5),
+                        
+                        numericInput(ns("save_height"), "Plot Height (inches):", 8.5,
+                                     min = 5, max = 20, step = 0.5)
+                        
+                 )
+               ),
+             tags$div(
+               fluidRow(hr(),
+                 downloadButton(ns('save_plot'), "Save Plot")
+               ), 
+               align = "center"
+             )
+           )
+
+    ),
+    column(6,
+           wellPanel(
+             h4("Margins", align = "center"),
+             fluidRow(
+               column(6,
+                      sliderInput(ns("plot_margin_top"), "adjust top margin",
+                                  min = 0, max = 1.5, value = 0.2, step = 0.1),
+                      sliderInput(ns("plot_margin_bottom"), "adjust bottom margin",
+                                  min = 0, max = 1.5, value = 0.2, step = 0.1)
+               ),
+               column(6,
+                      sliderInput(ns("plot_margin_left"), "adjust left margin",
+                                  min = 0, max = 1.5, value = 0.5, step = 0.1),
+                      sliderInput(ns("plot_margin_right"), "adjust right margin",
+                                  min = 0, max = 1.5, value = 0.2, step = 0.1)
+               )
+             ) # fluidRow
+           ) # wellPanel
+    ) # end column
+
   )
 }
 
@@ -34,11 +86,52 @@ PLOT_TITLE_AND_LABELS_UI <- function(id, sec_y_axis = FALSE) {
 # Thus do not use () in callModule argument for reactives
 # For non reactives wrap with "reactive" to make into a reactive expression.
 
-PLOT_TITLE_AND_LABELS <- function(input, output, session, P, Title_Auto, X_Lab_Auto, Y_Lab_Auto, Y2_Lab_Auto = NULL) {
-  
+PLOT_SAVE <- function(input, output, session, P, Plot_Name) {
+
   ns <- session$ns # see General Note 1
   
+  P1 <- reactive({
+    
+    p <- P()
+    
 
+    # Gridlines for saving options - nonplotly inage
+    if("major gridlines" %in% input$save_grid){
+      p <- p + theme(panel.grid.major = element_line())
+    }
+    if("minor gridlines" %in% input$save_grid){
+      p <- p + theme(panel.grid.minor = element_line())
+    }
+    
+    # Margin Options
+    # Size dependent? Change size for saving?
+    p <- p + theme(plot.margin = unit(c(input$plot_margin_top, 
+                                        input$plot_margin_right, 
+                                        input$plot_margin_bottom, 
+                                        input$plot_margin_left), 
+                                      "in"))
+    
+    
+    p
+    
+  })
+    
+  # Filename
+  
+  Filename <- reactive({
+    paste0(Plot_Name(), ".", input$save_type)
+  })
+  
+  # Plot Print
+  
+  output$save_plot <- downloadHandler(
+    filename = function(){Filename()},
+    content = function(file){ggsave(file, plot = P1(), 
+                                    width = input$save_width,
+                                    height = input$save_height,
+                                    device = input$save_type)}
+  )
+    
   
 } # end Server Function
 

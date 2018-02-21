@@ -65,7 +65,7 @@ source("modules2/inputs/plot_theme_and_hlines.R")
 source("modules2/inputs/plot_text_and_vlines_time.R")
 #source("modules2/inputs/plot_text_and_vlines_corr.R")
 source("modules2/inputs/plot_title_and_labels.R")
-#source("modules2/inputs/plot_save.R")
+source("modules2/inputs/plot_save.R")
 
 # Outputs
 source("modules2/outputs/plot_time_wq.R")
@@ -135,24 +135,24 @@ tabPanel("Filter",
          navlistPanel(widths = c(2, 10),
                       "Water Quality Data",
                       tabPanel("Tributary",
-                               fluidRow(h4("Filter and Export for Tributary WQ Data", align = "center")),
+                               fluidRow(h4("Filter Tributary WQ Data", align = "center")),
                                FILTER_WQ_UI("mod_trib_filter")
                       ),
                       tabPanel("Bacteria (Res)",
-                               fluidRow(h4("Filter and Export for Reservoir Bacteria WQ Data", align = "center")),
+                               fluidRow(h4("Filter Reservoir Bacteria WQ Data", align = "center")),
                                FILTER_WQ_UI("mod_bact_filter")
                       ),
                       tabPanel("Chemical (Res)",
-                               fluidRow(h4("Filter and Export for Reservoir Chemical WQ Data", align = "center")),
+                               fluidRow(h4("Filter Reservoir Chemical WQ Data", align = "center")),
                                FILTER_WQ_UI("mod_chem_filter")
                       ),
                       tabPanel("Profile (Res)",
-                               fluidRow(h4("Filter and Export for Reservoir Profile WQ Data", align = "center")),
+                               fluidRow(h4("Filter Reservoir Profile WQ Data", align = "center")),
                                FILTER_WQ_UI("mod_prof_filter")
                       ),
                       "Hydro and Met",
                       tabPanel("Hydro/Met Data",
-                               fluidRow(h4("Filter and Export for Hydro and Met Data", align = "center"))
+                               fluidRow(h4("Filter Hydro and Met Data", align = "center"))
                       )
          ) # end navlist
 ),

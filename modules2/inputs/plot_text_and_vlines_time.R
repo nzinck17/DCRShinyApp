@@ -22,7 +22,7 @@ PLOT_TEXT_AND_VLINES_TIME_UI <- function(id) {
   tagList(
     column(8,
            wellPanel(
-             h4("Text", align = "center"),
+             h4("Text Boxes", align = "center"),
              fluidRow(
                column(3,
                       wellPanel(
@@ -189,13 +189,12 @@ PLOT_TEXT_AND_VLINES_TIME <- function(input, output, session, P, Df1) {
                           alpha = input$vline1_alpha)
     }
     
-    # Vertical Line 1
+    # Vertical Line 2
     if(input$vline2 == TRUE){
-      p <- p + geom_vline(data = Df1(),
-                          xintercept = as.POSIXct(input$vline2_int),
-                          linetype = input$vline2_type,
-                          size = input$vline2_size,
-                          alpha = input$vline2_alpha)
+      p <- p + geom_vline(xintercept = as.POSIXct(as.character(input$vline2_int)))#,
+                          # linetype = input$vline2_type,
+                          # size = input$vline2_size,
+                          # alpha = input$vline2_alpha)
     }
     
     p
