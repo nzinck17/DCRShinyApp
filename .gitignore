@@ -2,3 +2,8 @@
 .Rhistory
 .RData
 .Ruserdata
+.DCR_WQ_App.vbs
+.DCR_WQ_App.bat
+.lineprof.R
+.Benchmarking.R
+.ShinyApp.log
