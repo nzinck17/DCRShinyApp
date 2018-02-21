@@ -31,13 +31,17 @@ ipak(packages)
 
 ## Fetch all of the cached rds data for the app:
     # Directory with saved .rds files
-    datadir <- "//env.govt.state.ma.us/enterprise/DCR-WestBoylston-WKGRP/WatershedJAH/EQStaff/WQDatabase/R-Shared/WQApp/data"
+    datadir <- config[1]
+
     # Make a list of all the .rds files using full path
     rds_files <- list.files(datadir,full.names = TRUE ,pattern = "\\.rds$")
-    # Make a list of the df names by eliminating extension from files
-    df_names <- gsub(".rds", "", list.files(datadir))
+
     # create an object that contains all of the rds files
     data <- lapply(rds_files, readRDS)
+
+    # Make a list of the df names by eliminating extension from files
+    df_names <- gsub(".rds", "", list.files(datadir))
+
     # name each df in the data object appropriately
     names(data) <- df_names
     # Extract each element of the data object into the global environment
