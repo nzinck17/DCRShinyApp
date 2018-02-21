@@ -22,15 +22,17 @@ ns <- NS(id)
 
 tagList(
   fluidRow(
-    tags$style(type = "text/css", "#Home-map {height: calc(100vh - 210px) !important;}"),
-    leafletOutput(ns("map")) #height = 700
+    tags$style(type = "text/css", "#home-map {height: calc(100vh - 235px) !important;}"),
+    leafletOutput(ns("map"))
   ),
   fluidRow(
-    br(),
-    column(3, imageOutput(ns("dcr_image"), height = 80), align = "left"),
-    column(6, imageOutput(ns("wave_image"), height = 80), align = "center"),
-    column(3, imageOutput(ns("umass_image"), height = 80), align = "right")
-	)
+    column(6,
+           strong(textOutput(ns("text_db")), align = "left")
+    ),
+    column(6,
+           strong(textOutput(ns("text_cred")), align = "right")
+    )
+  )
 )
 
 }
@@ -123,26 +125,5 @@ HOME <- function(input, output, session, df_site) {
 
   })
 
-
-  # DCR IMAGE
-  output$dcr_image <- renderImage({
-    list(src = "images/DCR.jpg",
-         width= "160",
-         height= "80")
-  }, deleteFile = FALSE)
-
-  # WAVE IMAGE
-  output$wave_image <- renderImage({
-    list(src = "images/WAVE.jpg",
-          width= "360",
-          height= "80")
-  }, deleteFile = FALSE)
-
-  # UMass IMAGE
-  output$umass_image <- renderImage({
-    list(src = "images/UMass.png",
-         width= "240",
-         height= "80")
-  }, deleteFile = FALSE)
 
 } # end Server Function

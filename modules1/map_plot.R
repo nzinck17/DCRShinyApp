@@ -38,7 +38,15 @@ tagList(
   
   # CSS for map / map legend
   tags$head(
-    tags$style(type = "text/css", "html, body {width:100%;height:100%}",
+    tags$style(type = "text/css", 
+               # CSS for Map height to adjust to screen height
+               "#mod_trib_quab_map-map {height: calc(100vh - 235px) !important;}",
+               "#mod_trib_ware_map-map {height: calc(100vh - 235px) !important;}",
+               "#mod_trib_wach_map-map {height: calc(100vh - 235px) !important;}",
+               "#mod_bact_wach_map-map {height: calc(100vh - 235px) !important;}",
+               "#mod_chem_quab_map-map {height: calc(100vh - 235px) !important;}",
+               "#mod_chem_wach_map-map {height: calc(100vh - 235px) !important;}",
+               # CSS for legend
                ".leaflet .legend i{
                border-radius:50%;
                width: 10px;
@@ -49,7 +57,7 @@ tagList(
   ), # end tags head
   # end CSS
   
-    sidebarLayout(
+    sidebarLayout(position = "right",
       sidebarPanel(width = 3,
         tabsetPanel(
           # Main Panel Options
@@ -59,10 +67,7 @@ tagList(
                    radioButtons(ns("df_choice"), "Full or Filtered Data:", 
                                 choices = c("full", "filtered"),
                                 inline = TRUE),
-                   conditionalPanel(
-                     condition = paste0("input['", ns("dfchoice"), "'] == 'filtered'"), 
-                     p('This Dataset has been filtered and therefore some observations (data points) may be excluded.\n See "Filtered tab"')
-                   ),
+                   p(textOutput(ns("text_filtered"))),
                    # Parameter Selection
                    selectInput(ns("param"), "Water Quality Parameter:",        
                                choices=c("-Select Parameter-", levels(factor(df$Parameter))),
@@ -90,7 +95,7 @@ tagList(
                    ) # end Well Panel
           ),
           # Display Panel Options
-          tabPanel("Display Options",
+          tabPanel("Display",
                    br(), br(),
                    # Map Style
                    selectInput(ns("map_type"), "Map Style:",        
@@ -106,17 +111,9 @@ tagList(
                                selected = "Display by Color"),
                    br(),
                    wellPanel(
-                     # Color Scheme (Dependent on the Condition of which Plot Style is Selected, see General Note 2)
-                     conditionalPanel(condition = paste0("input['", ns("plot_type"), "'] == 'Display by Color' "),
-                                      radioButtons(ns("color_dynamic"), "Color Scheme:",        
-                                                   choices=rownames(subset(brewer.pal.info, category %in% c("seq", "div"))),
-                                                   inline = TRUE)
-                     ),
-                     conditionalPanel(condition = paste0("input['", ns("plot_type"), "'] == 'Display by Size' "),
-                                      radioButtons(ns("color_static"), "Color:",        
-                                                   choices=c("black", "blue", "red"),
-                                                   selected = "blue")
-                     ),
+                     # Color Scheme (Dependent on which Plot Style is Selected)
+                     uiOutput(ns("color_dynamic_ui")),
+                     uiOutput(ns("color_static_ui")),
                      br(),
                      # Radius Slider Bar
                      sliderInput(ns("radius"), "Circle Size:",
@@ -151,7 +148,9 @@ tagList(
 # For non reactives wrap with "reactive" to make into a reactive expression.
 
 MAP_PLOT <- function(input, output, session, df_full, Df_Filtered, df_site) {
-
+  
+  ns <- session$ns # see General Note 1
+  
   # Create a more condensed Site Location dataframe (with Lat,lomg,site ID)
   df_site2 <- df_site %>% select(Site, LocationLat, LocationLong)
   
@@ -163,6 +162,29 @@ MAP_PLOT <- function(input, output, session, df_full, Df_Filtered, df_site) {
       df_full
     }
   })
+  
+  ### Render UIs
+  
+  # Parameter Axis Choice for Secondary Axis
+  output$color_dynamic_ui <- renderUI({
+    req(input$plot_type == "Display by Color")
+    radioButtons(ns("color_dynamic"), "Color Scheme:",        
+                 choices= c("Spectral", "RdYlBu", "Greens", "Greys", "Oranges", "Blues"),
+                 inline = TRUE)
+  })
+  
+  outputOptions(output, "color_dynamic_ui", suspendWhenHidden = FALSE) # see Dev. Manual
+  
+  # Parameter Axis Choice for Secondary Axis
+  output$color_static_ui <- renderUI({
+    req(input$plot_type == "Display by Size")
+    radioButtons(ns("color_static"), "Color:",        
+                 choices=c("black", "blue", "red"),
+                 selected = "blue",
+                 inline = TRUE)
+  })
+  
+  outputOptions(output, "color_static_ui", suspendWhenHidden = FALSE) # see Dev. Manual
   
   
   ### Reactive Dataframe for data stats
@@ -214,11 +236,12 @@ MAP_PLOT <- function(input, output, session, df_full, Df_Filtered, df_site) {
 # Map - Color Pallete
   
   Color_Pal <- reactive({
+    req(input$color_dynamic)
     # If statement to prevent potential crash, See Note 1
     if(nrow(Df2()) > 0){
       colorNumeric(palette = input$color_dynamic, range(Df2()$Value))
     }
-    }) # end colorpal
+  }) # end colorpal
 
   
 # Map - Size "Pallete" - For size legend creation.
@@ -328,6 +351,14 @@ MAP_PLOT <- function(input, output, session, df_full, Df_Filtered, df_site) {
         clearMarkers() %>%
         clearControls()
     }
+  })
+  
+  
+  
+  # Text - Filtered Data
+  output$text_filtered <- renderText({
+    req(input$df_choice == "filtered") # See General Note 1
+    'This Dataset has been filtered and therefore some observations (data points) may be excluded.\n See "Filtered tab"'
   })
   
 } # end Server Funtion

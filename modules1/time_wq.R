@@ -6,11 +6,7 @@
 ##############################################################################################################################
 
 # Notes: 
-#   1. req() will delay the rendering of a widget or other reactive object until a certain logical expression is TRUE or not NULL
-#
-# To-Do List:
-#   1. Make the Metero/Hydro Filters work
-#   2. Plotting Features - Show Limits, Finish and Clean up Coloring options (flagged data, met filters)
+# 
 
 ##############################################################################################################################
 # User Interface
@@ -24,26 +20,28 @@ TIME_WQ_UI <- function(id) {
     wellPanel(       
       fluidRow(
         column(3,
-               radioButtons(ns("dfchoice"), "Full or Filtered Data:", 
+               radioButtons(ns("df_choice"), "Full or Filtered Data:", 
                             choices = c("full", "filtered"),
                             inline = TRUE),
-               conditionalPanel(
-                 condition = paste0("input['", ns("dfchoice"), "'] == 'filtered'"), 
-                 p('This Dataset has been filtered and therefore some observations (data points) may be excluded.\n See "Filtered tab"')
-               ),
-               uiOutput(ns("text_select")),
+               p(textOutput(ns("text_filtered"))),
+               wellPanel(
+                 h4(textOutput(ns("text_site_null")), align = "center"),
+                 h4(textOutput(ns("text_param_null")), align = "center"),
+                 h4(textOutput(ns("text_date_null")), align = "center"),
+                 h5(textOutput(ns("text_num_text")), align = "center"),
+                 strong(textOutput(ns("text_num")), align = "center")
+               ), # end Well Panel
                wellPanel(
                  SITE_MAP_UI(ns("site_map"))
                ) # end Well Panel
         ), # end Column
         column(6,
-               uiOutput(ns("site_ui"))
+               SITE_CHECKBOX_UI(ns("site"))
         ), # end Column
         column(3,
-               uiOutput(ns("param_ui")),
+               PARAM_SELECT_UI(ns("param")),
                br(),
-               # Date Selection
-               uiOutput(ns("date_ui"))
+               DATE_SELECT_UI(ns("date"))
         ) # end column
       ) # end fluidrow     
     ), # end well panel
@@ -53,18 +51,22 @@ TIME_WQ_UI <- function(id) {
       
       # Plot Tab
       tabPanel("Plot",
+               h4(textOutput(ns("text_plot_no_data"))),
+               h4(textOutput(ns("text_plot_zero_data"))),
                PLOT_TIME_WQ_UI(ns("plot"))
       ), # end Tab Panel - Plot
       
       # Table Tabpanel
       tabPanel("Table",
+               h4(textOutput(ns("text_table_no_data"))),
+               h4(textOutput(ns("text_table_zero_data"))),
                fluidRow(br(),
                         column(3,
                                downloadButton(ns("download_data"), "Download table as csv")
                         ),
-                        column(9,
+                        column(9, 
                                uiOutput(ns("column_ui"))
-                        ),
+                        ), 
                         br()
                ), # end Fluid Row
                fluidRow(
@@ -73,9 +75,12 @@ TIME_WQ_UI <- function(id) {
       ), # end Tab Panel - Table
       
       # Summary Tabpanel
-      tabPanel("Summary",
-               STAT_TIME_WQ_UI(ns("summary"))
+      tabPanel("Stats",
+               h4(textOutput(ns("text_stats_no_data"))),
+               h4(textOutput(ns("text_stats_zero_data"))),
+               STAT_TIME_WQ_UI(ns("stats"))
       ) # end Tab Panel - Summary
+      
     ) # end tabsetpanel (plots, stats, etc.)
   ) # end taglist
 } # end UI function
@@ -93,93 +98,99 @@ TIME_WQ <- function(input, output, session, df_full, Df_Filtered, df_site) {
   
   ns <- session$ns # see General Note 1
   
-  ### Dataframe filtered or full based on Selection
+  # Dataframe filtered or full based on Selection
   Df1 <- reactive({
-    if(input$dfchoice == "filtered"){
+    if(input$df_choice == "filtered"){
       Df_Filtered()
     }else{
       df_full
     }
   })
   
-  ### Site Selection using Site Select Module
   
-  # Ui
-  output$site_ui <- renderUI({
-    SITE_CHECKBOX_UI(ns("site"))
-  })
-  
-  # Server
+  # Site Selection using Site Select Module
   Site <- callModule(SITE_CHECKBOX, "site", Df = Df1)
   
   
-  ### Parameter Selection using ParameterSelect Module
-  
-  # Ui
-  output$param_ui <- renderUI({
-    PARAM_SELECT_UI(ns("param"))
-  })
-  
-  # Server
-  Param <- callModule(PARAM_SELECT, "param", Df = Df1, Site = Site)
-  
-  
-  
-  ### Date Range Selection Using DateSelect Module
-  
-  # Ui
-  output$date_ui <- renderUI({
-    DATE_SELECT_UI(ns("date"))
-  })
-  
-  # Server
-  Date_Range <- callModule(DATE_SELECT, "date", Df = Df1, Site = Site)
-  
-  
-  
-  ### Reactive Dataframe - filter for selected site, param, value range, date, and remove rows with NA for Result
-  
+  # Reactive Dataframe - first filter of the dataframe for Site
   Df2 <- reactive({
-    
-    req(Site(), Param$Type(), Param$Range_Min(), Param$Range_Min(), Date_Range$Lower(), Date_Range$Upper()) # See General Note _
+    req(Site())
     
     Df1() %>% 
-      filter(LocationLabel %in% Site(), 
-             Parameter %in% Param$Type(), 
-             Result > Param$Range_Min(), Result < Param$Range_Max(),
-             Date > Date_Range$Lower(), Date < Date_Range$Upper(),
-             !is.na(Result))
+      filter(LocationLabel %in% Site(),
+             !is.na(Result)) # can remove this once certain no NAs. Maybe remove for Rdata files
   })
   
   
-  ### Column Selection for table output
+  # Parameter Selection using ParameterSelect Module
+  Param <- callModule(PARAM_SELECT, "param", Df = Df2, Site = Site)
   
+
+  #Date Range Selection Using DateSelect Module
+  Date_Range <- callModule(DATE_SELECT, "date", Df = Df2, Site = Site)
+  
+  
+  
+  # Reactive Dataframe - filter for param, value range, date, and remove rows with NA for Result
+  Df3 <- reactive({
+    req(Param$Type(), Param$Range_Min(), Param$Range_Min(), Date_Range$Lower(), Date_Range$Upper()) # See General Note _
+    
+    Df2() %>% 
+      filter(Parameter %in% Param$Type(), 
+             Result > Param$Range_Min(), Result < Param$Range_Max(),
+             Date > Date_Range$Lower(), Date < Date_Range$Upper())
+  })
+  
+  
+  # Plot
+  callModule(PLOT_TIME_WQ, "plot", Df = Df3)
+  
+  
+  # Table
+  output$table <- renderDataTable(Df_Table())
+  
+  
+  # Stats
+  callModule(STAT_TIME_WQ, "stats", Df = Df3)
+  
+  
+  # Site Map
+  callModule(SITE_MAP, "site_map", df_site = df_site, Site_List = Site)
+  
+  
+  ### Downloadable csv of selected dataset
+  
+  output$download_data <- downloadHandler(
+    filename = function() {
+      paste("DCRExportedWQData", ".csv", sep = "")
+    },
+    content = function(file) {
+      write_csv(Df_Table(), file)
+    }
+  )
+  
+  
+  # Column Selection for table output
   output$column_ui <- renderUI({
     checkboxGroupInput(ns("column"), "Table Columns:", 
-                       choices = names(Df2()), 
-                       selected = names(Df2()),
+                       choices = names(Df3()), 
+                       selected = names(Df3()),
                        inline = TRUE)
   })
   
-  # Column Selection
+  # Df for Table
   Df_Table <- reactive({
     req(input$column)
-    Df2() %>% select(c(input$column))
+    Df3() %>% select(c(input$column))
   })
 
   
   ### Texts
   
-  # Text Output
-  output$text_select <- renderUI({
-    # Text - Number of Samples or "Select a site"
-    wellPanel(
-      h5(textOutput(ns("text_site_null")), align = "center"),
-      h5(textOutput(ns("text_param_null")), align = "center"),
-      h5(textOutput(ns("text_date_null")), align = "center"),
-      h5(textOutput(ns("text_num_text")), align = "center"),
-      strong(textOutput(ns("text_num")), align = "center")
-    ) # end Well Panel
+  # Text - Filtered Data
+  output$text_filtered <- renderText({
+    req(input$df_choice == "filtered") # See General Note 1
+    'This Dataset has been filtered and therefore some observations (data points) may be excluded.\n See "Filtered tab"'
   })
   
   # Text - Select Site
@@ -202,48 +213,60 @@ TIME_WQ <- function(input, output, session, df_full, Df_Filtered, df_site) {
   
   # Text - Number of Samples - Words
   output$text_num_text <- renderText({
-    req(Df2()) # See General Note 1
+    req(Df3()) # See General Note 1
     "Number of Samples in Selected Data:"
   })
   
   # Text - Number of Samples - Number
   output$text_num <- renderText({
-    req(Df2()) # See General Note 1
+    req(Df3()) # See General Note 1
     Df2() %>% summarise(n()) %>% paste()
   })
   
+  # Text - Plot- No data Selected
+  output$text_plot_no_data <- renderText({
+    req(!isTruthy(Site()) | !isTruthy(Param$Type()) | !isTruthy(Date_Range$Lower()) | !isTruthy(Date_Range$Upper()))
+    "Select Site, Param, and Date"
+  })
   
-  
-  ### Plot
-  
-  callModule(PLOT_TIME_WQ, "plot", Df = Df2)
-  
-  
-  ### Table
-  
-  output$table <- renderDataTable(Df_Table())
-  
-  
-  ### Summary Statistics
-
-  callModule(STAT_TIME_WQ, "summary", Df = Df2)
-  
-  
-  ### Site Map
-  
-  callModule(SITE_MAP, "site_map", df_site = df_site, Site_List = Site)
-  
-  
-  ### Downloadable csv of selected dataset
-  
-  output$download_data <- downloadHandler(
-    filename = function() {
-      paste("DCRExportedWQData", ".csv", sep = "")
-    },
-    content = function(file) {
-      write_csv(Df_Table(), file)
+  # Text - Plot - Zero data Selected for Plot
+  output$text_plot_zero_data <- renderText({
+    req(Df3()) # See General Note 1
+    if(Df3() %>% summarise(n()) %>% unlist() == 0){
+      "Selection Contains Zero Observations"
     }
-  )
+  })
+  
+  # Text - Table - No data Selected
+  output$text_table_no_data <- renderText({
+    req(!isTruthy(Site()) | !isTruthy(Param$Type()) | !isTruthy(Date_Range$Lower()) | !isTruthy(Date_Range$Upper()))
+    "Select Site, Param, and Date"
+  })
+  
+  # Text - Table - Zero data Selected
+  output$text_table_zero_data <- renderText({
+    req(Df3()) # See General Note 1
+    if(Df3() %>% summarise(n()) %>% unlist() == 0){
+      "Selection Contains Zero Observations"
+    }
+  })
+  
+  # Text - Stats - No data Selected
+  output$text_stats_no_data <- renderText({
+    req(!isTruthy(Site()) | !isTruthy(Param$Type()) | !isTruthy(Date_Range$Lower()) | !isTruthy(Date_Range$Upper()))
+    "Select Site, Param, and Date"
+  })
+  
+  # Text - Stats - Zero Data Selected
+  output$text_stats_zero_data <- renderText({
+    req(Df3()) # See General Note 1
+    if(Df3() %>% summarise(n()) %>% unlist() == 0){
+      "Selection Contains Zero Observations"
+    }
+  })
+  
+  
+
   
 } # end Server Function
 
