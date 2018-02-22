@@ -1,0 +1,165 @@
+Loading required package: methods
+Downloading https://github.com/dancrocker/DCRShinyApp/archive/master.tar.gz
+
+Attaching package: 'plotly'
+
+The following object is masked from 'package:ggplot2':
+
+    last_plot
+
+The following object is masked from 'package:stats':
+
+    filter
+
+The following object is masked from 'package:graphics':
+
+    layout
+
+
+Attaching package: 'dplyr'
+
+The following objects are masked from 'package:stats':
+
+    filter, lag
+
+The following objects are masked from 'package:base':
+
+    intersect, setdiff, setequal, union
+
+
+Attaching package: 'lubridate'
+
+The following object is masked from 'package:base':
+
+    date
+
+
+Attaching package: 'DT'
+
+The following objects are masked from 'package:shiny':
+
+    dataTableOutput, renderDataTable
+
+Warning in eval(ei, envir) : NAs introduced by coercion
+
+Listening on http://127.0.0.1:4437
+Warning in validateCoords(lng, lat, funcName) :
+  Data contains 177 rows with either missing or invalid lat/lon values and will be ignored
+Warning in min(., na.rm = TRUE) :
+  no non-missing arguments to min; returning Inf
+Warning in max(., na.rm = TRUE) :
+  no non-missing arguments to max; returning -Inf
+Warning: Error in filter_impl: Result must have length 132725, not 0
+Stack trace (innermost first):
+    112: <Anonymous>
+    111: stop
+    110: filter_impl
+    109: filter.tbl_df
+    108: filter
+    107: as.data.frame
+    106: filter.data.frame
+    105: filter
+    104: function_list[[k]]
+    103: withVisible
+    102: freduce
+    101: _fseq
+    100: eval
+     99: eval
+     98: withVisible
+     97: %>%
+     96: <reactive>
+     85: df.react
+     84: eval
+     83: eval
+     82: %>%
+     81: renderText
+     80: func
+     79: origRenderFunc
+     78: output$Wachusett Trib Time-text.num
+      3: runApp
+      2: runUrl
+      1: shiny::runGitHub
+Warning: Error in filter_impl: Result must have length 132725, not 0
+Stack trace (innermost first):
+    98: <Anonymous>
+    97: stop
+    96: df
+    95: ggplot
+    94: <reactive>
+    83: p
+    82: ggplotly
+    81: "plotly"::"ggplotly"
+    80: func
+    79: origRenderFunc
+    78: output$Wachusett Trib Time-Plot Time-plot
+     3: runApp
+     2: runUrl
+     1: shiny::runGitHub
+Warning: Error in filter_impl: Result must have length 132725, not 0
+Stack trace (innermost first):
+    123: <Anonymous>
+    122: stop
+    121: filter_impl
+    120: filter.tbl_df
+    119: filter
+    118: as.data.frame
+    117: filter.data.frame
+    116: filter
+    115: function_list[[k]]
+    114: withVisible
+    113: freduce
+    112: _fseq
+    111: eval
+    110: eval
+    109: withVisible
+    108: %>%
+    107: <reactive>
+     96: df
+     95: ggplot
+     94: <reactive>
+     83: p
+     82: ggplotly
+     81: "plotly"::"ggplotly"
+     80: func
+     79: origRenderFunc
+     78: output$Wachusett Trib Time-Plot Time-plot
+      3: runApp
+      2: runUrl
+      1: shiny::runGitHub
+Warning: Error in filter_impl: Result must have length 132725, not 0
+Stack trace (innermost first):
+    87: <Anonymous>
+    86: stop
+    85: df.react
+    84: eval
+    83: eval
+    82: %>%
+    81: renderText
+    80: func
+    79: origRenderFunc
+    78: output$Wachusett Trib Time-text.num
+     3: runApp
+     2: runUrl
+     1: shiny::runGitHub
+We recommend that you use the dev version of ggplot2 with `ggplotly()`
+Install it with: `devtools::install_github('hadley/ggplot2')`
+Warning in origRenderFunc() :
+  Ignoring explicitly provided widget ID "196877595670"; Shiny doesn't use them
+We recommend that you use the dev version of ggplot2 with `ggplotly()`
+Install it with: `devtools::install_github('hadley/ggplot2')`
+Warning in if (nchar(plot$labels$title %||% "") > 0) { :
+  the condition has length > 1 and only the first element will be used
+Warning in origRenderFunc() :
+  Ignoring explicitly provided widget ID "19682caa1b32"; Shiny doesn't use them
+We recommend that you use the dev version of ggplot2 with `ggplotly()`
+Install it with: `devtools::install_github('hadley/ggplot2')`
+Warning in if (nchar(plot$labels$title %||% "") > 0) { :
+  the condition has length > 1 and only the first element will be used
+Warning in origRenderFunc() :
+  Ignoring explicitly provided widget ID "19681444efc"; Shiny doesn't use them
+We recommend that you use the dev version of ggplot2 with `ggplotly()`
+Install it with: `devtools::install_github('hadley/ggplot2')`
+Warning in if (nchar(plot$labels$title %||% "") > 0) { :
+  the condition has length > 1 and only the first element will be used
+Warning in origRenderFunc() :
+  Ignoring explicitly provided widget ID "19686ac151a4"; Shiny doesn't use them
