@@ -182,10 +182,10 @@ tabPanel("Tributary",
                tabPanel("Correlation",
                         fluidRow(h4("Tributary Correlation Analysis", align = "center")),
                         tabsetPanel(
-                          tabPanel("Quabbin", CORRELATION_WQ_UI("mod_trib_quab_regr")),
-                          tabPanel("Ware River", CORRELATION_WQ_UI("mod_trib_ware_regr")),
-                          tabPanel("Wachusett", CORRELATION_WQ_UI("mod_trib_wach_regr"))#,
-                          #tabPanel("All Tribs", CORRELATION_WQ_UI("mod_trib_all_regr"))
+                          tabPanel("Quabbin", CORRELATION_WQ_UI("mod_trib_quab_corr")),
+                          tabPanel("Ware River", CORRELATION_WQ_UI("mod_trib_ware_corr")),
+                          tabPanel("Wachusett", CORRELATION_WQ_UI("mod_trib_wach_corr"))#,
+                          #tabPanel("All Tribs", CORRELATION_WQ_UI("mod_trib_all_corr"))
                         ) # end tabset Panel
                ), # end tabpanel
                tabPanel("MetaData",
@@ -221,7 +221,7 @@ tabPanel("Reservoir",
                 tabPanel("Correlation",
                          fluidRow(h4("Bacteria Correlation Analysis", align = "center")),
                          tabsetPanel(
-                           tabPanel("Wachusett", CORRELATION_WQ_UI("mod_bact_wach_regr"))
+                           tabPanel("Wachusett", CORRELATION_WQ_UI("mod_bact_wach_corr"))
                          ) # end tabset panel
                 ), # end tabpanel
                 tabPanel("MetaData",
@@ -242,8 +242,8 @@ tabPanel("Reservoir",
                 tabPanel("Correlation",
                          fluidRow(h4("Chemical Correlation Analysis", align = "center")),
                          tabsetPanel(
-                           tabPanel("Quabbin", CORRELATION_DEPTH_WQ_UI("mod_chem_quab_regr")),
-                           tabPanel("Wachusett", CORRELATION_DEPTH_WQ_UI("mod_chem_wach_regr"))
+                           tabPanel("Quabbin", CORRELATION_DEPTH_WQ_UI("mod_chem_quab_corr")),
+                           tabPanel("Wachusett", CORRELATION_DEPTH_WQ_UI("mod_chem_wach_corr"))
                          )
                 ),
                 tabPanel("Metadata",
@@ -445,10 +445,10 @@ server <- function(input, output, session) {
   #callModule(time, "mod_trib_all_time", df = df_trib_all, df_site = df_trib_all_site)
 
   # Correlation
-  callModule(CORRELATION_WQ, "mod_trib_quab_regr", df = df_trib_quab, df_site = df_trib_quab_site)
-  callModule(CORRELATION_WQ, "mod_trib_ware_regr", df = df_trib_ware, df_site = df_trib_ware_site)
-  callModule(CORRELATION_WQ, "mod_trib_wach_regr", df = df_trib_wach, df_site = df_trib_wach_site)
-  #callModule(CORRELATION, "mod_trib_all_regr", df = df_trib_all, df_site = df_trib_all_site)
+  callModule(CORRELATION_WQ, "mod_trib_quab_corr", df_full = df_trib_quab, Df_Filtered = Df_Trib_Filtered[[2]], df_site = df_trib_quab_site)
+  callModule(CORRELATION_WQ, "mod_trib_ware_corr", df_full = df_trib_ware, Df_Filtered = Df_Trib_Filtered[[3]], df_site = df_trib_ware_site)
+  callModule(CORRELATION_WQ, "mod_trib_wach_corr", df_full = df_trib_wach, Df_Filtered = Df_Trib_Filtered[[1]], df_site = df_trib_wach_site)
+  #callModule(CORRELATION, "mod_trib_all_corr", df = df_trib_all, df_site = df_trib_all_site)
   
   # Metadata
   callModule(METADATA, "mod_trib_quab_meta", df_full = df_trib_quab, Df_Filtered = Df_Trib_Filtered[[2]], df_site = df_trib_quab_site, df_param = df_quab_param)
@@ -460,7 +460,7 @@ server <- function(input, output, session) {
   # Bacteria
   callModule(TIME_WQ, "mod_bact_wach_time", df_full = df_bact_wach, Df_Filtered = Df_Bact_Filtered[[1]], df_site = df_bact_wach_site)
 
-  callModule(CORRELATION_WQ, "mod_bact_wach_regr", df = df_bact_wach, df_site = df_bact_wach_site)
+  callModule(CORRELATION_WQ, "mod_bact_wach_corr", df_full = df_bact_wach, Df_Filtered = Df_Bact_Filtered[[1]], df_site = df_bact_wach_site)
 
   callModule(METADATA, "mod_bact_wach_meta", df_full = df_bact_wach, Df_Filtered = Df_Bact_Filtered[[1]], df_site = df_bact_wach_site, df_param = df_wq_wach_param, df_flag = df_wq_wach_flag)
   
@@ -468,8 +468,8 @@ server <- function(input, output, session) {
   callModule(TIME_DEPTH_WQ, "mod_chem_quab_time", df_full = df_chem_quab, Df_Filtered = Df_Chem_Filtered[[2]], df_site = df_chem_quab_site)
   callModule(TIME_DEPTH_WQ, "mod_chem_wach_time", df_full = df_chem_wach, Df_Filtered = Df_Chem_Filtered[[1]], df_site = df_chem_wach_site)
 
-  callModule(CORRELATION_DEPTH_WQ, "mod_chem_quab_regr", df = df_chem_quab, df_site = df_chem_quab_site)
-  callModule(CORRELATION_DEPTH_WQ, "mod_chem_wach_regr", df = df_chem_wach, df_site = df_chem_wach_site)
+  callModule(CORRELATION_DEPTH_WQ, "mod_chem_quab_corr", df = df_chem_quab, df_site = df_chem_quab_site)
+  callModule(CORRELATION_DEPTH_WQ, "mod_chem_wach_corr", df = df_chem_wach, df_site = df_chem_wach_site)
 
   callModule(METADATA, "mod_chem_quab_meta", df_full = df_chem_quab, Df_Filtered = Df_Chem_Filtered[[2]], df_site = df_chem_quab_site, df_param = df_quab_param)
   callModule(METADATA, "mod_chem_wach_meta",  df_full = df_chem_wach, Df_Filtered = Df_Chem_Filtered[[1]], df_site = df_prof_wach_site)

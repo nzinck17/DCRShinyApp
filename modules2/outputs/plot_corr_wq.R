@@ -409,6 +409,46 @@ PLOT_CORR_WQ <- function(input, output, session, Df) {
     content = function(file) {ggsave(file, plot = p(), device = "png")},
     contentType = 'image/png'
   )
+  
+  
+  
+  
+  
+  
+  # 
+  # 
+  # # Reactive Dataframe
+  # 
+  # Df2 <- reactive({
+  #   
+  #   req(site_list(), input$y_param, input$y_range, input$x_param, input$x_range, input$date) # See General Note _
+  #   
+  #   # filter by Site and Date adn save
+  #   df_temp <- df %>% 
+  #     filter(LocationLabel %in% c(site_list()),
+  #            Date > input$date[1], Date < input$date[2])
+  #   
+  #   # X Parameter filter and make modifications
+  #   df_temp_x <-  df_temp %>% 
+  #     filter(Parameter %in% c(input$x_param),
+  #            Result > input$x_range[1], Result < input$x_range[2]) %>%
+  #     rename(x_Parameter = Parameter, x_Result = Result) %>%
+  #     select(Site, Date, x_Parameter, x_Result)
+  #   
+  #   # Y Parameter filter and make modifications
+  #   df_temp_y <-  df_temp %>% 
+  #     filter(Parameter %in% c(input$y_param),
+  #            Result > input$y_range[1], Result < input$y_range[2]) %>%
+  #     rename(y_Parameter = Parameter, y_Result = Result) %>%
+  #     select(Site, Date, y_Parameter, y_Result)
+  #   
+  #   # Join the two X and Y parameters dataframes
+  #   inner_join(df_temp_x, df_temp_y, by = c("Site", "Date"))
+  #   
+  # })
+  
+  
+  
 
   
 } # end Server Function
