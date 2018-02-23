@@ -29,10 +29,16 @@ packages <- c("shiny", "rmarkdown", "knitr", "tidyverse", "lubridate", "plotly",
               "DT", "akima", "odbc", "DBI", "scales", "stringr", "cowplot", "shinythemes","rgdal")
 ipak(packages)
 
+user <-  Sys.getenv("USERNAME")
+
+
 ## Fetch all of the cached rds data for the app:
     # Directory with saved .rds files
-    datadir <- config[1]
-
+    if (user == "bkeevan") {
+      datadir <- config[1]
+    } else {
+      datadir <- config[14]
+    }
     # Make a list of all the .rds files using full path
     rds_files <- list.files(datadir,full.names = TRUE ,pattern = "\\.rds$")
 
@@ -110,7 +116,7 @@ source("functions/phyto_plots.R")
 #               font-family: 'Lobster', cursive;
 ui <- tagList(
   # Creates padding at top for navBar space due to "fixed-top" position
-  tags$style(type='text/css', 
+  tags$style(type='text/css',
              'body {padding-top: 70px;}',
              'h2 {
                font-family: "Arial Black";
@@ -119,15 +125,15 @@ ui <- tagList(
                color: #0C4B91;
              }'
              ),
-  
-  navbarPage(NULL, position = "fixed-top", inverse = TRUE, collapsible = TRUE, theme = shinytheme("cerulean"), 
+
+  navbarPage(NULL, position = "fixed-top", inverse = TRUE, collapsible = TRUE, theme = shinytheme("cerulean"),
              windowTitle = "WAVE", footer = uiOutput("footer_ui"),
 
 ######################################################
 # Home Page
 
 tabPanel("Home",
-         
+
          fluidRow(
            column(3, imageOutput("dcr_image", height = 80), align = "left"),
            column(6, imageOutput("wave_image1", height = 80), align = "center"),
@@ -180,7 +186,7 @@ tabPanel("Filter",
 
 tabPanel("Tributary",
 
-         
+
   # Title
   fluidRow(
            column(2, imageOutput("wave_image3", height = 50), align = "center"),
@@ -221,7 +227,7 @@ tabPanel("Tributary",
 # Reservoir
 
 tabPanel("Reservoir",
-         
+
    # Title
    fluidRow(
             column(2, imageOutput("wave_image4", height = 50), align = "center"),
@@ -319,7 +325,7 @@ tabPanel("Reservoir",
 # Map
 
 tabPanel("Map Plot",
-         
+
          # Title
          fluidRow(
                   column(2, imageOutput("wave_image5", height = 50), align = "center"),
@@ -345,7 +351,7 @@ tabPanel("Map Plot",
 # Hydrology/Meteorology
 
 tabPanel("Met/Hydro",
-         
+
          # Title
          fluidRow(
                   column(2, imageOutput("wave_image6", height = 50), align = "center"),
@@ -357,7 +363,7 @@ tabPanel("Met/Hydro",
 # Forestry
 
 tabPanel("Forestry",
-         
+
          # Title
          fluidRow(
                   column(2, imageOutput("wave_image7", height = 50), align = "center"),
@@ -369,7 +375,7 @@ tabPanel("Forestry",
 # Reports
 
 tabPanel("Report",
-         
+
          # Title
          fluidRow(
                   column(2, imageOutput("wave_image8", height = 50), align = "center"),
@@ -546,13 +552,13 @@ server <- function(input, output, session) {
 
 #######################################################################
 # Footer
-  
+
   output$footer_ui <- renderUI({
-    
+
     update_date <- "Coming Soon"
-    
+
     text_db <- paste("Data last updated:", update_date)
-    
+
     tagList(
       hr(),
       column(4,
@@ -565,88 +571,88 @@ server <- function(input, output, session) {
       )
     )
   })
-  
+
 #######################################################################
 # Images
-  
+
   # DCR IMAGE
   output$dcr_image <- renderImage({
     list(src = "images/DCR.jpg",
          width= "160",
          height= "80")
   }, deleteFile = FALSE)
-  
+
   # UMass IMAGE
   output$umass_image <- renderImage({
     list(src = "images/UMass.png",
          width= "240",
          height= "80")
   }, deleteFile = FALSE)
-  
+
   # WAVE IMAGE 1
   output$wave_image1 <- renderImage({
     list(src = "images/WAVE.jpg",
          width= "360",
          height= "80")
   }, deleteFile = FALSE)
-  
+
   # WAVE IMAGE 2
   output$wave_image2 <- renderImage({
     list(src = "images/WAVE.jpg",
          width= "225",
          height= "50")
   }, deleteFile = FALSE)
-  
+
   # WAVE IMAGE 3
   output$wave_image3 <- renderImage({
     list(src = "images/WAVE.jpg",
          width= "225",
          height= "50")
   }, deleteFile = FALSE)
-  
+
   # WAVE IMAGE 4
   output$wave_image4 <- renderImage({
     list(src = "images/WAVE.jpg",
          width= "225",
          height= "50")
   }, deleteFile = FALSE)
-  
+
   # WAVE IMAGE 5
   output$wave_image5 <- renderImage({
     list(src = "images/WAVE.jpg",
          width= "225",
          height= "50")
   }, deleteFile = FALSE)
-  
-  
+
+
   # WAVE IMAGE 6
   output$wave_image6 <- renderImage({
     list(src = "images/WAVE.jpg",
          width= "225",
          height= "50")
   }, deleteFile = FALSE)
-  
-  
+
+
   # WAVE IMAGE 7
   output$wave_image7 <- renderImage({
     list(src = "images/WAVE.jpg",
          width= "225",
          height= "50")
   }, deleteFile = FALSE)
-  
-  
+
+
   # WAVE IMAGE 8
   output$wave_image8 <- renderImage({
     list(src = "images/WAVE.jpg",
          width= "225",
          height= "50")
   }, deleteFile = FALSE)
-  
-  
 
-  
-  
-  
+
+
+
+
+
 # Code to stop app when browser session window closes
 session$onSessionEnded(function() {
       stopApp()
