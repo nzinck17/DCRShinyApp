@@ -35,9 +35,9 @@ user <-  Sys.getenv("USERNAME")
 ## Fetch all of the cached rds data for the app:
     # Directory with saved .rds files
     if (user == "bkeevan") {
-      datadir <- config[1]
-    } else {
       datadir <- config[14]
+    } else {
+      datadir <- config[1]
     }
     # Make a list of all the .rds files using full path
     rds_files <- list.files(datadir,full.names = TRUE ,pattern = "\\.rds$")
