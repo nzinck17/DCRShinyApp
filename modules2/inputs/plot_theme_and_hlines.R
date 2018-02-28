@@ -105,7 +105,7 @@ PLOT_THEME_AND_HLINE_UI <- function(id) {
 # Thus do not use () in callModule argument for reactives
 # For non reactives wrap with "reactive" to make into a reactive expression.
 
-PLOT_THEME_AND_HLINE <- function(input, output, session, P, Df1, Df2, x, y) {
+PLOT_THEME_AND_HLINE <- function(input, output, session, P) {
   
   ns <- session$ns # see General Note 1
   
@@ -144,8 +144,7 @@ PLOT_THEME_AND_HLINE <- function(input, output, session, P, Df1, Df2, x, y) {
     
     # Horizontal Line 1
     if(input$hline1 == TRUE){
-      p <- p + geom_hline(data = Df1(),
-                          yintercept = Hline1_Int(),
+      p <- p + geom_hline(yintercept = Hline1_Int(),
                           linetype = input$hline1_type,
                           size = input$hline1_size,
                           alpha = input$hline1_alpha)
@@ -153,8 +152,7 @@ PLOT_THEME_AND_HLINE <- function(input, output, session, P, Df1, Df2, x, y) {
     
     # Horizontal Line 2
     if(input$hline2 == TRUE){
-      p <- p + geom_hline(data = Df1(), 
-                          yintercept = Hline2_Int(),
+      p <- p + geom_hline(yintercept = Hline2_Int(),
                           linetype = input$hline2_type,
                           size = input$hline2_size,
                           alpha = input$hline2_alpha)
@@ -162,8 +160,7 @@ PLOT_THEME_AND_HLINE <- function(input, output, session, P, Df1, Df2, x, y) {
     
     # Horizontal Line 1
     if(input$hline3 == TRUE){
-      p <- p + geom_hline(data = Df1(), 
-                          yintercept = Hline3_Int(),
+      p <- p + geom_hline(yintercept = Hline3_Int(),
                           linetype = input$hline3_type,
                           size = input$hline3_size,
                           alpha = input$hline3_alpha)

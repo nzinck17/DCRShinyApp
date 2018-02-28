@@ -1,20 +1,20 @@
 ##############################################################################################################################
-#     Title: Tributary-Time.R
+#     Title: Tributary-Regression.R
 #     Type: Module for DCR Shiny App
-#     Description: Time Series plots, tables, and summary stats for Tributaries
+#     Description: Regression plots and tables
 #     Written by: Nick Zinck, Spring 2017
 ##############################################################################################################################
 
 # Notes: 
-# 
+#   
 
 ##############################################################################################################################
 # User Interface
 ##############################################################################################################################
 
-TIME_WQ_UI <- function(id) {
+DISTRIBUTION_WQ_UI <- function(id) {
   
-  ns <- NS(id) # see General Note 1
+  ns <- NS(id)
   
   tagList(
     wellPanel(       
@@ -46,42 +46,31 @@ TIME_WQ_UI <- function(id) {
       ) # end fluidrow     
     ), # end well panel
     
-    # Tabset panel for plots, tables, etc. 
-    tabsetPanel(
-      
-      # Plot Tab
-      tabPanel("Plot",
-               h4(textOutput(ns("text_plot_no_data"))),
-               h4(textOutput(ns("text_plot_zero_data"))),
-               PLOT_TIME_WQ_UI(ns("plot"))
-      ), # end Tab Panel - Plot
-      
-      # Table Tabpanel
-      tabPanel("Table",
-               h4(textOutput(ns("text_table_no_data"))),
-               h4(textOutput(ns("text_table_zero_data"))),
-               fluidRow(br(),
-                        column(3,
-                               downloadButton(ns("download_data"), "Download table as csv")
-                        ),
-                        column(9, 
-                               uiOutput(ns("column_ui"))
-                        ), 
-                        br()
-               ), # end Fluid Row
-               fluidRow(
-                 dataTableOutput(ns("table"))
-               ) # end Fluid Row
-      ), # end Tab Panel - Table
-      
-      # Summary Tabpanel
-      tabPanel("Stats",
-               h4(textOutput(ns("text_stats_no_data"))),
-               h4(textOutput(ns("text_stats_zero_data"))),
-               STAT_TIME_WQ_UI(ns("stats"))
-      ) # end Tab Panel - Summary
-      
-    ) # end tabsetpanel (plots, stats, etc.)
+    sidebarLayout(
+      sidebarPanel(
+        radioButtons(ns("plot_type"), "Plot Type",
+                     choices = c("Histogram", "Density Curve", "Box Plot")),
+        uiOutput(ns("histo_ui")),
+        checkboxInput(ns("rm_outliers"), "Remove Outliers"),
+        radioButtons(ns("color_ui"), "group by color",
+                     choices = c("None" = "None",
+                    "Site" = "LocationLabel", 
+                    "Year", 
+                    "Month",
+                    "Season")),
+        radioButtons(ns("facet_ui"), "group by facet",
+                     choices = c("None" = "None",
+                                 "Site" = "LocationLabel", 
+                                 "Year", 
+                                 "Month",
+                                 "Season"))
+      ),
+      mainPanel(
+        h4(textOutput(ns("text_plot_no_data"))),
+        h4(textOutput(ns("text_plot_zero_data"))),
+        plotlyOutput(ns("plot"))
+      )
+    )
   ) # end taglist
 } # end UI function
 
@@ -90,11 +79,18 @@ TIME_WQ_UI <- function(id) {
 # Server Function
 ##############################################################################################################################
 
-# Note that Argument "df.filtered"  needs to be a reactive expression, not a resolved value. 
-# Thus do not use () in callModule argument for reactives
-# For non reactives wrap with "reactive" to make into a reactive expression.
-
-TIME_WQ <- function(input, output, session, df_full, Df_Filtered, df_site) {
+DISTRIBUTION_WQ <- function(input, output, session, df_full, Df_Filtered, df_site) {
+  
+  # move to functions
+  remove_outliers <- function(x, na.rm = TRUE, ...) {
+    qnt <- quantile(x, probs=c(.25, .75), na.rm = na.rm, ...)
+    H <- 1.5 * IQR(x, na.rm = na.rm)
+    y <- x
+    y[x < (qnt[1] - H)] <- NA
+    y[x > (qnt[2] + H)] <- NA
+    y
+  }
+  
   
   ns <- session$ns # see General Note 1
   
@@ -122,10 +118,6 @@ TIME_WQ <- function(input, output, session, df_full, Df_Filtered, df_site) {
   })
   
   
-  # Parameter Selection using ParameterSelect Module
-  Param <- callModule(PARAM_SELECT, "param", Df = Df2, Site = Site)
-  
-
   # Date Range Selection Using DateSelect Module
   Date_Range <- callModule(DATE_SELECT, "date", Df = Df2, Site = Site)
   
@@ -136,56 +128,64 @@ TIME_WQ <- function(input, output, session, df_full, Df_Filtered, df_site) {
     req(Param$Type(), Param$Range_Min(), Param$Range_Min(), Date_Range$Lower(), Date_Range$Upper()) # See General Note _
     
     Df2() %>% 
-      filter(Parameter %in% Param$Type(), 
+      filter(Parameter %in% Param$Type()[1], 
              Result > Param$Range_Min(), Result < Param$Range_Max(),
              Date > Date_Range$Lower(), Date < Date_Range$Upper())
   })
   
   
   # Plot
-  callModule(PLOT_TIME_WQ, "plot", Df = Df3)
+  renderPlotly(
+    plotly(P())
+  )
+
+  P <- reactive({
+    
+    
+    df <- Df3() %>% mutate(Result = remove_outliers(df5$Result))
+    
+    # Histogram
+    if(input$plot_type == "Histogram"){
+      if(input$color == "None"){
+        p <-   ggplot(df5, aes()) +
+          geom_histogram(data = df5, aes(x = Result), alpha = 0.1, size =1.5)
+      } else{
+        p <-   ggplot(df5, aes()) +
+          geom_histogram(data = df5, aes_string(x = "Result", fill = input$color, color = input$color), alpha = 0.1, size =1.5)
+      }
+      # Density Curve
+    } else if(input$plot_type == "Density Curve"){
+      if(input$color == "None"){
+        p <-   ggplot(df5, aes()) +
+          geom_density(data = df5, aes(x = Result), alpha = 0.1, size =1.5)
+      } else{
+        p <-   ggplot(df5, aes()) +
+          geom_density(data = df5, aes_string(x = "Result", fill = input$color, color = input$color), alpha = 0.1, size =1.5)
+      }
+      # Box Plot
+    } else if(input$plot_type == "Box Plot"){
+      if(input$color == "None"){
+        p <-   ggplot(df5, aes()) +
+          geom_density(data = df5, aes(x = Result), alpha = 0.1, size =1.5)
+      } else{
+        p <-   ggplot(df5, aes()) +
+          geom_density(data = df5, aes_string(x = input$color, y = "Result", fill = input$color, color = input$color), alpha = 0.1, size =1.5)
+      }
+    }
+    
+    if(input$facet != "None")
+      p <- p + facet_wrap(~input$facet)
+    
+  })
   
-  
-  # Table
-  output$table <- renderDataTable(Df_Table())
-  
-  
-  # Stats
-  callModule(STAT_TIME_WQ, "stats", Df = Df3)
   
   
   # Site Map
   callModule(SITE_MAP, "site_map", df_site = df_site, Site_List = Site)
   
   
-  ### Downloadable csv of selected dataset
-  
-  output$download_data <- downloadHandler(
-    filename = function() {
-      paste("DCRExportedWQData", ".csv", sep = "")
-    },
-    content = function(file) {
-      write_csv(Df_Table(), file)
-    }
-  )
-  
-  
-  # Column Selection for table output
-  output$column_ui <- renderUI({
-    checkboxGroupInput(ns("column"), "Table Columns:", 
-                       choices = names(Df3()), 
-                       selected = names(Df3()),
-                       inline = TRUE)
-  })
-  
-  # Df for Table
-  Df_Table <- reactive({
-    req(input$column)
-    Df3() %>% select(c(input$column))
-  })
-
-  
-  ### Texts
+ 
+  ################ Texts ###################################
   
   # Text - Filtered Data
   output$text_filtered <- renderText({
@@ -237,36 +237,17 @@ TIME_WQ <- function(input, output, session, df_full, Df_Filtered, df_site) {
     }
   })
   
-  # Text - Table - No data Selected
-  output$text_table_no_data <- renderText({
-    req(!isTruthy(Site()) | !isTruthy(Param$Type()) | !isTruthy(Date_Range$Lower()) | !isTruthy(Date_Range$Upper()))
-    "Select Site, Param, and Date"
-  })
   
-  # Text - Table - Zero data Selected
-  output$text_table_zero_data <- renderText({
-    req(Df3()) # See General Note 1
-    if(Df3() %>% summarise(n()) %>% unlist() == 0){
-      "Selection Contains Zero Observations"
-    }
-  })
-  
-  # Text - Stats - No data Selected
-  output$text_stats_no_data <- renderText({
-    req(!isTruthy(Site()) | !isTruthy(Param$Type()) | !isTruthy(Date_Range$Lower()) | !isTruthy(Date_Range$Upper()))
-    "Select Site, Param, and Date"
-  })
-  
-  # Text - Stats - Zero Data Selected
-  output$text_stats_zero_data <- renderText({
-    req(Df3()) # See General Note 1
-    if(Df3() %>% summarise(n()) %>% unlist() == 0){
-      "Selection Contains Zero Observations"
-    }
-  })
-  
-  
-
   
 } # end Server Function
+
+
+
+# Three Types of Plots - histo (count), density, box plot
+# Histo Only - Number of bins adn position
+# remove outliers
+# parameter range
+# Color by site, season, year, month
+# Facet, Site, season, year, month - some caet wrap / nrow /4
+
 

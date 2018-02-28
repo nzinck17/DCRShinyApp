@@ -87,11 +87,25 @@ HOME <- function(input, output, session, df_site) {
       spTransform(CRS("+proj=longlat +ellps=GRS80"))
 
     leaflet(data = df_site2) %>%
+      # Set Long/Lat (not completely neccesary)
       setView(lng = -72.0589, lat = 42.43, zoom = 11) %>%
+      # 
       addTiles() %>%
-      addProviderTiles(providers$Esri.WorldImagery,  #  Stamen.TonerLite
-                       options = providerTileOptions(noWrap = TRUE)
-      ) %>%
+      # Basemap (World Imagery from ESRI)
+      addProviderTiles(providers$Esri.WorldImagery,
+                       options = providerTileOptions(noWrap = TRUE)) %>%
+      # Watershed Boundary
+      addPolygons(data = QWW,
+                  layerId = QWW,
+                  color = "white", # "#00008B",
+                  weight = 2, smoothFactor = 0.5,
+                  opacity = 0.7, fillOpacity = .1,
+                  fillColor = "#00008B") %>%  # ,
+                  # Removed Highlighting due to BringToFront interferring with circle Markers
+                  #highlightOptions = highlightOptions(color = "white", 
+                                                      #weight = 2,
+                                                      #bringToFront = TRUE)) %>%
+      # Site Location Markers
       addCircleMarkers(
         lng = ~LocationLong, lat = ~LocationLat,
         label=~LocationLabel,
@@ -104,24 +118,15 @@ HOME <- function(input, output, session, df_site) {
         radius = 5,
         weight = 3,
         opacity = 0.8,
-        fillOpacity = 0.4
-      ) %>%
-      addPolygons(data = QWW,
-                  layerId = QWW,
-                  color = "#00008B",
-                  weight = 1, smoothFactor = 0.5,
-                  opacity = 0.7, fillOpacity = .1,
-                  fillColor = "#00008B",
-                  highlightOptions = highlightOptions(color = "white", weight = 2,
-                                                      bringToFront = TRUE)) %>%
+        fillOpacity = 0.4) %>%
+      # Legend
       addLegend(
                 position = "bottomleft",
                 values = ~MapFactor,
                 pal = pal,
                 opacity = 1,
                 na.label = "Not Available",
-                title = ""
-      )
+                title = "")
 
   })
 

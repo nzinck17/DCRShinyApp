@@ -26,7 +26,7 @@
 
 #### NOTE - Shiny must be installed and loaded in the LaunchAppGitHub.R script - any other packages requred should be listed below
 packages <- c("shiny", "rmarkdown", "knitr", "tidyverse", "lubridate", "plotly", "leaflet", "RColorBrewer",
-              "DT", "akima", "odbc", "DBI", "scales", "stringr", "cowplot", "shinythemes","rgdal")
+              "DT", "akima", "odbc", "DBI", "scales", "stringr", "cowplot", "shinythemes","rgdal", "reshape2")
 ipak(packages)
 
 ## Fetch all of the cached rds data for the app:
@@ -57,6 +57,7 @@ source("modules1/time_wq.R")
 source("modules1/time_depth_wq.R")
 source("modules1/correlation_wq.R")
 source("modules1/correlation_depth_wq.R")
+source("modules1/distribution_wq.R")
 source("modules1/metadata.R")
 source("modules1/profile_heatmap.R")
 source("modules1/profile_line.R")
@@ -79,7 +80,7 @@ source("modules2/inputs/checkbox_select_all.R")
 source("modules2/inputs/select_select_all.R")
 source("modules2/inputs/plot_theme_and_hlines.R")
 source("modules2/inputs/plot_text_and_vlines_time.R")
-#source("modules2/inputs/plot_text_and_vlines_corr.R")
+source("modules2/inputs/plot_text_and_vlines_corr.R")
 source("modules2/inputs/plot_title_and_labels.R")
 source("modules2/inputs/plot_save.R")
 
@@ -88,6 +89,7 @@ source("modules2/outputs/plot_time_wq.R")
 source("modules2/outputs/plot_time_depth_wq.R")
 source("modules2/outputs/plot_corr_wq.R")
 source("modules2/outputs/plot_corr_depth_wq.R")
+source("modules2/outputs/plot_corr_matrix_wq.R")
 source("modules2/outputs/plot_profline_custom.R")
 #source("modules2/outputs/plot-Profline-Standard.R")
 #source("modules2/outputs/plot-Heatmap-Custom.R")
@@ -202,6 +204,15 @@ tabPanel("Tributary",
                           tabPanel("Quabbin", CORRELATION_WQ_UI("mod_trib_quab_corr")),
                           tabPanel("Ware River", CORRELATION_WQ_UI("mod_trib_ware_corr")),
                           tabPanel("Wachusett", CORRELATION_WQ_UI("mod_trib_wach_corr"))#,
+                          #tabPanel("All Tribs", CORRELATION_WQ_UI("mod_trib_all_corr"))
+                        ) # end tabset Panel
+               ), # end tabpanel
+               tabPanel("Distribution",
+                        fluidRow(h4("Tributary Parameter Value Distribution", align = "center")),
+                        tabsetPanel(
+                          tabPanel("Quabbin", DISTRIBUTION_WQ_UI("mod_trib_quab_dist")),
+                          tabPanel("Ware River", DISTRIBUTION_WQ_UI("mod_trib_ware_dist")),
+                          tabPanel("Wachusett", DISTRIBUTION_WQ_UI("mod_trib_wach_dist"))#,
                           #tabPanel("All Tribs", CORRELATION_WQ_UI("mod_trib_all_corr"))
                         ) # end tabset Panel
                ), # end tabpanel
@@ -461,9 +472,16 @@ server <- function(input, output, session) {
   callModule(TIME_WQ, "mod_trib_wach_time", df_full = df_trib_wach, Df_Filtered = Df_Trib_Filtered[[1]], df_site = df_trib_wach_site)
   #callModule(time, "mod_trib_all_time", df = df_trib_all, df_site = df_trib_all_site)
 
+  # Correlation
   callModule(CORRELATION_WQ, "mod_trib_quab_corr", df_full = df_trib_quab, Df_Filtered = Df_Trib_Filtered[[2]], df_site = df_trib_quab_site)
   callModule(CORRELATION_WQ, "mod_trib_ware_corr", df_full = df_trib_ware, Df_Filtered = Df_Trib_Filtered[[3]], df_site = df_trib_ware_site)
   callModule(CORRELATION_WQ, "mod_trib_wach_corr", df_full = df_trib_wach, Df_Filtered = Df_Trib_Filtered[[1]], df_site = df_trib_wach_site)
+  #callModule(CORRELATION, "mod_trib_all_corr", df = df_trib_all, df_site = df_trib_all_site)
+  
+  # Distribution
+  callModule(DISTRIBUTION_WQ, "mod_trib_quab_dist", df_full = df_trib_quab, Df_Filtered = Df_Trib_Filtered[[2]], df_site = df_trib_quab_site)
+  callModule(DISTRIBUTION_WQ, "mod_trib_ware_dist", df_full = df_trib_ware, Df_Filtered = Df_Trib_Filtered[[3]], df_site = df_trib_ware_site)
+  callModule(DISTRIBUTION_WQ, "mod_trib_wach_dist", df_full = df_trib_wach, Df_Filtered = Df_Trib_Filtered[[1]], df_site = df_trib_wach_site)
   #callModule(CORRELATION, "mod_trib_all_corr", df = df_trib_all, df_site = df_trib_all_site)
   
   # Metadata

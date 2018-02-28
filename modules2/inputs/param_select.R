@@ -36,7 +36,7 @@ PARAM_SELECT_UI <- function(id) {
 # Thus do not use () in callModule argument for reactives
 # For non reactives wrap with "reactive" to make into a reactive expression.
 
-PARAM_SELECT <- function(input, output, session, Df, Site) { 
+PARAM_SELECT <- function(input, output, session, Df, Site, multiple = TRUE) { 
   
 
   # Non Historical Parameters (when a Parameter has not been used in over 5 years). See General Note 6
@@ -89,7 +89,7 @@ PARAM_SELECT <- function(input, output, session, Df, Site) {
   
   output$type_ui <- renderUI({
     ns <- session$ns # see General Note 1
-    selectInput(ns("type"), "Parameter:", choices=c(Param_Choices()), multiple = TRUE)
+    selectInput(ns("type"), "Parameter:", choices=c(Param_Choices()), multiple = multiple)
   })
   
   

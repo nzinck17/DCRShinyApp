@@ -131,7 +131,7 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
   
 ##################### Main Reactive Expressions
   
-  # Find Choices for Sites and Param (could make it so plot.time module server function accepts this instead (probably faster)
+  # Find Choices for Sites and Param 
   Param <- reactive({Df()$Parameter %>% factor() %>% levels()})
   
   # Two Dataframes (Primary and Secondary Axis)
@@ -559,15 +559,11 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
 
   # Display OPtions Tab
   P2 <- callModule(PLOT_THEME_AND_HLINE, "theme_hline",
-                   P = P1,
-                   Df1 = Df1,
-                   Df2 = Df2,
-                   x = "as.POSIXct(Date)", y = "Result")
+                   P = P1)
   
   # Display OPtions Tab
   P3 <- callModule(PLOT_TEXT_AND_VLINES_TIME, "text_vline",
-                   P = P2$Plot,
-                   Df1 = Df1)
+                   P = P2$Plot)
   
   
   # Title and Labels - returns a list of two reactive expressions. One a plot object and one a text string Sec. Axis label

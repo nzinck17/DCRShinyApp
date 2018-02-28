@@ -50,11 +50,18 @@ tagList(
   tabsetPanel(
     
     # Plot Tab
-    tabPanel("Plot",
-             h4(textOutput(ns("text_plot_no_data"))),
-             h4(textOutput(ns("text_plot_zero_data")))#,
-             #PLOT_CORR_WQ_UI(ns("plot"))
+    tabPanel("Scatter Plot",
+             h4(textOutput(ns("text_plot1_no_data"))),
+             h4(textOutput(ns("text_plot1_zero_data"))),
+             PLOT_CORR_WQ_UI(ns("plot_scatter"))
     ), # end Tab Panel - Plot
+    
+    # Summary Tabpanel
+    tabPanel("Correlation Matrix",
+             h4(textOutput(ns("text_plot2_no_data"))),
+             h4(textOutput(ns("text_plot2_zero_data"))),
+             PLOT_CORR_MATRIX_WQ_UI(ns("plot_matrix"))
+    ), # end Tab Panel - Summary
     
     # Table Tabpanel
     tabPanel("Table",
@@ -62,6 +69,8 @@ tagList(
              h4(textOutput(ns("text_table_zero_data"))),
              fluidRow(br(),
                       column(3,
+                             radioButtons(ns("table_format"), "Table Format",
+                                          choices = c("long", "wide")),
                              downloadButton(ns("download_data"), "Download table as csv")
                       ),
                       column(9, 
@@ -72,14 +81,7 @@ tagList(
              fluidRow(
                dataTableOutput(ns("table"))
              ) # end Fluid Row
-    ), # end Tab Panel - Table
-    
-    # Summary Tabpanel
-    tabPanel("Stats",
-             h4(textOutput(ns("text_stats_no_data"))),
-             h4(textOutput(ns("text_stats_zero_data")))#,
-             #STAT_CORR_WQ_UI(ns("stats"))
-    ) # end Tab Panel - Summary
+    ) # end Tab Panel - Table
     
   ) # end tabsetpanel (plots, stats, etc.)
 ) # end taglist
@@ -138,18 +140,23 @@ CORRELATION_WQ <- function(input, output, session, df_full, Df_Filtered, df_site
              Date > Date_Range$Lower(), Date < Date_Range$Upper())
   })
   
+  # Reactive Dataframe - Wide Format (for Correlation Matrix and for option in table )
+  Df4 <- reactive({
+    Df3() %>%
+      select(-Units) %>%
+      distinct(LocationLabel, Date, Parameter, .keep_all = TRUE) %>%
+      spread("Parameter", "Result")
+  })
   
-  # # Plot
-  # callModule(PLOT_CORR_WQ, "plot", Df = Df3)
   
+  # Plot - Scatter
+  callModule(PLOT_CORR_WQ, "plot_scatter", Df = Df3)
+  
+  # Plot - Scatter
+  callModule(PLOT_CORR_MATRIX_WQ, "plot_matrix", Df = Df4)
   
   # Table
   output$table <- renderDataTable(Df_Table())
-  
-  
-  # # Stats
-  # callModule(STAT_CORR_WQ, "stats", Df = Df3)
-  
   
   # Site Map
   callModule(SITE_MAP, "site_map", df_site = df_site, Site_List = Site)
@@ -169,16 +176,25 @@ CORRELATION_WQ <- function(input, output, session, df_full, Df_Filtered, df_site
   
   # Column Selection for table output
   output$column_ui <- renderUI({
+    if(input$table_format == "long"){
+      df <- Df3()
+    } else{
+      df <- Df4()
+    }
     checkboxGroupInput(ns("column"), "Table Columns:", 
-                       choices = names(Df3()), 
-                       selected = names(Df3()),
+                       choices = names(df), 
+                       selected = names(df),
                        inline = TRUE)
   })
   
   # Df for Table
   Df_Table <- reactive({
     req(input$column)
-    Df3() %>% select(c(input$column))
+    if(input$table_format == "long"){
+      Df3() %>% select(c(input$column))
+    } else{
+      Df4() %>% select(c(input$column))
+    }
   })
   
   
@@ -217,17 +233,31 @@ CORRELATION_WQ <- function(input, output, session, df_full, Df_Filtered, df_site
   # Text - Number of Samples - Number
   output$text_num <- renderText({
     req(Df3()) # See General Note 1
-    Df2() %>% summarise(n()) %>% paste()
+    Df3() %>% summarise(n()) %>% paste()
   })
   
-  # Text - Plot- No data Selected
-  output$text_plot_no_data <- renderText({
+  # Text - Plot1- No data Selected
+  output$text_plot1_no_data <- renderText({
     req(!isTruthy(Site()) | !isTruthy(Param$Type()) | !isTruthy(Date_Range$Lower()) | !isTruthy(Date_Range$Upper()))
     "Select Site, Param, and Date"
   })
   
-  # Text - Plot - Zero data Selected for Plot
-  output$text_plot_zero_data <- renderText({
+  # Text - Plot1 - Zero data Selected for Plot
+  output$text_plot1_zero_data <- renderText({
+    req(Df3()) # See General Note 1
+    if(Df3() %>% summarise(n()) %>% unlist() == 0){
+      "Selection Contains Zero Observations"
+    }
+  })
+  
+  # Text - Plot 2 - No data Selected
+  output$text_plot2_no_data <- renderText({
+    req(!isTruthy(Site()) | !isTruthy(Param$Type()) | !isTruthy(Date_Range$Lower()) | !isTruthy(Date_Range$Upper()))
+    "Select Site, Param, and Date"
+  })
+  
+  # Text - Plot 2 - Zero Data Selected
+  output$text_plot2_zero_data <- renderText({
     req(Df3()) # See General Note 1
     if(Df3() %>% summarise(n()) %>% unlist() == 0){
       "Selection Contains Zero Observations"
@@ -242,20 +272,6 @@ CORRELATION_WQ <- function(input, output, session, df_full, Df_Filtered, df_site
   
   # Text - Table - Zero data Selected
   output$text_table_zero_data <- renderText({
-    req(Df3()) # See General Note 1
-    if(Df3() %>% summarise(n()) %>% unlist() == 0){
-      "Selection Contains Zero Observations"
-    }
-  })
-  
-  # Text - Stats - No data Selected
-  output$text_stats_no_data <- renderText({
-    req(!isTruthy(Site()) | !isTruthy(Param$Type()) | !isTruthy(Date_Range$Lower()) | !isTruthy(Date_Range$Upper()))
-    "Select Site, Param, and Date"
-  })
-  
-  # Text - Stats - Zero Data Selected
-  output$text_stats_zero_data <- renderText({
     req(Df3()) # See General Note 1
     if(Df3() %>% summarise(n()) %>% unlist() == 0){
       "Selection Contains Zero Observations"
