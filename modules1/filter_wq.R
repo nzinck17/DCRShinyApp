@@ -36,11 +36,11 @@ FILTER_WQ_UI <- function(id) {
                ), # end Well Panel
                wellPanel(
                  # Month
-                 CHECKBOX_SELECT_ALL_UI(ns("Month"))
+                 CHECKBOX_SELECT_ALL_UI(ns("month"))
                ), # end Well Panel
                wellPanel(
                  # Year
-                 SELECT_SELECT_ALL_UI(ns("Year"))
+                 SELECT_SELECT_ALL_UI(ns("year"))
                ) # end Well Panel
         ), # end Column
         column(4,
@@ -136,7 +136,7 @@ FILTER_WQ <- function(input, output, session, dfs, col) {
   ### Year Selection
   
   # Choices
-  year_choices <- c(rev(year(seq(as.Date("1980-01-01"), Sys.Date(), "years"))))
+  year_choices <- c(rev(year(seq(as.Date("1980-01-01"), Sys.Date(), "years")))) # Change to first year of data
   
   # Server
   Year <- callModule(SELECT_SELECT_ALL, "year", 
