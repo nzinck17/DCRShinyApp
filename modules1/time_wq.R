@@ -79,31 +79,7 @@ TIME_WQ <- function(input, output, session, Df) {
   callModule(STAT_TIME_WQ, "stats", Df = Df)
 
 
-  ### Downloadable csv of selected dataset
 
-  output$download_data <- downloadHandler(
-    filename = function() {
-      paste("DCRExportedWQData", ".csv", sep = "")
-    },
-    content = function(file) {
-      write_csv(Df_Table(), file)
-    }
-  )
-
-
-  # Column Selection for table output
-  output$column_ui <- renderUI({
-    checkboxGroupInput(ns("column"), "Table Columns:",
-                       choices = names(Df()),
-                       selected = names(Df()),
-                       inline = TRUE)
-  })
-
-  # Df for Table
-  Df_Table <- reactive({
-    req(input$column)
-    Df() %>% select(c(input$column))
-  })
 
 
 

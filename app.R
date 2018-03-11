@@ -51,6 +51,10 @@ ipak(packages)
 
     tab_selected = "Wachusett"
 
+### Format Changes - ! to be moved to Update_Wave !
+
+  df_chem_quab <- df_chem_quab %>% rename(LocationDepth = Sampling_Level)
+
 ### Load Primary Modules
 
 source("modules1/home.R")
@@ -75,6 +79,7 @@ source("modules1/report_custom.R")
 # Inputs
 source("modules2/inputs/site_checkbox.R")
 source("modules2/inputs/station_level_checkbox.R")
+source("modules2/inputs/site_profile.R")
 source("modules2/inputs/param_select.R")
 source("modules2/inputs/param_checkbox.R")
 source("modules2/inputs/date_select.R")
@@ -156,17 +161,15 @@ tabPanel("Tributary",
   tabsetPanel(
     tabPanel("Quabbin",
              navlistPanel(widths = c(2, 10),
-                          tabPanel("Select / Filter data", FILTER_WQ_UI("mod_trib_quab_filter")),
-                          tabPanel("-- table", fluidRow(h5("Table to come"))
-                          ),
-                          tabPanel("-- plots",
+                          tabPanel("Select / Filter Data", FILTER_WQ_UI("mod_trib_quab_filter")),
+                          tabPanel("-- Plots",
                                    tabsetPanel(
                                      tabPanel("Time-Series Scatter", PLOT_TIME_WQ_UI("mod_trib_quab_plot_time")),
                                      tabPanel("Correlation Scatter", PLOT_CORR_WQ_UI("mod_trib_quab_plot_corr")),
                                      tabPanel("Distribution Charts", DISTRIBUTION_WQ_UI("mod_trib_quab_plot_dist"))
                                    )
                           ),
-                          tabPanel("-- statistics",
+                          tabPanel("-- Statistics",
                                    tabsetPanel(
                                      tabPanel("Summary Statistics", STAT_TIME_WQ_UI("mod_trib_quab_stat_sum")),
                                      tabPanel("Temporal Statistics", fluidRow(h5("Mann-Kendall Stats to come"))),
@@ -179,22 +182,44 @@ tabPanel("Tributary",
     ),
     tabPanel("Ware",
              navlistPanel(widths = c(2, 10),
-                          tabPanel("SELECT / FILTER DATA", FILTER_WQ_UI("mod_trib_ware_filter")),
-                          tabPanel("- table", TIME_WQ_UI("mod_trib_ware_time")),
-                          tabPanel("- plots", CORRELATION_WQ_UI("mod_trib_ware_corr")),
-                          tabPanel("- statistics", DISTRIBUTION_WQ_UI("mod_trib_ware_dist")),
+                          tabPanel("Select / Filter Data", FILTER_WQ_UI("mod_trib_ware_filter")),
+                          tabPanel("-- Plots",
+                                   tabsetPanel(
+                                     tabPanel("Time-Series Scatter", PLOT_TIME_WQ_UI("mod_trib_ware_plot_time")),
+                                     tabPanel("Correlation Scatter", PLOT_CORR_WQ_UI("mod_trib_ware_plot_corr")),
+                                     tabPanel("Distribution Charts", DISTRIBUTION_WQ_UI("mod_trib_ware_plot_dist"))
+                                   )
+                          ),
+                          tabPanel("-- Statistics",
+                                   tabsetPanel(
+                                     tabPanel("Summary Statistics", STAT_TIME_WQ_UI("mod_trib_ware_stat_sum")),
+                                     tabPanel("Temporal Statistics", fluidRow(h5("Mann-Kendall Stats to come"))),
+                                     tabPanel("Correlation Matrix", PLOT_CORR_MATRIX_WQ_UI("mod_trib_ware_stat_cormat"))
+                                   )
+                          ),
                           tabPanel("Geospatial", MAP_PLOT_UI("mod_trib_ware_map", df = df_trib_ware)),
                           tabPanel("Metadata", fluidRow(h5("See Quabbin Tab. Can add data here in future")))
              ) # end navlist panel
     ),
     tabPanel("Wachusett",
              navlistPanel(widths = c(2, 10),
-                          tabPanel("SELECT / FILTER DATA", FILTER_WQ_UI("mod_trib_wach_filter")),
-                          tabPanel("- table", TIME_WQ_UI("mod_trib_wach_time")),
-                          tabPanel("- plots", CORRELATION_WQ_UI("mod_trib_wach_corr")),
-                          tabPanel("- statistics", DISTRIBUTION_WQ_UI("mod_trib_wach_dist")),
-                          tabPanel("Geospatial", MAP_PLOT_UI("mod_trib_wach_map", df = df_trib_quab)),
-                          tabPanel("- MetaData", METADATA_UI("mod_trib_wach_meta"))
+                          tabPanel("Select / Filter Data", FILTER_WQ_UI("mod_trib_wach_filter")),
+                          tabPanel("-- Plots",
+                                   tabsetPanel(
+                                     tabPanel("Time-Series Scatter", PLOT_TIME_WQ_UI("mod_trib_wach_plot_time")),
+                                     tabPanel("Correlation Scatter", PLOT_CORR_WQ_UI("mod_trib_wach_plot_corr")),
+                                     tabPanel("Distribution Charts", DISTRIBUTION_WQ_UI("mod_trib_wach_plot_dist"))
+                                   )
+                          ),
+                          tabPanel("-- Statistics",
+                                   tabsetPanel(
+                                     tabPanel("Summary Statistics", STAT_TIME_WQ_UI("mod_trib_wach_stat_sum")),
+                                     tabPanel("Temporal Statistics", fluidRow(h5("Mann-Kendall Stats to come"))),
+                                     tabPanel("Correlation Matrix", PLOT_CORR_MATRIX_WQ_UI("mod_trib_wach_stat_cormat"))
+                                   )
+                          ),
+                          tabPanel("Geospatial", MAP_PLOT_UI("mod_trib_wach_map", df = df_trib_wach)),
+                          tabPanel("MetaData", METADATA_UI("mod_trib_wach_meta"))
              ) # end navlist panel
     ),
     selected = tab_selected
@@ -213,127 +238,88 @@ tabPanel("Reservoir",
             column(2, imageOutput("wave_image4", height = 50), align = "center"),
             column(10, h2("Reservoir Water Quality Data", align = "center"))
    ),
-   navlistPanel(widths = c(2, 10),
-                "Bacteria",
-                tabPanel("SelectFilter Data",
-                         fluidRow(h4("Select and Filter Data", align = "center")),
-                         tabsetPanel(
-                           tabPanel("Wachusett", FILTER_WQ_UI("mod_bact_wach_filter"))
-                         ) # end tabset Panel
-                ), # end tabpanel
-                tabPanel("Time-Series",
-                         fluidRow(h4("Bacteria Time-Series Analysis", align = "center")),
-                         tabsetPanel(
-                           tabPanel("Wachusett", TIME_WQ_UI("mod_bact_wach_time"))
-                         ) # end tabset Panel
-                ), # end tabpanel
-                tabPanel("Correlation",
-                         fluidRow(h4("Bacteria Correlation Analysis", align = "center")),
-                         tabsetPanel(
-                           tabPanel("Wachusett", CORRELATION_WQ_UI("mod_bact_wach_corr"))
-                         ) # end tabset panel
-                ), # end tabpanel
-                tabPanel("MetaData",
-                         fluidRow(h4("Tributary MetaData", align = "center")),
-                         tabsetPanel(
-                           tabPanel("Wachusett", METADATA_UI("mod_bact_wach_meta"))
-                         ) # end tabset Panel
-                ), # end tabpanel
-
-                "Chemical",
-                tabPanel("SelectFilter Data",
-                         fluidRow(h4("Select and Filter Data", align = "center")),
-                         tabsetPanel(
-                           tabPanel("Quabbin", FILTER_WQ_UI("mod_chem_quab_filter")),
-                           tabPanel("Wachusett", FILTER_WQ_UI("mod_chem_wach_filter"))
-                         ) # end tabset Panel
-                ), # end tabpanel
-                tabPanel("Time-Series",
-                         fluidRow(h4("Chemical Time-Series Analysis", align = "center")),
-                         tabsetPanel(
-                           tabPanel("Quabbin", TIME_DEPTH_WQ_UI("mod_chem_quab_time")),
-                           tabPanel("Wachusett", TIME_DEPTH_WQ_UI("mod_chem_wach_time"))
-                         )
-                ),
-                tabPanel("Correlation",
-                         fluidRow(h4("Chemical Correlation Analysis", align = "center")),
-                         tabsetPanel(
-                           tabPanel("Quabbin", CORRELATION_DEPTH_WQ_UI("mod_chem_quab_corr")),
-                           tabPanel("Wachusett", CORRELATION_DEPTH_WQ_UI("mod_chem_wach_corr"))
-                         )
-                ),
-                tabPanel("Metadata",
-                         fluidRow(h4("Chemical Metadata", align = "center")),
-                         tabsetPanel(
-                           tabPanel("Quabbin", METADATA_UI("mod_chem_quab_meta")),
-                           tabPanel("Wachusett", METADATA_UI("mod_chem_wach_meta"))
-                         ) # end tabset Panel
-                ), # end tabpanel
-
-                "Profile",
-                tabPanel("Heat Map",
-                         fluidRow(h4("Profile Heatmap", align = "center")),
-                         tabsetPanel(
-                           tabPanel("Quabbin", PROF_HEATMAP_UI("mod_prof_quab_heat", df_prof_quab)),
-                           tabPanel("Wachusett", PROF_HEATMAP_UI("mod_prof_wach_heat", df_prof_wach))
-                         )
-                ),
-                tabPanel("Line Plot",
-                         fluidRow(h4("Profile Line Plot", align = "center")),
-                         tabsetPanel(
-                           tabPanel("Quabbin", PROF_LINE_UI("mod_prof_quab_line", df_prof_quab)),
-                           tabPanel("Wachusett", PROF_LINE_UI("mod_prof_wach_line", df_prof_wach))
-                         )
-                ),
-                tabPanel("Table and Summary",
-                         fluidRow(h4("Profile Summary", align = "center")),
-                         tabsetPanel(
-                           tabPanel("Quabbin", PROF_TABLE_STAT_UI("mod_prof_quab_sum", df_prof_quab)),
-                           tabPanel("Wachusett", PROF_TABLE_STAT_UI("mod_prof_wach_sum", df_prof_wach))
-                         )
-                ),
-                tabPanel("Metadata",
-                         fluidRow(h4("Profile metadat", align = "center")),
-                         tabsetPanel(
-                           tabPanel("Quabbin", METADATA_UI("mod_prof_quab_meta")),
-                           tabPanel("Wachusett", METADATA_UI("mod_prof_wach_meta"))
-                         ) # end tabset Panel
-                ), # end tabpanel
-
-
-                "Biological",
-                tabPanel("Phytoplankton",
-                         fluidRow(h4("Phytoplankton Plots and Data", align = "center")),
-                         tabsetPanel(
-                           tabPanel("Wachusett", PHYTO_UI("mod_phyto_wach_plots", df_phyto_wach))
-                         )
-                )
-
-   ) # end navlist
-
+   tabsetPanel(
+     tabPanel("Quabbin",
+              navlistPanel(widths = c(2, 10),
+                           "Chemical",
+                           tabPanel("Select / Filter data", FILTER_WQ_UI("mod_chem_quab_filter")),
+                           tabPanel("-- Plots",
+                                    tabsetPanel(
+                                      tabPanel("Time-Series Scatter", PLOT_TIME_WQ_UI("mod_chem_quab_plot_time")),
+                                      tabPanel("Correlation Scatter", PLOT_CORR_WQ_UI("mod_chem_quab_plot_corr")),
+                                      tabPanel("Distribution Charts", DISTRIBUTION_WQ_UI("mod_chem_quab_plot_dist"))
+                                    )
+                           ),
+                           tabPanel("-- Statistics",
+                                    tabsetPanel(
+                                      tabPanel("Summary Statistics", STAT_TIME_DEPTH_WQ_UI("mod_chem_quab_stat_sum")),
+                                      tabPanel("Temporal Statistics", fluidRow(h5("Mann-Kendall Stats to come"))),
+                                      tabPanel("Correlation Matrix", PLOT_CORR_MATRIX_WQ_UI("mod_chem_quab_stat_cormat"))
+                                    )
+                           ),
+                           tabPanel("Metadata", METADATA_UI("mod_chem_quab_meta")),
+                           "Profile",
+                           tabPanel("Heat Map", PROF_HEATMAP_UI("mod_prof_quab_heat", df_prof_wach)),
+                           tabPanel("Line Plot", PROF_LINE_UI("mod_prof_quab_line", df_prof_wach)),
+                           tabPanel("Table and Summary", PROF_TABLE_STAT_UI("mod_prof_quab_sum", df_prof_wach)),
+                           tabPanel("Metadata", METADATA_UI("mod_prof_quab_meta"))
+              ) # end navlist panel
+     ),
+     tabPanel("Wachusett",
+              navlistPanel(widths = c(2, 10),
+                           "Bacteria",
+                           tabPanel("Select / Filter Data", FILTER_WQ_UI("mod_bact_wach_filter")),
+                           tabPanel("-- Plots",
+                                    tabsetPanel(
+                                      tabPanel("Time-Series Scatter", PLOT_TIME_WQ_UI("mod_bact_wach_plot_time")),
+                                      tabPanel("Correlation Scatter", PLOT_CORR_WQ_UI("mod_bact_wach_plot_corr")),
+                                      tabPanel("Distribution Charts", DISTRIBUTION_WQ_UI("mod_bact_wach_plot_dist"))
+                                    )
+                           ),
+                           tabPanel("-- Statistics",
+                                    tabsetPanel(
+                                      tabPanel("Summary Statistics", STAT_TIME_WQ_UI("mod_bact_wach_stat_sum")),
+                                      tabPanel("Temporal Statistics", fluidRow(h5("Mann-Kendall Stats to come"))),
+                                      tabPanel("Correlation Matrix", PLOT_CORR_MATRIX_WQ_UI("mod_bact_wach_stat_cormat"))
+                                    )
+                           ),
+                           tabPanel("Geospatial", MAP_PLOT_UI("mod_bact_wach_map", df = df_bact_wach)),
+                           tabPanel("Metadata", METADATA_UI("mod_bact_wach_meta")),
+                           "Chemical",
+                           tabPanel("Select / Filter Data", FILTER_WQ_UI("mod_chem_wach_filter")),
+                           tabPanel("-- Plots",
+                                    tabsetPanel(
+                                      tabPanel("Time-Series Scatter", PLOT_TIME_WQ_UI("mod_chem_wach_plot_time")),
+                                      tabPanel("Correlation Scatter", PLOT_CORR_WQ_UI("mod_chem_wach_plot_corr")),
+                                      tabPanel("Distribution Charts", DISTRIBUTION_WQ_UI("mod_chem_wach_plot_dist"))
+                                    )
+                           ),
+                           tabPanel("-- Statistics",
+                                    tabsetPanel(
+                                      tabPanel("Summary Statistics", STAT_TIME_DEPTH_WQ_UI("mod_chem_wach_stat_sum")),
+                                      tabPanel("Temporal Statistics", fluidRow(h5("Mann-Kendall Stats to come"))),
+                                      tabPanel("Correlation Matrix", PLOT_CORR_MATRIX_WQ_UI("mod_chem_wach_stat_cormat"))
+                                    )
+                           ),
+                           tabPanel("Metadata", METADATA_UI("mod_chem_wach_meta")),
+                           "Profile",
+                           tabPanel("Select / Filter Data", FILTER_WQ_UI("mod_prof_wach_filter")),
+                           tabPanel("-- Plots",
+                                    tabsetPanel(
+                                      tabPanel("Heat Map", PROF_HEATMAP_UI("mod_prof_wach_heat", df_prof_wach)),
+                                      tabPanel("Line Plot", PROF_LINE_UI("mod_prof_wach_line", df_prof_wach)),
+                                      tabPanel("Distribution Charts", DISTRIBUTION_WQ_UI("mod_prof_wach_plot_dist"))
+                                    )
+                           ),
+                           tabPanel("Table and Summary", PROF_TABLE_STAT_UI("mod_prof_wach_sum", df_prof_wach)),
+                           tabPanel("Metadata", METADATA_UI("mod_prof_wach_meta")),
+                           "Biological",
+                           tabPanel("Phytoplankton", PHYTO_UI("mod_phyto_wach_plots", df_phyto_wach))
+              ) # end navlist panel
+     ),
+     selected = tab_selected
+   )
  ),  # end Tabpanel (page)
-
-
-#######################################################
-# Map
-
-tabPanel("Map Plot",
-
-         # Title
-         fluidRow(
-                  column(2, imageOutput("wave_image5", height = 50), align = "center"),
-                  column(10, h2("Geospatial Plots", align = "center"))
-         ),
-         navlistPanel(widths = c(2, 10),
-                      "Reservoir Bacteria",
-                      tabPanel("Wachusett", MAP_PLOT_UI("mod_bact_wach_map", df = df_bact_wach)),
-                      "Reservoir Chemical",
-                      tabPanel("Quabbin", MAP_PLOT_UI("mod_chem_quab_map", df = df_chem_quab)),
-                      tabPanel("Wachusett", MAP_PLOT_UI("mod_chem_wach_map", df = df_chem_wach))
-         ) # end navlist
-
-), # end tabpanel (page)
-
 
 ###################################################################
 # Hydrology/Meteorology
@@ -444,9 +430,7 @@ server <- function(input, output, session) {
   ### Quabbin
 
   # Filter
-  Df_Trib_Quab <- callModule(FILTER_WQ, "mod_trib_quab_filter", df = df_trib_quab, df_site = df_trib_quab_site)
-
-  # Table
+  Df_Trib_Quab <- callModule(FILTER_WQ, "mod_trib_quab_filter", df = df_trib_quab, df_site = df_trib_quab_site, type = "wq")
 
   # Plots
   callModule(PLOT_TIME_WQ, "mod_trib_quab_plot_time", Df = Df_Trib_Quab$Long)
@@ -455,7 +439,7 @@ server <- function(input, output, session) {
 
   # Stats
   callModule(STAT_TIME_WQ, "mod_trib_quab_stat_sum", Df = Df_Trib_Quab$Long)  # Push in $Stats and get rid in module
-  #callModule(STAT_TIME_WQ, "mod_trib_quab_stat_temp", Df = Df_Trib_Quab)
+  # temp stats
   callModule(PLOT_CORR_MATRIX_WQ, "mod_trib_quab_stat_cormat", Df = Df_Trib_Quab$Wide)
 
   # Geospatial
@@ -466,95 +450,149 @@ server <- function(input, output, session) {
 
 
   ### Ware
+
+  # Filter
+  Df_Trib_Ware <- callModule(FILTER_WQ, "mod_trib_ware_filter", df = df_trib_ware, df_site = df_trib_ware_site, type = "wq")
+
+  # Plots
+  callModule(PLOT_TIME_WQ, "mod_trib_ware_plot_time", Df = Df_Trib_Ware$Long)
+  callModule(PLOT_CORR_WQ, "mod_trib_ware_plot_corr", Df = Df_Trib_Ware$Long)
+  callModule(DISTRIBUTION_WQ, "mod_trib_ware_plot_dist", Df = Df_Trib_Ware$Long)
+
+  # Stats
+  callModule(STAT_TIME_WQ, "mod_trib_ware_stat_sum", Df = Df_Trib_Ware$Long)  # Push in $Stats and get rid in module
+  # temp stats
+  callModule(PLOT_CORR_MATRIX_WQ, "mod_trib_ware_stat_cormat", Df = Df_Trib_Ware$Wide)
+
+  # Geospatial
+  callModule(MAP_PLOT, "mod_trib_ware_map", df = df_trib_ware, df_site = df_trib_ware_site)
+
+
   ### Wachusett
 
-  # Select/Filter Data - Returns a list of 3 versions of reactive filtered dataframes (Long, Wide, Stat)
+  # Filter
+  Df_Trib_Wach <- callModule(FILTER_WQ, "mod_trib_wach_filter", df = df_trib_wach, df_site = df_trib_wach_site, type = "wq")
 
-  Df_Trib_Ware <- callModule(FILTER_WQ, "mod_trib_ware_filter", df = df_trib_ware, df_site = df_trib_ware_site)
-  Df_Trib_Wach <- callModule(FILTER_WQ, "mod_trib_wach_filter", df = df_trib_wach, df_site = df_trib_wach_site)
+  # Plots
+  callModule(PLOT_TIME_WQ, "mod_trib_wach_plot_time", Df = Df_Trib_Wach$Long)
+  callModule(PLOT_CORR_WQ, "mod_trib_wach_plot_corr", Df = Df_Trib_Wach$Long)
+  callModule(DISTRIBUTION_WQ, "mod_trib_wach_plot_dist", Df = Df_Trib_Wach$Long)
 
-  # Time Series
-  callModule(TIME_WQ, "mod_trib_ware_time", Df = Df_Trib_Ware$Long)
-  callModule(TIME_WQ, "mod_trib_wach_time", Df = Df_Trib_Wach$Long)
-  #callModule(time, "mod_trib_all_time", df = df_trib_all, df_site = df_trib_all_site)
+  # Stats
+  callModule(STAT_TIME_WQ, "mod_trib_wach_stat_sum", Df = Df_Trib_Wach$Long)  # Push in $Stats and get rid in module
+  # temp stats
+  callModule(PLOT_CORR_MATRIX_WQ, "mod_trib_wach_stat_cormat", Df = Df_Trib_Wach$Wide)
 
-  # Correlation
-  callModule(CORRELATION_WQ, "mod_trib_ware_corr", Dfa = Df_Trib_Ware$Long, Dfb = Df_Trib_Ware$Wide)
-  callModule(CORRELATION_WQ, "mod_trib_wach_corr", Dfa = Df_Trib_Wach$Long, Dfb = Df_Trib_Wach$Wide)
-  #callModule(CORRELATION, "mod_trib_all_corr", df = df_trib_all, df_site = df_trib_all_site)
+  # Geospatial
+  callModule(MAP_PLOT, "mod_trib_wach_map", df = df_trib_wach, df_site = df_trib_wach_site)
 
-  # Distribution
-  callModule(DISTRIBUTION_WQ, "mod_trib_ware_dist", Df = Df_Trib_Ware$Stat)
-  callModule(DISTRIBUTION_WQ, "mod_trib_wach_dist", Df = Df_Trib_Wach$Stat)
-  #callModule(CORRELATION, "mod_trib_all_corr", df = df_trib_all, df_site = df_trib_all_site)
+  # MetaData
+  callModule(METADATA, "mod_trib_wach_meta", df = df_trib_wach, df_site = df_trib_wach_site, df_param = df_wach_param)
 
-  # Metadata
-  callModule(METADATA, "mod_trib_wach_meta", df = df_trib_wach, df_site = df_trib_wach_site, df_param = df_wq_wach_param)
+
 
 #############################################################
 # Reservoir
 
-  ### Bacteria
 
-  # Filter
-  Df_Bact_Wach <- callModule(FILTER_WQ, "mod_bact_wach_filter", df = df_bact_wach, df_site = df_bact_wach_site)
-
-  callModule(TIME_WQ, "mod_bact_wach_time", Df = Df_Bact_Wach$Long)
-
-  callModule(CORRELATION_WQ, "mod_bact_wach_corr", Dfa = Df_Bact_Wach$Long, Dfb = Df_Bact_Wach$Wide)
-
-  callModule(METADATA, "mod_bact_wach_meta", df_bact_wach, df_site = df_bact_wach_site, df_param = df_wq_wach_param)
+##### Quabbin #####
 
   ### Chemical
 
   # Filter
-  Df_Chem_Quab <- callModule(FILTER_WQ, "mod_chem_quab_filter", df = df_chem_quab, df_site = df_chem_quab_site, depth = TRUE)
-  Df_Chem_Wach <- callModule(FILTER_WQ, "mod_chem_wach_filter", df = df_chem_wach, df_site = df_chem_wach_site, depth = TRUE)
+  Df_Chem_Quab <- callModule(FILTER_WQ, "mod_chem_quab_filter", df = df_chem_quab, df_site = df_chem_quab_site, type = "wq_depth")
 
-  # Time-Series
-  callModule(TIME_DEPTH_WQ, "mod_chem_quab_time", Df = Df_Chem_Quab$Long)
-  callModule(TIME_DEPTH_WQ, "mod_chem_wach_time", Df = Df_Chem_Wach$Long)
+  # Plots
+  callModule(PLOT_TIME_WQ, "mod_chem_quab_plot_time", Df = Df_Chem_Quab$Long) # Update to Depth specific plot
+  callModule(PLOT_CORR_WQ, "mod_chem_quab_plot_corr", Df = Df_Chem_Quab$Long) # Update to Depth Specific Plot
+  callModule(DISTRIBUTION_WQ, "mod_chem_quab_plot_dist", Df = Df_Chem_Quab$Long) # Depth Specific?
 
-  # Correlation
-  callModule(CORRELATION_DEPTH_WQ, "mod_chem_quab_corr", df = df_chem_quab, df_site = df_chem_quab_site)
-  callModule(CORRELATION_DEPTH_WQ, "mod_chem_wach_corr", df = df_chem_wach, df_site = df_chem_wach_site)
+  # Stats
+  callModule(STAT_TIME_DEPTH_WQ, "mod_chem_quab_stat_sum", Df = Df_Chem_Quab$Long) # Push in $Stats and get rid in module
+  # temp stats
+  callModule(PLOT_CORR_MATRIX_WQ, "mod_chem_quab_stat_cormat", Df = Df_Chem_Quab$Wide)
 
-  # Metadata
-  callModule(METADATA, "mod_chem_quab_meta",  df = df_chem_quab, df_site = df_chem_quab_site, df_param = df_quab_param)
-  callModule(METADATA, "mod_chem_wach_meta",  df = df_chem_wach, df_site = df_chem_wach_site)
+  # MetaData
+  callModule(METADATA, "mod_chem_quab_meta", df = df_chem_quab, df_site = df_chem_quab_site, df_param = df_chem_param)
 
-  ### Profile (physicochemical)
+  ### Profile
+
+  # Add a Filter Tab???????? - probably
+
+  # Heatmap
   callModule(PROF_HEATMAP, "mod_prof_quab_heat", df = df_prof_quab)
-  callModule(PROF_HEATMAP, "mod_prof_wach_heat", df = df_prof_wach)
 
+  # Line Plot
   callModule(PROF_LINE, "mod_prof_quab_line", df = df_prof_quab)
-  callModule(PROF_LINE, "mod_prof_wach_line", df = df_prof_wach)
-
+  # Table and Stats
   callModule(PROF_TABLE_STAT, "mod_prof_quab_sum", df = df_prof_quab)
-  callModule(PROF_TABLE_STAT, "mod_prof_wach_sum", df = df_prof_wach)
 
   # Change the Data Frames to Profile Data
   callModule(METADATA, "mod_prof_quab_meta", df = df_prof_quab, df_site = df_prof_quab_site, df_param = df_quab_param)
-  callModule(METADATA, "mod_prof_wach_meta", df = df_prof_wach, df_site = df_prof_wach_site)
 
-  # AquaBio
-  callModule(PHYTO, "mod_phyto_wach_plots", df = df_phyto_wach)
-  #callModule(phyto_summary, "mod_phyto_wach_plots", df = df_phyto_wach)
 
-####################################################################
-# Map Plot
 
-  # Trib
+##### Wachusett #####
 
-  callModule(MAP_PLOT, "mod_trib_ware_map", df = df_trib_ware, df_site = df_trib_ware_site)
-  callModule(MAP_PLOT, "mod_trib_wach_map", df = df_trib_wach, df_site = df_trib_wach_site)
+  ### Bacteria
 
-  # Bacteria
+  # Filter
+  Df_Bact_Wach <- callModule(FILTER_WQ, "mod_bact_wach_filter", df = df_bact_wach, df_site = df_bact_wach_site, type = "wq")
+
+  # Plots
+  callModule(PLOT_TIME_WQ, "mod_bact_wach_plot_time", Df = Df_Bact_Wach$Long)
+  callModule(PLOT_CORR_WQ, "mod_bact_wach_plot_corr", Df = Df_Bact_Wach$Long)
+  callModule(DISTRIBUTION_WQ, "mod_bact_wach_plot_dist", Df = Df_Bact_Wach$Long)
+
+  # Stats
+  callModule(STAT_TIME_WQ, "mod_bact_wach_stat_sum", Df = Df_Bact_Wach$Long)  # Push in $Stats and get rid in module
+  # temp stats
+  callModule(PLOT_CORR_MATRIX_WQ, "mod_bact_wach_stat_cormat", Df = Df_Bact_Wach$Wide)
+
+  # Geospatial
   callModule(MAP_PLOT, "mod_bact_wach_map", df = df_bact_wach, df_site = df_bact_wach_site)
 
-  # Chemical
-  callModule(MAP_PLOT, "mod_chem_quab_map", df = df_chem_quab, df_site = df_chem_quab_site)
-  callModule(MAP_PLOT, "mod_chem_wach_map", df = df_chem_wach, df_site = df_chem_wach_site)
+  # MetaData
+  callModule(METADATA, "mod_bact_wach_meta", df = df_bact_wach, df_site = df_bact_wach_site, df_param = df_wach_param)
+
+  ### Chemical
+
+  # Filter
+  Df_Chem_Wach <- callModule(FILTER_WQ, "mod_chem_wach_filter", df = df_chem_wach, df_site = df_chem_wach_site, type = "wq_depth")
+
+  # Plots
+  callModule(PLOT_TIME_WQ, "mod_chem_wach_plot_time", Df = Df_Chem_Wach$Long) # Update to Depth specific plot
+  callModule(PLOT_CORR_WQ, "mod_chem_wach_plot_corr", Df = Df_Chem_Wach$Long) # Update to Depth Specific Plot
+  callModule(DISTRIBUTION_WQ, "mod_chem_wach_plot_dist", Df = Df_Chem_Wach$Long) # Depth Specific?
+
+  # Stats
+  callModule(STAT_TIME_DEPTH_WQ, "mod_chem_wach_stat_sum", Df = Df_Chem_Wach$Long) # Push in $Stats and get rid in module
+  # temp stats
+  callModule(PLOT_CORR_MATRIX_WQ, "mod_chem_wach_stat_cormat", Df = Df_Chem_Wach$Wide)
+
+  # MetaData
+  callModule(METADATA, "mod_chem_wach_meta", df = df_chem_wach, df_site = df_chem_wach_site, df_param = df_chem_param)
+
+  ### Profile
+
+  # Filter
+  Df_Prof_Wach <- callModule(FILTER_WQ, "mod_prof_wach_filter", df = df_prof_wach, df_site = df_prof_wach_site, type = "profile")
+
+  # Plots
+  callModule(PROF_HEATMAP, "mod_prof_wach_heat", df = df_prof_wach)
+  callModule(PROF_LINE, "mod_prof_wach_line", df = df_prof_wach)
+  callModule(DISTRIBUTION_WQ, "mod_prof_wach_plot_dist", Df = Df_Prof_Wach$Long) # Depth Specific?
+
+  # Table and Stats
+  callModule(PROF_TABLE_STAT, "mod_prof_wach_sum", df = df_prof_wach)
+
+  # Change the Data Frames to Profile Data
+  callModule(METADATA, "mod_prof_wach_meta", df = df_prof_wach, df_site = df_prof_wach_site, df_param = df_wach_param)
+
+  ### AquaBio
+
+  callModule(PHYTO, "mod_phyto_wach_plots", df = df_phyto_wach)
+
 
 ####################################################################
 # Hydrology/Meteorology/Statistics

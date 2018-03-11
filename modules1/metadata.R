@@ -130,7 +130,7 @@ METADATA <- function(input, output, session, df_site = NULL, df_param = NULL, df
 
   # Site Overview Table
   Df_Site_Info_a <- reactive({
-    Df() %>%
+    df %>%
       filter(LocationLabel %in% Site_Selected()$LocationLabel) %>%
       summarise(`Parameter` = "ALL",
                 `Number of Samples` = n(),
@@ -141,7 +141,7 @@ METADATA <- function(input, output, session, df_site = NULL, df_param = NULL, df
   })
 
   Df_Site_Info_b <- reactive({
-    Df() %>%
+    df %>%
       filter(LocationLabel %in% Site_Selected()$LocationLabel) %>%
       group_by(Parameter) %>%
       summarise(`Number of Samples` = n(),
@@ -199,7 +199,7 @@ METADATA <- function(input, output, session, df_site = NULL, df_param = NULL, df
 
   # param Overview Table
   Df_Param_Info_a <- reactive({
-    Df() %>%
+    df %>%
       filter(Parameter %in%  Param_Selected()$ParameterName) %>%
       summarise(`LocationLabel` = "ALL",
                 `Number of Samples` = n(),
@@ -210,7 +210,7 @@ METADATA <- function(input, output, session, df_site = NULL, df_param = NULL, df
   })
 
   Df_Param_Info_b <- reactive({
-    Df() %>%
+    df %>%
       filter(Parameter %in%  Param_Selected()$ParameterName) %>%
       group_by(LocationLabel) %>%
       summarise(`Number of Samples` = n(),
