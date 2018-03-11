@@ -67,7 +67,7 @@ PLOT_TIME_WQ_UI <- function(id) {
                             sliderInput(ns("point_size"), "Point Size:",
                                         min = 0.5, max = 4, value = 1.5, step = 0.5)
                           )
-                          
+
                         )
                       )
                ), # end column
@@ -91,7 +91,7 @@ PLOT_TIME_WQ_UI <- function(id) {
                                       min = 0, max = 3, value = 1, step = 0.25),
                           sliderInput(ns("trend_alpha"), "Line Opacity:",
                                       min = 0, max = 1, value = .1, step = 0.1)
-                          
+
                         )
                       )
                ) # end column
@@ -121,25 +121,25 @@ PLOT_TIME_WQ_UI <- function(id) {
 # Server Function
 ##############################################################################################################################
 
-# Note that Argument "Df"  needs to be a reactive expression, not a resolved value. 
+# Note that Argument "Df"  needs to be a reactive expression, not a resolved value.
 # Thus do not use () in callModule argument for reactives
 # For non reactives wrap with "reactive" to make into a reactive expression.
 
 PLOT_TIME_WQ <- function(input, output, session, Df) {
 
   ns <- session$ns # see General Note 1
-  
+
 ##################### Main Reactive Expressions
-  
-  # Find Choices for Sites and Param 
+
+  # Find Choices for Param
   Param <- reactive({Df()$Parameter %>% factor() %>% levels()})
-  
+
   # Two Dataframes (Primary and Secondary Axis)
-  
+
   Df1 <- reactive({
     req(input$param1)
     Df() %>% filter(Parameter %in% input$param1)})
-  
+
   Df2 <- reactive({
     req(input$param1) # param1 not param2 in req() becuase param2 always has "None" option
     if(input$param2 != "None"){
@@ -148,7 +148,7 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
       NULL
     }
   })
-  
+
   # Site List  - Primary Axis Only Plots
   Site <- reactive({
     if(input$param2 == "None"){
@@ -157,7 +157,7 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
       unique(Df1()$Site %>% factor() %>% levels(), Df2()$Site %>% factor() %>% levels())
     }
   })
-  
+
 ############# Rendered User Interface
 
   # Parameter Axis Choice for Primary Axis
@@ -167,12 +167,12 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
                    choices = Param())
     }
   })
-  
+
   outputOptions(output, "param1_ui", suspendWhenHidden = FALSE) # see Dev. Manual
-  
+
   # update when new flag code changes
   observe({
-    
+
     # save previously selected value
     isolate({
       if(input$param1 %in% c(Param())){
@@ -181,24 +181,24 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
         save_selected <- NULL
       }
     })
-    
-    updateRadioButtons(session, inputId = "param1", 
+
+    updateRadioButtons(session, inputId = "param1",
                       choices = Param(),
                       selected = save_selected)
   })
-  
+
   # Parameter Axis Choice for Secondary Axis
   output$param2_ui <- renderUI({
     radioButtons(ns("param2"), "Parameter 2 - Secondary Y-Axis",
                  choices = c(Param(), "None"),
                  selected = "None")
   })
-  
+
   outputOptions(output, "param2_ui", suspendWhenHidden = FALSE) # See Dev. Manual
-  
+
   # update when new flag code changes
   observe({
-    
+
     # save previously selected value
     isolate({
       if(input$param2 %in% c(Param(), "None")){
@@ -207,16 +207,16 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
         save_selected <- "None"
       }
     })
-    
+
     updateRadioButtons(session, inputId = "param2",
                       choices = c(Param(), "None"),
                       selected = save_selected)
-    
+
   })
 
-  
 
-  
+
+
   # Flag List
   # Flag <- reactive({
   #   if(input$param2 == "None"){
@@ -225,7 +225,7 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
   #     unique(Df1()$Site %>% factor() %>% levels(), Df2()$Site %>% factor() %>% levels())
   #   }
   # })
-  
+
   # Color Grouping UI
   output$group_color_ui <- renderUI({
     req(input$param2)
@@ -241,47 +241,47 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
       )
     }
   })
-  
+
   # # update when new flag code changes
   # observe({
-  #   
+  #
   #   # save previously selected value
   #   isolate({save_selected <- input$group_color})
-  #   
+  #
   #   #if(input$param2 == "None"){
   #     color_choices <- c("None", "Site", "Flags (needs update)")
-  #     updateRadioButtons(session, inputId = "group_color", label = "Parameter:", 
+  #     updateRadioButtons(session, inputId = "group_color", label = "Parameter:",
   #                       choices=c(color_choices),
   #                       selected = save_selected)
   #   #}
   # })
-  
+
   # Shape Grouping
   output$group_shape_ui <- renderUI({
     req(input$param2)
-    
+
     # Make so this includes all types of flags. Probably make sticky memory
     shape_choices <- c("None/Parameter", "Site", "Flags (needs update)")
-    
+
     radioButtons(ns("group_shape"), label = "Group with Shapes:",
                  choices = shape_choices,
                  selected = "None/Parameter")
   })
-  
+
   # # update when new flag code changes
   # observeEvent(c(Df1(),Df2()), {
-  #   
+  #
   #   # save previously selected value
   #   isolate({save_selected <- input$group_shape})
-  #   
+  #
   #   shape_choices <- c("None/Parameter", "Site", "Flags (needs update)")
-  #   updateRadioButtons(session, inputId = "group_shape", label = "Parameter:", 
+  #   updateRadioButtons(session, inputId = "group_shape", label = "Parameter:",
   #                     choices=c(shape_choices),
   #                     selected = save_selected)
-  #   
+  #
   # })
 
-  
+
   # Axis UI - only show options for 1 Parameter plot
   output$axis_ui <- renderUI({
     req(input$param2 == "None")
@@ -291,7 +291,7 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
                                     "Y-axis start at zero"))
     )
   })
-  
+
   # Point Color 1 UI - only show options when color = None
   output$point_color1_ui <- renderUI({
     req(input$param2 != "None" | input$group_color == "None")
@@ -299,7 +299,7 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
                    choices = c("black", "blue", "red", "green"),
                    inline = TRUE)
   })
-  
+
   # Point Color 2 UI - only show options when color = None
   output$point_color2_ui <- renderUI({
     req(input$param2 != "None")
@@ -316,36 +316,36 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
                  choices = c("solid", "dashed", "dotted"),
                  inline = TRUE)
   })
-  
 
-  
+
+
 ########################################################################
 ### Plot UI
-  
-  
-  ### Plot Outputs 
-  
+
+
+  ### Plot Outputs
+
   # ONe Y-axis interactive Plotly plot
   output$plot1_inter <- renderPlotly({
     req(input$param2 == "None")# & P2$Gplotly() == TRUE)
     ggplotly(P5(), tooltip = c("y", "colour", "shape"))
   })
-  
+
   # ONe Y-axis static Plot
   output$plot1_static <- renderPlot({
     req(input$param2 == "None") # & P2$Gplotly() == FALSE)
     P5() + theme(text = element_text(size = 15))
   })
-  
+
   # Two Y-axis ggplot static plot
   output$plot2 <- renderPlot({
     req(input$param2 != "None")
     P5() + theme(text = element_text(size = 15))
   })
-  
+
   output$plot_ui <- renderUI({
     req(input$param1, input$param2)
-    
+
     if(input$param2 != "None"){
       tagList(
         plotOutput(ns("plot2"), width = "100%", height = 600),
@@ -355,35 +355,35 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
         plotlyOutput(ns("plot1_inter"), width = "100%", height = 600)
     }else{
         plotOutput(ns("plot1_static"), width = "100%", height = 600)
-    } 
+    }
 
   })
-  
-  
-  
+
+
+
 #########################################################################
 # Plot Creation
-  
+
   # Main Plot Scripts
   P1 <- reactive({
-    
+
     ############# One Parameter Plots - Primary Y axis only ######################################
-    
+
     if(input$param2 == "None"){
-      
+
       p <- ggplot(Df1())
-      
+
       # Group by both Color and Shape when both selected
       if(input$group_color != "None" & input$group_shape != "None/Parameter"){
-          p <- p + geom_point(aes_string(x = "as.POSIXct(Date)", 
-                                         y = "Result", 
-                                         color = input$group_color, 
+          p <- p + geom_point(aes_string(x = "as.POSIXct(Date)",
+                                         y = "Result",
+                                         color = input$group_color,
                                          shape = input$group_shape),
                               size = input$point_size)
           if(input$trend_show == TRUE){
-            p <- p + geom_smooth(aes_string(x = "as.POSIXct(Date)", 
-                                            y = "Result", 
-                                            color = input$group_color, 
+            p <- p + geom_smooth(aes_string(x = "as.POSIXct(Date)",
+                                            y = "Result",
+                                            color = input$group_color,
                                             linetype = input$group_shape),
                                  method = input$trend_type,
                                  size = input$trend_size,
@@ -393,14 +393,14 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
           }
           # Group by only Color when only color grouping is selected
       } else if (input$group_color != "None"){
-        p <- p + geom_point(aes_string(x = "as.POSIXct(Date)", 
-                                       y = "Result", 
-                                       color = input$group_color), 
+        p <- p + geom_point(aes_string(x = "as.POSIXct(Date)",
+                                       y = "Result",
+                                       color = input$group_color),
                             shape = 16,
                             size = input$point_size)
         if(input$trend_show == TRUE){
-          p <- p + geom_smooth(aes_string(x = "as.POSIXct(Date)", 
-                                          y = "Result", 
+          p <- p + geom_smooth(aes_string(x = "as.POSIXct(Date)",
+                                          y = "Result",
                                           color = input$group_color),
                                linetype = input$trend_line,
                                method = input$trend_type,
@@ -411,15 +411,15 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
         }
         # Group by only Shape when only shape grouping is selected
       } else if (input$group_shape != "None/Parameter"){
-        p <- p + geom_point(aes_string(x = "as.POSIXct(Date)", 
-                                       y = "Result", 
-                                       shape = input$group_shape), 
+        p <- p + geom_point(aes_string(x = "as.POSIXct(Date)",
+                                       y = "Result",
+                                       shape = input$group_shape),
                             color = input$point_color1,
                             size = input$point_size)
-        
+
         if(input$trend_show == TRUE){
-          p <- p + geom_smooth(aes_string(x = "as.POSIXct(Date)", 
-                                          y = "Result", 
+          p <- p + geom_smooth(aes_string(x = "as.POSIXct(Date)",
+                                          y = "Result",
                                           linetype = input$group_shape),
                                method = input$trend_type,
                                size = input$trend_size,
@@ -429,13 +429,13 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
         }
         # No Grouping Selected
       } else {
-        p <- p + geom_point(aes_string(x = "as.POSIXct(Date)", 
+        p <- p + geom_point(aes_string(x = "as.POSIXct(Date)",
                                        y = "Result"),
                             color = input$point_color1,
                             shape = 16,
                             size = input$point_size)
         if(input$trend_show == TRUE){
-          p <- p + geom_smooth(aes_string(x = "as.POSIXct(Date)", 
+          p <- p + geom_smooth(aes_string(x = "as.POSIXct(Date)",
                                           y = "Result"),
                                linetype = input$trend_line,
                                method = input$trend_type,
@@ -445,13 +445,13 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
                                level = as.numeric(input$trend_conf))
         }
       }
-      
-      
+
+
       # Facet for Sites if no grouping for site is selected and number of sites is greater than 1
       if(input$group_color != "Site" & input$group_shape != "Site" & length(c(Site())) > 1){
         p <- p + facet_wrap(~Site, ncol = ceiling(length(c(Site()))/4))
       }
-      
+
       # Log Scale and Y-axis start at zero
       if(input$param2 == "None"){
         if("Log-scale Y-Axis" %in% input$axis){
@@ -466,37 +466,37 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
         }
         # Secondary and Primary Axis (2 Parameter Plots)
       }
-      
+
       ############# Two Parameter Plots - Primary and Secondary Y axes' ######################
     } else{
-      
+
       p <- ggplot()
-      
+
       # Grouped by Shape
       if(input$group_shape != "None/Parameter"){
-        p <- p + geom_point(data = Df1(), 
-                            aes_string(x = "as.POSIXct(Date)", 
-                                       y = "Result", 
+        p <- p + geom_point(data = Df1(),
+                            aes_string(x = "as.POSIXct(Date)",
+                                       y = "Result",
                                        shape = input$group_shape),
                             color = input$point_color1,
                             size = input$point_size*2) +
           geom_point(data = Df2(),
-                     aes_string(x = "as.POSIXct(Date)", 
-                                y = "Result*Mult()", 
-                                shape = input$group_shape), 
+                     aes_string(x = "as.POSIXct(Date)",
+                                y = "Result*Mult()",
+                                shape = input$group_shape),
                      color = input$point_color2,
                      size = input$point_size*2)
         if(input$trend_show == TRUE){
-          p <- p + geom_smooth(data = Df1(), aes_string(x = "as.POSIXct(Date)", 
-                                                        y = "Result", 
+          p <- p + geom_smooth(data = Df1(), aes_string(x = "as.POSIXct(Date)",
+                                                        y = "Result",
                                                         linetype = input$group_shape),
                                color = input$point_color1,
                                method = input$trend_type,
                                size = input$trend_size,
                                alpha = input$trend_alpha,
                                se = input$trend_ribbon,
-                               level = as.numeric(input$trend_conf)) + 
-            geom_smooth(data = Df2(), aes_string(x = "as.POSIXct(Date)", 
+                               level = as.numeric(input$trend_conf)) +
+            geom_smooth(data = Df2(), aes_string(x = "as.POSIXct(Date)",
                                                  y = "Result*Mult()",
                                                  linetype = input$group_shape),
                         color = input$point_color2,
@@ -506,31 +506,31 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
                         se = input$trend_ribbon,
                         level = as.numeric(input$trend_conf))
         }
-        # Not Grouped 
+        # Not Grouped
       } else{
-        p <- p + geom_point(data = Df1(), 
-                            aes_string(x = "as.POSIXct(Date)", 
+        p <- p + geom_point(data = Df1(),
+                            aes_string(x = "as.POSIXct(Date)",
                                        y = "Result"),
                             shape = 15,
                             color = input$point_color1,
                             size = input$point_size*2) +
           geom_point(data = Df2(),
-                     aes_string(x = "as.POSIXct(Date)", 
-                                y = "Result*Mult()"), 
+                     aes_string(x = "as.POSIXct(Date)",
+                                y = "Result*Mult()"),
                      shape = 17,
                      color = input$point_color2,
                      size = input$point_size*2)
       }
       if(input$trend_show == TRUE){
-        p <- p + geom_smooth(data = Df1(), aes_string(x = "as.POSIXct(Date)", 
+        p <- p + geom_smooth(data = Df1(), aes_string(x = "as.POSIXct(Date)",
                                                       y = "Result"),
                              linetype = input$trend_line,
                              color = input$point_color1,
                              method = input$trend_type,
                              size = input$trend_size,
                              se = input$trend_ribbon,
-                             level = as.numeric(input$trend_conf)) + 
-          geom_smooth(data = Df2(), aes_string(x = "as.POSIXct(Date)", 
+                             level = as.numeric(input$trend_conf)) +
+          geom_smooth(data = Df2(), aes_string(x = "as.POSIXct(Date)",
                                                y = "Result*Mult()"),
                       linetype = input$trend_line,
                       color = input$point_color2,
@@ -539,33 +539,33 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
                       se = input$trend_ribbon,
                       level = as.numeric(input$trend_conf))
       }
-      
-      
+
+
       # Facet for Sites if no grouping for site is selected and number of sites is greater than 1
       if(input$group_shape != "Site" & length(c(Site())) > 1){
         p <- p + facet_wrap(~Site, ncol = ceiling(length(c(Site()))/4))
       }
-      
+
     }
-    
+
     ### All Plots #####
     p <- p + scale_x_datetime(breaks = pretty_breaks(n=12))
-    
+
     p
-    
-  }) 
-      
-      
+
+  })
+
+
 
   # Display OPtions Tab
   P2 <- callModule(PLOT_THEME_AND_HLINE, "theme_hline",
                    P = P1)
-  
+
   # Display OPtions Tab
   P3 <- callModule(PLOT_TEXT_AND_VLINES_TIME, "text_vline",
                    P = P2$Plot)
-  
-  
+
+
   # Title and Labels - returns a list of two reactive expressions. One a plot object and one a text string Sec. Axis label
   P4 <- callModule(PLOT_TITLE_AND_LABELS, "title_label",
                    P = P3,
@@ -574,67 +574,67 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
                    Y_Lab_Auto = reactive({paste(Text_Param1(), " (", Text_Units1(),")", sep= "")}),
                    sec_y_axis = TRUE,
                    Y2_Lab_Auto = reactive({paste(Text_Param2(), " (", Text_Units2(),")", sep= "")}))
-  
-  
+
+
   # Secondary Axis Only (Post Axis Label Naming)
   P5 <- reactive({
-    
+
     p <- P4$Plot()
-    
+
     # Secondary Axis Only
     if(input$param2 != "None"){
       p <- p + scale_y_continuous(breaks = pretty_breaks(), # ylim?
-                                  sec.axis = sec_axis(~./Mult(), breaks = pretty_breaks(), 
+                                  sec.axis = sec_axis(~./Mult(), breaks = pretty_breaks(),
                                                       name = P4$Y2_Lab()))
       # p <- p + theme(text = element_text(size = 15))
-      
+
       p <- p + theme(axis.text.y = element_text(colour = input$point_color1),
                      axis.text.y.right = element_text(colour = input$point_color2))
-      
+
     }
-    
-    p 
-          
+
+    p
+
   }) # end P5
-  
-  
+
+
   # Save Tab and Download Function
   callModule(PLOT_SAVE, "save",
              P = P5,
              Plot_Name = Plot_Name)
-  
-  
+
+
   # Multiplier for Secondary Y-axis
   Mult <- reactive({
-    
+
     y1max <- max(Df1()$Result, na.rm = TRUE)
     y2max <- max(Df2()$Result, na.rm = TRUE)
-    
-    y1max / y2max 
+
+    y1max / y2max
 
   })
-  
-  
+
+
   ### Texts For Plot
-  
+
   Text_Site <- reactive({Site() %>% paste(collapse = ", ")})
-  
+
   Text_Param1 <- reactive({Df1()$Parameter %>% factor() %>% levels() %>% paste()})
-  
+
   Text_Param2 <- reactive({Df2()$Parameter %>% factor() %>% levels() %>% paste()})
-  
+
   Text_Units1 <- reactive({Df1()$Units %>% factor() %>% levels() %>% paste(collapse = ", ")})
-  
+
   Text_Units2 <- reactive({Df2()$Units %>% factor() %>% levels() %>% paste(collapse = ", ")})
-  
+
   Text_Date_Start1 <- reactive({Df1()$Date %>% min(na.rm = TRUE) %>% paste()})
-  
+
   Text_Date_End1 <- reactive({Df1()$Date %>% max(na.rm = TRUE) %>% paste()})
-  
+
   Text_Date_Start2 <- reactive({c(Df1()$Date, Df2()$Date)  %>% min(na.rm = TRUE) %>% paste()})
-  
+
   Text_Date_End2 <- reactive({c(Df1()$Date, Df2()$Date) %>% max(na.rm = TRUE) %>% paste()})
-  
+
   Plot_Name <- reactive({
     if(input$param2 == "None"){
       paste0(Text_Param1(),' at Site(s) ', Text_Site(),
@@ -644,7 +644,7 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
              ' from ', Text_Date_Start2(),' to ', Text_Date_End2())
     }
   })
-  
+
   # legend for double y-axis plot
   output$plot2text <- renderText({
     paste(input$point_color1, "=", Text_Param1(), " , ", input$point_color2, "=", Text_Param2())
