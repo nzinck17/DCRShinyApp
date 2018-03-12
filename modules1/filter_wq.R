@@ -47,7 +47,8 @@ FILTER_WQ_UI <- function(id) {
                # Flag Selection
                wellPanel(
                  selectInput(ns("flag"),label = "Select flag(s) to exclude from the data:",
-                             choices = flag_choices, multiple = TRUE)
+                             choices = flag_choices <- df_flags$label[df_flags$Flag_ID != 114],
+                             multiple = TRUE)
                ), # end Well Panel
                # storm Sample Selection
                wellPanel(
@@ -159,8 +160,6 @@ FILTER_WQ <- function(input, output, session, dfs, col) {
 
   # Choices
   # flag_choices <- dfs[[1]]$FlagCode %>% factor() %>% levels()
-  flag_choices <- df_flags$label[df_flags$Flag_ID != 114]
-
   # Server
   # Flag <- callModule(SELECT_SELECT_ALL, "flag",
   #                    label = "Flags to exclude:",
