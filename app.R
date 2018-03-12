@@ -555,7 +555,7 @@ server <- function(input, output, session) {
 
   output$footer_ui <- renderUI({
 
-    update_date <- "Coming Soon"
+    update_date <- paste0(last_update)
 
     text_db <- paste("Data last updated:", update_date)
 
