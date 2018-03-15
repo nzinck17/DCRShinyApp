@@ -60,7 +60,7 @@ FILTER_WQ_UI <- function(id) {
                ), # end well panel
                # Advanced Filters
                wellPanel(
-                 fluidRow(h3("Advanced Filters")),
+                 fluidRow(h3("Advanced Filters", align = "center")),
                  fluidRow(
                    column(4,
                           # Date Selection
@@ -169,6 +169,10 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
 
   ns <- session$ns # see General Note 1
 
+  # Site Map
+  callModule(SITE_MAP, "site_map", df_site = df_site, Site_List = Site)
+
+
   ### Site Selection
 
   # Display sites w/o depths OR sites w/ Depths
@@ -183,42 +187,54 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
   })
 
   # Site Selection using Site Select Module
-  Site <- if(type == "wq"){
-    callModule(SITE_CHECKBOX, "site", Df = reactive({df}))
-  } else if(type == "wq_depth"){
-    callModule(STATION_LEVEL_CHECKBOX, "site", Df = reactive({df}))
-  } else if(type == "profile"){
+  Site <- reactive({
+    if(type == "wq"){
+      Sites <- callModule(SITE_CHECKBOX, "site", Df = reactive({df}))
+      Sites()
+    } else if(type == "wq_depth"){
+      Sites <- callModule(STATION_LEVEL_CHECKBOX, "site", Df = reactive({df}))()
+      Sites()
+    } else if(type == "profile"){
+      # It is useful to have Site choices all named Site, even for profile, due to "req(Site())" in Df1
+      Site_Depth()$Sites
+    }
+  })
+
+  # Profile Only - Site and Depth selection
+  Site_Depth <- if(type == "profile"){
+    # Returns a named list with 2 elements: vector of Locations and vector of lower and upper depth
     callModule(SITE_PROFILE, "site", Df = reactive({df}))
   }
-
-  # Site Map
-  callModule(SITE_MAP, "site_map", df_site = df_site, Site_List = Site)
 
 
   # Reactive Dataframe - first filter of the dataframe for Site
   Df1 <- reactive({
+    # A Site must be selected in order for Df1 (or anything that uses Df1()) to be executed
+    # Note how this does not require depth for the Profile Data.
+    # It is hard to include this becuase there is no depth for the other types of data
     req(Site())
 
     if(type == "wq" | type == "wq_depth"){
-    df %>%
-      filter(LocationLabel %in% Site(),
-             !is.na(Result)) # Is this needed? can remove this once certain no NAs.
-    } else if(type == "profile"){
+      # Filter WQ and WQ_depth data for Site
       df %>%
-        filter(LocationLabel %in% Site()$Site,
-               # Depthm >= Site()$Depth_Lower,
-               # Depthm >= Site()$Depth_Upper,
-               !is.na(Result)) # Is this needed? can remove this once certain no NAs.
+        filter(LocationLabel %in% Site())
+
+    } else if(type == "profile"){
+      # FIlter Profile Data for Site and Depths
+      df %>%
+        filter(LocationLabel %in% Site(),
+               Depthm >= Site_Depth()$Depths[1],
+               Depthm <= Site_Depth()$Depths[2])
     }
   })
 
 
   ### Parameter and Date Range
 
-  # Parameter Selection using ParameterSelect Module
+  # Parameter Selection using Param_Select Module
   Param <- callModule(PARAM_SELECT, "param", Df = Df1)
 
-  # Date Range Selection Using DateSelect Module
+  # Date Range Selection Using Date_Select Module
   Date_Range <- callModule(DATE_SELECT, "date", Df = Df1)
 
   # Reactive Dataframe - filter for param, value range, date, and remove rows with NA for Result
@@ -226,6 +242,7 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
     req(Param$Type(), Param$Range_Min(), Param$Range_Min(), Date_Range$Lower(), Date_Range$Upper()) # See General Note _
 
     Df1() %>%
+      # filter by parameter, parameter value range, and by date range
       filter(Parameter %in% Param$Type(),
              Result > Param$Range_Min(), Result < Param$Range_Max(),
              Date > Date_Range$Lower(), Date < Date_Range$Upper())
@@ -387,16 +404,19 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
 
   ### Texts - Tell the user to Select a Input type when none is chosen but neccessary
 
+  # Text - Select Month
   output$text_no_month <- renderText({
     req(is.null(Month()))
     "- Select Months"
   })
 
+  # Text - Select Month
   output$text_no_year <- renderText({
     req(is.null(Year()))
     "- Select Years"
   })
 
+  # Text - Select Storm Sample Types when none are selected
   output$text_no_storm <- renderText({
     req(input$storm == FALSE & input$nonstorm == FALSE)
     "- Please Select Storm Sample Types"

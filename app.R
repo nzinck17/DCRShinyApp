@@ -259,9 +259,15 @@ tabPanel("Reservoir",
                            ),
                            tabPanel("Metadata", METADATA_UI("mod_chem_quab_meta")),
                            "Profile",
-                           tabPanel("Heat Map", PROF_HEATMAP_UI("mod_prof_quab_heat", df_prof_wach)),
-                           tabPanel("Line Plot", PROF_LINE_UI("mod_prof_quab_line", df_prof_wach)),
-                           tabPanel("Table and Summary", PROF_TABLE_STAT_UI("mod_prof_quab_sum", df_prof_wach)),
+                           tabPanel("Select / Filter Data", FILTER_WQ_UI("mod_prof_quab_filter")),
+                           tabPanel("-- Plots",
+                                    tabsetPanel(
+                                      tabPanel("Heat Map", PROF_HEATMAP_UI("mod_prof_quab_heat")),
+                                      tabPanel("Line Plot", PROF_LINE_UI("mod_prof_quab_line", df_prof_quab)),
+                                      tabPanel("Distribution Charts", DISTRIBUTION_WQ_UI("mod_prof_quab_plot_dist"))
+                                    )
+                           ),
+                           tabPanel("Table and Summary", PROF_TABLE_STAT_UI("mod_prof_quab_sum", df_prof_quab)),
                            tabPanel("Metadata", METADATA_UI("mod_prof_quab_meta"))
               ) # end navlist panel
      ),
@@ -306,7 +312,7 @@ tabPanel("Reservoir",
                            tabPanel("Select / Filter Data", FILTER_WQ_UI("mod_prof_wach_filter")),
                            tabPanel("-- Plots",
                                     tabsetPanel(
-                                      tabPanel("Heat Map", PROF_HEATMAP_UI("mod_prof_wach_heat", df_prof_wach)),
+                                      tabPanel("Heat Map", PROF_HEATMAP_UI("mod_prof_wach_heat")),
                                       tabPanel("Line Plot", PROF_LINE_UI("mod_prof_wach_line", df_prof_wach)),
                                       tabPanel("Distribution Charts", DISTRIBUTION_WQ_UI("mod_prof_wach_plot_dist"))
                                     )
@@ -379,29 +385,6 @@ tabPanel("Report",
                                  tabPanel("Ware River", REPORT_CUSTOM_UI("mod_trib_ware_rep", df_trib_ware)),
                                  tabPanel("Wachusett", REPORT_CUSTOM_UI("mod_trib_wach_rep", df_trib_wach))
                                )
-                      ),
-                      tabPanel("Bacteria (Res)",
-                               fluidRow(column(10, h4("Reservoir Bacteria Custom Reports", align = "center")), column(2)),
-                               tabsetPanel(
-                                 tabPanel("Wachusett", REPORT_CUSTOM_UI("mod_bact_wach_rep", df_bact_wach))
-                               )
-                      ),
-                      tabPanel("Chemical (Res)",
-                               fluidRow(column(10, h4("Reservoir Chemical Custom Reports", align = "center")), column(2)),
-                               tabsetPanel(
-                                 tabPanel("Quabbin", REPORT_CUSTOM_UI("mod_chem_quab_rep", df_chem_quab)),
-                                 tabPanel("Wachusett", REPORT_CUSTOM_UI("mod_chem_wach_rep", df_chem_wach))
-                               )
-                      ),
-                      tabPanel("Profile (Res)",
-                               fluidRow(column(10, h4("Profile Custom Reports", align = "center")), column(2)),
-                               tabsetPanel(
-                                 tabPanel("Quabbin", REPORT_CUSTOM_UI("mod_prof_quab_rep", df_prof_quab)),
-                                 tabPanel("Wachusett", REPORT_CUSTOM_UI("mod_prof_wach_rep", df_prof_wach))
-                               )
-                      ),
-                      tabPanel("Phytoplankton",
-                               fluidRow(column(10, h4("Phytoplankton Custom Reports", align = "center")), column(2))
                       )
          ) # end navlist
 
@@ -501,8 +484,7 @@ server <- function(input, output, session) {
   ### Chemical
 
   # Filter
-  Df_Chem_Quab <- callModule(FILTER_WQ, "mod_chem_quab_filter", df = df_chem_quab, df_site = df_chem_quab_site,
-                             df_flags = df_flags, df_flag_sample_index = df_flag_sample_index, type = "wq_depth")
+  Df_Chem_Quab <- callModule(FILTER_WQ, "mod_chem_quab_filter", df = df_chem_quab, df_site = df_chem_quab_site, type = "wq_depth")
 
   # Plots
   callModule(PLOT_TIME_WQ, "mod_chem_quab_plot_time", Df = Df_Chem_Quab$Long) # Update to Depth specific plot
@@ -519,13 +501,14 @@ server <- function(input, output, session) {
 
   ### Profile
 
-  # Add a Filter Tab???????? - probably
+  # Filter
+  Df_Prof_Quab <- callModule(FILTER_WQ, "mod_prof_quab_filter", df = df_prof_quab, df_site = df_prof_quab_site, type = "profile")
 
-  # Heatmap
-  callModule(PROF_HEATMAP, "mod_prof_quab_heat", df = df_prof_quab)
-
-  # Line Plot
+  # Plots
+  callModule(PROF_HEATMAP, "mod_prof_quab_heat", Df = Df_Prof_Quab$Long)
   callModule(PROF_LINE, "mod_prof_quab_line", df = df_prof_quab)
+  callModule(DISTRIBUTION_WQ, "mod_prof_quab_plot_dist", Df = Df_Prof_Quab$Long)
+
   # Table and Stats
   callModule(PROF_TABLE_STAT, "mod_prof_quab_sum", df = df_prof_quab)
 
@@ -539,7 +522,8 @@ server <- function(input, output, session) {
   ### Bacteria
 
   # Filter
-  Df_Bact_Wach <- callModule(FILTER_WQ, "mod_bact_wach_filter", df = df_bact_wach, df_site = df_bact_wach_site, type = "wq")
+  Df_Bact_Wach <- callModule(FILTER_WQ, "mod_bact_wach_filter", df = df_bact_wach, df_site = df_bact_wach_site,
+                             df_flags = df_flags, df_flag_sample_index = df_flag_sample_index, type = "wq")
 
   # Plots
   callModule(PLOT_TIME_WQ, "mod_bact_wach_plot_time", Df = Df_Bact_Wach$Long)
@@ -581,9 +565,9 @@ server <- function(input, output, session) {
   Df_Prof_Wach <- callModule(FILTER_WQ, "mod_prof_wach_filter", df = df_prof_wach, df_site = df_prof_wach_site, type = "profile")
 
   # Plots
-  callModule(PROF_HEATMAP, "mod_prof_wach_heat", df = df_prof_wach)
+  callModule(PROF_HEATMAP, "mod_prof_wach_heat", Df = Df_Prof_Wach$Long)
   callModule(PROF_LINE, "mod_prof_wach_line", df = df_prof_wach)
-  callModule(DISTRIBUTION_WQ, "mod_prof_wach_plot_dist", Df = Df_Prof_Wach$Long) # Depth Specific?
+  callModule(DISTRIBUTION_WQ, "mod_prof_wach_plot_dist", Df = Df_Prof_Wach$Long)
 
   # Table and Stats
   callModule(PROF_TABLE_STAT, "mod_prof_wach_sum", df = df_prof_wach)
@@ -609,11 +593,6 @@ server <- function(input, output, session) {
   callModule(REPORT_CUSTOM, "mod_trib_quab_rep", df = df_trib_quab, df_site = df_trib_quab_site)
   callModule(REPORT_CUSTOM, "mod_trib_ware_rep", df = df_trib_ware, df_site = df_trib_ware_site)
   callModule(REPORT_CUSTOM, "mod_trib_wach_rep", df = df_trib_wach, df_site = df_trib_wach_site)
-  callModule(REPORT_CUSTOM, "mod_bact_wach_rep", df = df_bact_wach, df_site = df_bact_wach_site)
-  callModule(REPORT_CUSTOM, "mod_chem_quab_rep", df = df_chem_quab, df_site = df_chem_quab_site)
-  callModule(REPORT_CUSTOM, "mod_chem_wach_rep", df = df_chem_wach, df_site = df_chem_wach_site)
-  callModule(REPORT_CUSTOM, "mod_prof_quab_rep", df = df_prof_quab, df_site = df_prof_quab_site)
-  callModule(REPORT_CUSTOM, "mod_prof_wach_rep", df = df_prof_wach, df_site = df_prof_wach_site)
 
 #######################################################################
 # Footer

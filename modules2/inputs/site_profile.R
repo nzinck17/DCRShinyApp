@@ -22,13 +22,18 @@ SITE_PROFILE_UI <- function(id) {
       column(6,
              # Site Selection
              wellPanel(
-               CHECKBOX_SELECT_ALL_UI(ns("site"))
+               uiOutput(ns("site_primary_ui"))
              )
       ),
       column(6,
+             # Site Selection
              wellPanel(
                uiOutput(ns("level_ui"))
-             ) # end Well Panel
+             ),
+             wellPanel(
+               uiOutput(ns("site_nonprimary_category_ui")),
+               uiOutput(ns("site_nonprimary_ui"))
+             )
       )
     ) # end FluidRow
   ) # end taglist
@@ -48,19 +53,72 @@ SITE_PROFILE <- function(input, output, session, Df) {
 
   ns <- session$ns # see General Note 1
 
-  ### Site
+  ### Site - Primary
 
-  # Choice LIST
-  Site_Choices <- reactive({
-    Df()$LocationLabel %>% factor() %>% levels()
+  # List
+  Site_Primary_Choices <- reactive({
+    # Filter Site List for when primary is in the Location Category name
+    Df() %>% filter(grepl("Primary", LocationCategory)) %>%
+      .$LocationLabel %>% factor() %>% levels()
+  })
+
+  # UI
+  output$site_primary_ui <- renderUI({
+    ns <- session$ns # see General Note 1
+    CHECKBOX_SELECT_ALL_UI(ns("site_primary"))
   })
 
   # Server
-  Site_Selected <- callModule(CHECKBOX_SELECT_ALL, "site",
-                                 label = "Site:",
-                                 choices = Site_Choices,
-                                 colwidth = 3)
+  Site_Primary <- callModule(CHECKBOX_SELECT_ALL, "site_primary",
+                             label =  "Primary Active Sites:",
+                             choices = Site_Primary_Choices)
 
+
+
+  ### Site - Non Primary Categories
+
+  # List
+  Site_Nonprimary_Category_Choices <- reactive({
+    Df() %>% filter(LocationCategory != "Primary Active") %>%
+      .$LocationCategory %>% factor(exclude = FALSE) %>% levels()
+  })
+
+  # UI
+  output$site_nonprimary_category_ui <- renderUI({
+    ns <- session$ns # see General Note 1
+    CHECKBOX_SELECT_ALL_UI(ns("site_nonprimary_category"))
+  })
+
+  # Server
+  Site_Nonprimary_Category <- callModule(CHECKBOX_SELECT_ALL, "site_nonprimary_category",
+                                         label = "Show Other Categories:",
+                                         choices = Site_Nonprimary_Category_Choices)
+
+
+
+  ### Site - NonPrimary Sites
+
+  # List
+  Site_Nonprimary_Choices <- reactive({
+
+    Df() %>%
+      filter(LocationCategory %in% Site_Nonprimary_Category()) %>%
+      .$LocationLabel %>%
+      factor() %>%
+      levels()
+  })
+
+  # UI
+  output$site_nonprimary_ui <- renderUI({
+    ns <- session$ns # see General Note 1
+    CHECKBOX_SELECT_ALL_UI(ns("site_nonprimary"))
+  })
+
+
+  # Server
+  Site_Nonprimary <- callModule(CHECKBOX_SELECT_ALL, "site_nonprimary",
+                                label = "Sites:",
+                                choices = Site_Nonprimary_Choices)
 
 
   ### Location Depth
@@ -74,8 +132,7 @@ SITE_PROFILE <- function(input, output, session, Df) {
   })
 
 
-  return(reactive({list(Site = Site_Selected(),
-                        Depth_Lower = input$level[1],
-                        Depth_Upper = input$level[2])}))
+  return(reactive({list(Sites = c(Site_Primary(), Site_Nonprimary()),
+                        Depths = input$level)}))
 
 } # end Server Function
