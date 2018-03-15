@@ -471,7 +471,8 @@ server <- function(input, output, session) {
   ### Wachusett
 
   # Filter
-  Df_Trib_Wach <- callModule(FILTER_WQ, "mod_trib_wach_filter", df = df_trib_wach, df_site = df_trib_wach_site, type = "wq")
+  Df_Trib_Wach <- callModule(FILTER_WQ, "mod_trib_wach_filter", df = df_trib_wach, df_site = df_trib_wach_site,
+                             df_flags = df_flags, df_flag_sample_index = df_flag_sample_index, type = "wq")
 
   # Plots
   callModule(PLOT_TIME_WQ, "mod_trib_wach_plot_time", Df = Df_Trib_Wach$Long)

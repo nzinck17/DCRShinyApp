@@ -67,26 +67,32 @@ FILTER_WQ_UI <- function(id) {
                           wellPanel(
                             # Month
                             CHECKBOX_SELECT_ALL_UI(ns("month"))
-                          ), # end Well Panel
+                          ),
                           wellPanel(
                             # Year
                             SELECT_SELECT_ALL_UI(ns("year"))
-                          ) # end Well Panel
+                          )
                    ), # end Column
                    column(4,
-                          # # Flag Selection
-                          # wellPanel(
-                          #   SELECT_SELECT_ALL_UI(ns("flag"))
-                          # ), # end Well Panel
+                          # Flag Selection
+                          wellPanel(
+                            SELECT_SELECT_ALL_UI(ns("flag"))
+                          ),
                           # storm Sample Selection
-                          # wellPanel(
-                          #   CHECKBOX_SELECT_ALL_UI(ns("storm"))
-                          # ), # end Well Panel
+                          wellPanel(
+                            strong("Storm Samples:"), # Bold Text
+                            checkboxInput(ns("storm"),
+                                          label =  "Include Storm Samples",
+                                          value = TRUE),
+                            checkboxInput(ns("nonstorm"),
+                                          label =  "Include Non-Storm Samples",
+                                          value = TRUE)
+
+                          ), # end Well Panel
                           # Text - Number of Samples or "Select a site"
                           wellPanel(
                             h5(textOutput(ns("text_no_month"))),
                             h5(textOutput(ns("text_no_year"))),
-                            h5(textOutput(ns("text_no_flag"))),
                             h5(textOutput(ns("text_no_storm")))
                           ) # end Well Panel
                    ), # end column
@@ -154,8 +160,10 @@ FILTER_WQ_UI <- function(id) {
 # This module does not take any reactive expressions. Changes will have to be made to accmodate reactive expressions
 # dfs is a list of dataframes
 
-FILTER_WQ <- function(input, output, session, df, df_site, type = "wq") {
+FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_flag_sample_index = NULL, type = "wq")
+  {
 # Types include: "wq", "wq_depth", and "profile". More can be added
+# Office is either "Wachusett" or "Quabbin" to account for missing dataframes like df_flag and df_flag_sample_index
 ########################################################
 # Main Selection
 
@@ -287,31 +295,62 @@ FILTER_WQ <- function(input, output, session, df, df_site, type = "wq") {
                            colwidth = 3)
 
 
-  # ### Flag Selection
-  #
-  # # Choices
-  # flag_choices <- Df2$FlagCode %>% factor() %>% levels()
-  #
-  # # Server
-  # Flag <- callModule(SELECT_SELECT_ALL, "flag",
-  #                    label = "Flags:",
-  #                    choices = reactive({flag_choices}),
-  #                    selected = reactive({flag_choices}),
-  #                    colwidth = 3,
-  #                    hidden = TRUE)
+  ### Flag Selection
+
+  # Choices
+  flag_choices <- df_flags$label[df_flags$Flag_ID != 114]
+
+  # Server
+  Flag <- callModule(SELECT_SELECT_ALL, "flag",
+                     label = "Select flag(s) to EXCLUDE from the data:",
+                     choices = reactive({df_flags$label}),
+                     colwidth = 3)
 
 
-  ### Storm Selection
 
-  # # Choices
-  # storm_choices <- dfs[[1]]$StormSample %>% factor() %>% levels()
-  #
-  # # Server
-  # Storm <- callModule(CHECKBOX_SELECT_ALL, "storm",
-  #                     label = "Storm Sample:",
-  #                     choices = reactive({storm_choices}),
-  #                     selected = reactive({storm_choices}),
-  #                     hidden = TRUE)
+  # Subset the Sample Flag Index by the dfs in the active filter and by the flags selected to exclude
+  # This results in a vector of IDs to filter out
+  flagged_ids <- reactive({
+    df_flag_sample_index %>%
+      filter(FlagCode %in% as.numeric(substr(Flag(),1, 3))) %>%
+      .$SampleID
+  })
+
+  # # Convert the selected flag items to a list of numbers that match the flag code
+  # flagsSelected <- reactive({
+  #   req(input$flag())
+  #   as.numeric(substr(input$flag,1, 3))
+  # })
+  # # Subset the Sample Flag Index by the dfs in the active filter and by the flags selected to exclude
+  # # This results in a list of IDs to filter out
+  # flagged_ids <- reactive({
+  #   # req(input$flag)
+  #   if(length(flagsSelected()) > 0){
+  #     filter(df_flag_sample_index$SampleID,
+  #            df_flag_sample_index$Dataset %in% dfs & df_flag_sample_index$FlagCode %in% flagsSelected())
+  #   } else {
+  #     NA
+  #   }
+  # })
+
+
+
+  # Filter df_flag_sample_index so that only flag 114 for dfs are included
+  storm_ids <- reactive({
+    df_flag_sample_index %>%
+      filter(FlagCode == 114) %>%
+      .$SampleID
+  })
+
+
+  # Storm <- reactive({input$storm})
+  # nonStorm <- reactive({input$nonstorm})
+  # # Filter df_flag_sample_index so that only flag 114 for dfs are included
+  # storm_ids <- reactive({
+  #   filter(df_flag_sample_index$SampleID,
+  #          df_flag_sample_index$Dataset %in% dfs & df_flag_sample_index$FlagCode == 114)
+  # })
+
 
 
   ### Reactive List of (non-reactive) Dataframes - filter for selected site, param, value range, date, and remove rows with NA for Result
@@ -320,11 +359,26 @@ FILTER_WQ <- function(input, output, session, df, df_site, type = "wq") {
 
     req(Month(), Year()) #, Flag(), Storm() # See General Note _
 
-    Df2() %>% filter(as.character(month(Date, label = TRUE, abbr = FALSE)) %in% Month(),
-                   year(Date) %in% Year(),
-                   #FlagCode %in% Flag(),
-                   #StormSample %in% Storm(),
-                   !is.na(Result))
+    df_temp <- Df2() %>% filter(as.character(month(Date, label = TRUE, abbr = FALSE)) %in% Month(),
+                                year(Date) %in% Year(),
+                                !is.na(Result))
+
+    # filter out Selected Flags
+    if(isTruthy(Flag()) & isTruthy(df_flag_sample_index)){
+      df_temp <- df_temp %>% filter(!(ID %in% flagged_ids()))
+    }
+
+    # filter out Storm Samples
+    if(input$storm != TRUE){
+      df_temp <- df_temp %>% filter(!(ID %in% storm_ids()))
+    }
+
+    if(input$nonstorm != TRUE){
+      df_temp <- df_temp %>% filter((ID %in% storm_ids()))
+    }
+
+    df_temp
+
   })
 
 
@@ -340,15 +394,10 @@ FILTER_WQ <- function(input, output, session, df, df_site, type = "wq") {
     "- Select Years"
   })
 
-  # output$text_no_flag <- renderText({
-  #   req(is.null(Flag()))
-  #   "- Please Select Flag Types"
-  # })
-  #
-  # output$text_no_storm <- renderText({
-  #   req(is.null(Storm()))
-  #   "- Please Select Storm Sample Types"
-  # })
+  output$text_no_storm <- renderText({
+    req(input$storm == FALSE & input$nonstorm == FALSE)
+    "- Please Select Storm Sample Types"
+  })
 
 
   ### Return List of Reactive Dataframes
@@ -357,7 +406,7 @@ FILTER_WQ <- function(input, output, session, df, df_site, type = "wq") {
 
   # Reactive Dataframe - Wide Format (for Correlation ScatterPlot and Correlation Matrix)
   Df3_Wide <- reactive({
-    # require Dataframe to be more than zero observations - prvent from crashing
+    # require Dataframe to be more than zero observations - prevent from crashing
     req(Df3() %>% summarise(n()) %>% unlist() != 0)
     Df3() %>%
       select(-Units) %>%
