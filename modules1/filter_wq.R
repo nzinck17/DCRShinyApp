@@ -65,17 +65,18 @@ FILTER_WQ_UI <- function(id) {
                    column(4,
                           # Date Selection
                           wellPanel(
-                            # Month
+                            # Month Input - Using the custom Module SELECT_SELECT_ALL, see script of dev manual
                             CHECKBOX_SELECT_ALL_UI(ns("month"))
                           ),
                           wellPanel(
-                            # Year
+                            # Year Input - Using the custom Module SELECT_SELECT_ALL, see script of dev manual
                             SELECT_SELECT_ALL_UI(ns("year"))
                           )
                    ), # end Column
                    column(4,
                           # Flag Selection
                           wellPanel(
+                            # Flag Input - Using the custom Module SELECT_SELECT_ALL, see script of dev manual
                             SELECT_SELECT_ALL_UI(ns("flag"))
                           ),
                           # storm Sample Selection
@@ -160,10 +161,9 @@ FILTER_WQ_UI <- function(id) {
 # This module does not take any reactive expressions. Changes will have to be made to accmodate reactive expressions
 # dfs is a list of dataframes
 
-FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_flag_sample_index = NULL, type = "wq")
-  {
+FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_flag_sample_index = NULL, type = "wq"){
+
 # Types include: "wq", "wq_depth", and "profile". More can be added
-# Office is either "Wachusett" or "Quabbin" to account for missing dataframes like df_flag and df_flag_sample_index
 ########################################################
 # Main Selection
 
@@ -273,7 +273,7 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
 
   ### Month Selection
 
-  # server
+  # server - Using the custom Module CHECKBOX_SELECT_ALL, see script of dev manual
   Month <- callModule(CHECKBOX_SELECT_ALL, "month",
                             label = "Months:",
                             choices = reactive({month.name}),
@@ -287,7 +287,7 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
   # Choices
   year_choices <- c(rev(year(seq(as.Date("1980-01-01"), Sys.Date(), "years")))) # Change to first year of data
 
-  # Server
+  # server - Using the custom Module SELECT_SELECT_ALL, see script of dev manual
   Year <- callModule(SELECT_SELECT_ALL, "year",
                            label = "Years:",
                            choices = reactive({year_choices}),
@@ -300,7 +300,7 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
   # Choices
   flag_choices <- df_flags$label[df_flags$Flag_ID != 114]
 
-  # Server
+  # server - Using the custom Module SELECT_SELECT_ALL, see script of dev manual
   Flag <- callModule(SELECT_SELECT_ALL, "flag",
                      label = "Select flag(s) to EXCLUDE from the data:",
                      choices = reactive({df_flags$label}),
@@ -308,8 +308,7 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
 
 
 
-  # Subset the Sample Flag Index by the dfs in the active filter and by the flags selected to exclude
-  # This results in a vector of IDs to filter out
+  # Subset the Sample Flag Index by the flags selected to exclude - this results in a vector of IDs to filter out
   flagged_ids <- reactive({
     df_flag_sample_index %>%
       filter(FlagCode %in% as.numeric(substr(Flag(),1, 3))) %>%
@@ -334,8 +333,9 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
   # })
 
 
+  ### Storm Sample Selection
 
-  # Filter df_flag_sample_index so that only flag 114 for dfs are included
+  # Filter df_flag_sample_index so that only flag 114 (Storm Sample Flag) are included
   storm_ids <- reactive({
     df_flag_sample_index %>%
       filter(FlagCode == 114) %>%
@@ -357,8 +357,10 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
 
   Df3 <- reactive({
 
-    req(Month(), Year()) #, Flag(), Storm() # See General Note _
+    # if either month or year is empty (non selected), then do not run. This will result in no data, so will draw errors
+    req(Month(), Year()) # See General Note _
 
+    # filter by month and year
     df_temp <- Df2() %>% filter(as.character(month(Date, label = TRUE, abbr = FALSE)) %in% Month(),
                                 year(Date) %in% Year(),
                                 !is.na(Result))
@@ -368,12 +370,13 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
       df_temp <- df_temp %>% filter(!(ID %in% flagged_ids()))
     }
 
-    # filter out Storm Samples
-    if(input$storm != TRUE){
+    # filter out Storm Samples if unchecked
+    if(input$storm != TRUE & isTruthy(df_flag_sample_index)){
       df_temp <- df_temp %>% filter(!(ID %in% storm_ids()))
     }
 
-    if(input$nonstorm != TRUE){
+    # filter out Non Storm Samples if unchecked
+    if(input$nonstorm != TRUE & isTruthy(df_flag_sample_index)){
       df_temp <- df_temp %>% filter((ID %in% storm_ids()))
     }
 
@@ -382,7 +385,7 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
   })
 
 
-  ### Texts
+  ### Texts - Tell the user to Select a Input type when none is chosen but neccessary
 
   output$text_no_month <- renderText({
     req(is.null(Month()))
@@ -409,12 +412,15 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
     # require Dataframe to be more than zero observations - prevent from crashing
     req(Df3() %>% summarise(n()) %>% unlist() != 0)
     Df3() %>%
+      # Need to get rid of Units column to properly Spread the data due to discrepencies in Units
       select(-Units) %>%
+      # Should verify no duplicate records and then remove this dinstinct code line
       distinct(LocationLabel, Date, Parameter, .keep_all = TRUE) %>%
+      # Spread parameters to each have their own row (wide format)
       spread("Parameter", "Result")
   })
 
-  # Reactive Dataframe - Wide Format (for Correlation ScatterPlot and Correlation Matrix)
+  # Reactive Dataframe - Adding Columns for Year, Season, and Month for grouping purposesin some modules
   Df3_Stat <- reactive({
     Df3() %>%
       mutate(Year = factor(lubridate::year(Date)),

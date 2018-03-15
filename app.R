@@ -501,7 +501,8 @@ server <- function(input, output, session) {
   ### Chemical
 
   # Filter
-  Df_Chem_Quab <- callModule(FILTER_WQ, "mod_chem_quab_filter", df = df_chem_quab, df_site = df_chem_quab_site, type = "wq_depth")
+  Df_Chem_Quab <- callModule(FILTER_WQ, "mod_chem_quab_filter", df = df_chem_quab, df_site = df_chem_quab_site,
+                             df_flags = df_flags, df_flag_sample_index = df_flag_sample_index, type = "wq_depth")
 
   # Plots
   callModule(PLOT_TIME_WQ, "mod_chem_quab_plot_time", Df = Df_Chem_Quab$Long) # Update to Depth specific plot
