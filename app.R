@@ -79,7 +79,6 @@ source("modules1/report_custom.R")
 # Inputs
 source("modules2/inputs/site_checkbox.R")
 source("modules2/inputs/station_level_checkbox.R")
-source("modules2/inputs/site_profile.R")
 source("modules2/inputs/param_select.R")
 source("modules2/inputs/param_checkbox.R")
 source("modules2/inputs/date_select.R")

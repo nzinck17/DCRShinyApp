@@ -45,6 +45,7 @@ tagList(
 HOME <- function(input, output, session, df_site) {
 
   df_site$LocationType[df_site$LocationType == "Nutrient"] <- "Reservoir"
+  df_site$LocationType[df_site$LocationType == "Transect"] <- "Bacteria"
 
   # to fix duplicated Reservoir (Nutrient locations due to multiple depths)
   df_site$Site[!is.na(df_site$Station)] <- df_site$Station[!is.na(df_site$Station)]
@@ -56,8 +57,8 @@ HOME <- function(input, output, session, df_site) {
   map_levels <- c("Quabbin Tributary",
                   "Ware River Tributary",
                   "Wachusett Tributary",
-                  "Quabbin Transect",
-                  "Wachusett Transect",
+                  "Quabbin Bacteria",
+                  "Wachusett Bacteria",
                   "Quabbin Reservoir",
                   "Wachusett Reservoir")
 

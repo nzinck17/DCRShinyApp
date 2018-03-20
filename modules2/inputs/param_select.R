@@ -36,8 +36,9 @@ PARAM_SELECT_UI <- function(id) {
 # Thus do not use () in callModule argument for reactives
 # For non reactives wrap with "reactive" to make into a reactive expression.
 
-PARAM_SELECT <- function(input, output, session, Df, Site, multiple = TRUE) {
-
+PARAM_SELECT <- function(input, output, session, Df, multiple = TRUE) {
+  
+  ns <- session$ns # see General Note 1
 
   # Non Historical Parameters (when a Parameter has not been used in over 5 years). See General Note 6
 
@@ -50,13 +51,10 @@ PARAM_SELECT <- function(input, output, session, Df, Site, multiple = TRUE) {
   })
 
 
-
   # Parameter Choice List
 
   Param_Choices <- reactive({
-
-    #if(!is.null(Site())){
-
+    
     # Parameters which have data at any Site (in the mofule's Df) within 5 years.
     param_new_choices <- Df() %>%
       filter(Parameter %in% Parameters_Non_Historical()) %>%
@@ -74,26 +72,17 @@ PARAM_SELECT <- function(input, output, session, Df, Site, multiple = TRUE) {
     # Cmbine lists (recent parameters first and then old parameters)
     c(param_new_choices, param_old_choices)
 
-    #}
-
   })
-
-
 
 
 
   # Parameter Selection UI
-
-
   output$type_ui <- renderUI({
-    ns <- session$ns # see General Note 1
     selectInput(ns("type"), "Parameter:", choices=c(Param_Choices()), multiple = multiple)
   })
 
 
-
-  # To fill back in previously selected
-
+  # To fill back in previously selected - Memory
   observe({
 
     # save the Parameter Type input for when the Site selection changes. Isolate so does not cause reactivity
@@ -103,7 +92,6 @@ PARAM_SELECT <- function(input, output, session, Df, Site, multiple = TRUE) {
 
     # If Site list is changed but not empty then generate a Select Input with the...
     # parameters for that Site and autoselect previous selected parameter
-    #if(!is.null(Site())){
     if(Df() %>% summarise(n()) %>% unlist() != 0){
 
       updateSelectInput(session, inputId = "type", label = "Parameter:",
@@ -121,44 +109,34 @@ PARAM_SELECT <- function(input, output, session, Df, Site, multiple = TRUE) {
 
 
   # Units Texts for Selected Parameter
-
   Units <- reactive({
-
     Df() %>%
       filter(Parameter %in% input$type) %>%
       .$Units %>%
       factor() %>%
       levels()
-
   })
 
 
 
   # Parameter Value Range Bar UI
-
   output$range_ui <- renderUI({
-
-    ns <- session$ns # see General Note 1
-
-    #if(!is.null(Site())){
 
       result <- Df() %>%
         filter(Parameter %in% input$type) %>%
         .$Result
 
       param_min <- result %>% min(na.rm=TRUE)
-
       param_max <- result %>% max(na.rm=TRUE)
 
       sliderInput(ns("range"), paste("Range (", Units() , ")"),
                   min = param_min, max = param_max,
                   value = c(param_min, param_max))
-
-  #}
-
   })
 
-  # return List of reactive expressions
+  
+  
+  ### return List of reactive expressions
   return(list(Type = reactive({input$type}),
               Units = reactive({Units()}), # Units = Units
               Range_Min = reactive({input$range[1]}),

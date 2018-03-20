@@ -22,12 +22,12 @@ STATION_LEVEL_CHECKBOX_UI <- function(id) {
       column(6,
              # Site Selection
              wellPanel(
-               uiOutput(ns("station_ui"))
+               CHECKBOX_SELECT_ALL_UI(ns("station"))
              )
       ),
       column(6,
              wellPanel(
-               uiOutput(ns("level_ui"))
+               CHECKBOX_SELECT_ALL_UI(ns("level"))
              ) # end Well Panel
       )
     ) # end FluidRow
@@ -44,73 +44,32 @@ STATION_LEVEL_CHECKBOX_UI <- function(id) {
 # Thus do not use () in callModule argument for reactives
 # For non reactives wrap with "reactive" to make into a reactive expression.
 
-STATION_LEVEL_CHECKBOX <- function(input, output, session, Df, selectall = FALSE, colwidth = 3) {
+STATION_LEVEL_CHECKBOX <- function(input, output, session, df) {
 
   ### Station
 
-  # Choice LIST
-  Station_Choices <- reactive({
-    Df()$Station %>% factor() %>% levels()
-  })
-
-  Selected1 <- reactive({
-    if(selectall == FALSE){
-      NULL
-    }else{
-      Station_Choices()
-    }
-  })
-
-  # UI
-  output$station_ui <- renderUI({
-    ns <- session$ns # see General Note 1
-    CHECKBOX_SELECT_ALL_UI(ns("station"))
-  })
-
-  # Server
+  # Server for Checkbox Select All Module
   Station_Selected <- callModule(CHECKBOX_SELECT_ALL, "station",
                                  label = "Station:",
-                                 choices = Station_Choices,
-                                 selected = Selected1,
-                                 colwidth = colwidth)
+                                 Choices = reactive({unique(df$Station)}))
 
 
 
   ### Location Depth
 
-  # Choices
-  Level_Choices <- reactive({
-    Df()$LocationDepth %>% factor() %>% levels()
-  })
-
-  Selected2 <- reactive({
-    if(selectall == FALSE){
-      NULL
-    }else{
-      level_choices()
-    }
-  })
-
-  # UI
-  output$level_ui <- renderUI({
-    ns <- session$ns # see General Note 1
-    CHECKBOX_SELECT_ALL_UI(ns("level"))
-  })
-
-  # Server
+  # Server for Checkbox Select All Module
   Level_Selected <- callModule(CHECKBOX_SELECT_ALL, "level",
                                label = "Sampling Level:",
-                               choices = Level_Choices,
-                               selected = Selected2,
-                               colwidth = colwidth)
+                               Choices = reactive({unique(df$LocationDepth)}))
 
 
-  # Create Site (location Labels) Choices from selected Stations and Levels
+  
+  ### Create Site (location Labels) Choices from selected Stations and Levels
   Site_Selected <- reactive({
 
     req(Station_Selected(), Level_Selected())
 
-    Df() %>%
+    df %>%
       filter(Station %in% Station_Selected(),
              LocationDepth %in% Level_Selected()) %>%
       .$LocationLabel %>%
@@ -119,7 +78,8 @@ STATION_LEVEL_CHECKBOX <- function(input, output, session, Df, selectall = FALSE
 
   })
 
-  return(reactive({Site_Selected()}))
+  ### Return Site List
+  return(Site_Selected)
 
 } # end Server Function
 

@@ -21,16 +21,6 @@ FILTER_WQ_UI <- function(id) {
   ns <- NS(id) # see General Note 1
 
   tagList(
-    wellPanel(
-      fluidRow(
-        column(2,
-               downloadButton(ns("download_data"), "Download table as csv")
-        ),
-        column(10,
-               checkboxInput(ns("wide"), 'transform to "wide" data format (Caution should be taken)')
-        )
-      )
-    ),
     tabsetPanel(
       tabPanel("Select / Filter Data",
                wellPanel(
@@ -41,6 +31,7 @@ FILTER_WQ_UI <- function(id) {
                             h4(textOutput(ns("text_site_null")), align = "center"),
                             h4(textOutput(ns("text_param_null")), align = "center"),
                             h4(textOutput(ns("text_date_null")), align = "center"),
+                            h4(textOutput(ns("text_no_month"))),
                             h5(textOutput(ns("text_num_text")), align = "center"),
                             strong(textOutput(ns("text_num")), align = "center")
                           ), # end Well Panel
@@ -48,13 +39,24 @@ FILTER_WQ_UI <- function(id) {
                             SITE_MAP_UI(ns("site_map"))
                           ) # end Well Panel
                    ), # end Column
-                   column(6,
+                   column(5,
                           uiOutput(ns("site_ui"))
                    ), # end Column
-                   column(3,
+                   column(4,
+                          # Parameter INput - Using Module Parameter Select
                           PARAM_SELECT_UI(ns("param")),
                           br(),
-                          DATE_SELECT_UI(ns("date"))
+                          wellPanel(
+                            # Date Input - Using Module Date Select
+                            DATE_SELECT_UI(ns("date")),
+                            # Year Input - Using the custom Module SELECT_SELECT_ALL, see script of dev manual
+                            SELECT_SELECT_ALL_UI(ns("year"))
+                          ),
+                          br(),
+                          wellPanel(
+                            # Month Input - Using the custom Module SELECT_SELECT_ALL, see script of dev manual
+                            CHECKBOX_SELECT_ALL_UI(ns("month"))
+                          )
                    ) # end column
                  ) # end fluidrow
                ), # end well panel
@@ -62,17 +64,6 @@ FILTER_WQ_UI <- function(id) {
                wellPanel(
                  fluidRow(h3("Advanced Filters", align = "center")),
                  fluidRow(
-                   column(4,
-                          # Date Selection
-                          wellPanel(
-                            # Month Input - Using the custom Module SELECT_SELECT_ALL, see script of dev manual
-                            CHECKBOX_SELECT_ALL_UI(ns("month"))
-                          ),
-                          wellPanel(
-                            # Year Input - Using the custom Module SELECT_SELECT_ALL, see script of dev manual
-                            SELECT_SELECT_ALL_UI(ns("year"))
-                          )
-                   ), # end Column
                    column(4,
                           # Flag Selection
                           wellPanel(
@@ -90,10 +81,9 @@ FILTER_WQ_UI <- function(id) {
                                           value = TRUE)
 
                           ), # end Well Panel
+                          uiOutput(ns("depth_ui")),
                           # Text - Number of Samples or "Select a site"
                           wellPanel(
-                            h5(textOutput(ns("text_no_month"))),
-                            h5(textOutput(ns("text_no_year"))),
                             h5(textOutput(ns("text_no_storm")))
                           ) # end Well Panel
                    ), # end column
@@ -119,7 +109,9 @@ FILTER_WQ_UI <- function(id) {
                                                     "Flow - Stillwater"),
                                         selected = "Wind Speed"),
                             sliderInput(ns("met_value_1"), "Value Range:", min = 0, max = 12, value = c(0,12), step = 0.5)
-                          ), # end Well Panel
+                          ) # end Well Panel
+                   ),
+                   column(4,
                           # Meteoro/Hydro Filter 2
                           wellPanel(
                             strong("Meteoro/Hydro Filter 2"), # Bold Text
@@ -147,6 +139,7 @@ FILTER_WQ_UI <- function(id) {
                ) # end well panel
       ),
       tabPanel("View Data in Table",
+               fluidRow(br(), downloadButton(ns("download_data"), "Download table as csv"), align = "center"),
                dataTableOutput(ns("table"))
       )
     )
@@ -177,55 +170,28 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
 
   # Display sites w/o depths OR sites w/ Depths
   output$site_ui <- renderUI({
-    if(type == "wq"){
+    if(type == "wq" | type == "profile"){
       SITE_CHECKBOX_UI(ns("site"))
     } else if(type == "wq_depth"){
       STATION_LEVEL_CHECKBOX_UI(ns("site"))
-    } else if(type == "profile"){
-      SITE_PROFILE_UI(ns("site"))
     }
   })
 
   # Site Selection using Site Select Module
-  Site <- reactive({
-    if(type == "wq"){
-      Sites <- callModule(SITE_CHECKBOX, "site", Df = reactive({df}))
-      Sites()
-    } else if(type == "wq_depth"){
-      Sites <- callModule(STATION_LEVEL_CHECKBOX, "site", Df = reactive({df}))()
-      Sites()
-    } else if(type == "profile"){
-      # It is useful to have Site choices all named Site, even for profile, due to "req(Site())" in Df1
-      Site_Depth()$Sites
-    }
-  })
-
-  # Profile Only - Site and Depth selection
-  Site_Depth <- if(type == "profile"){
-    # Returns a named list with 2 elements: vector of Locations and vector of lower and upper depth
-    callModule(SITE_PROFILE, "site", Df = reactive({df}))
+  Site <- if(type == "wq" | type == "profile"){
+    callModule(SITE_CHECKBOX, "site", df = df)
+  } else if(type == "wq_depth"){
+    callModule(STATION_LEVEL_CHECKBOX, "site", df = df)
   }
 
 
   # Reactive Dataframe - first filter of the dataframe for Site
   Df1 <- reactive({
     # A Site must be selected in order for Df1 (or anything that uses Df1()) to be executed
-    # Note how this does not require depth for the Profile Data.
-    # It is hard to include this becuase there is no depth for the other types of data
     req(Site())
+    
+    df %>% filter(LocationLabel %in% Site())
 
-    if(type == "wq" | type == "wq_depth"){
-      # Filter WQ and WQ_depth data for Site
-      df %>%
-        filter(LocationLabel %in% Site())
-
-    } else if(type == "profile"){
-      # FIlter Profile Data for Site and Depths
-      df %>%
-        filter(LocationLabel %in% Site(),
-               Depthm >= Site_Depth()$Depths[1],
-               Depthm <= Site_Depth()$Depths[2])
-    }
   })
 
 
@@ -234,18 +200,34 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
   # Parameter Selection using Param_Select Module
   Param <- callModule(PARAM_SELECT, "param", Df = Df1)
 
-  # Date Range Selection Using Date_Select Module
-  Date_Range <- callModule(DATE_SELECT, "date", Df = Df1)
+  # Date Range and Year Using Date_Select Module
+  Date_Year <- callModule(DATE_SELECT, "date", Df = Df1)
+  
+  # Month Selection
+  Month <- callModule(CHECKBOX_SELECT_ALL, "month",
+                      label = "Months:",
+                      Choices = reactive({month.name}),
+                      Selected = reactive({month.name}),
+                      colwidth = 3,
+                      inline = TRUE)
+  
 
   # Reactive Dataframe - filter for param, value range, date, and remove rows with NA for Result
   Df2 <- reactive({
-    req(Param$Type(), Param$Range_Min(), Param$Range_Min(), Date_Range$Lower(), Date_Range$Upper()) # See General Note _
+    # Wait for all neccesary Inputs to Proceed
+    req(Param$Type(), Param$Range_Min(), Param$Range_Min(), Month(),
+        (isTruthy(Date_Year$Lower()) & isTruthy(Date_Year$Upper())) | isTruthy(Date_Year$Years())) # See General Note _
 
     Df1() %>%
       # filter by parameter, parameter value range, and by date range
       filter(Parameter %in% Param$Type(),
+             # Filter by Result Range
              Result > Param$Range_Min(), Result < Param$Range_Max(),
-             Date > Date_Range$Lower(), Date < Date_Range$Upper())
+             # Filter by either Date Range or By Years (Include both)
+             (Date > Date_Year$Lower() & Date < Date_Year$Upper()) | year(Date) %in% Date_Year$Years(),
+             # Filter by Month
+             as.character(month(Date, label = TRUE, abbr = FALSE)) %in% Month())
+             
   })
 
 
@@ -265,8 +247,14 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
 
   # Text - Select Param
   output$text_date_null <- renderText({
-    req(!isTruthy(Date_Range$Lower()) | !isTruthy(Date_Range$Upper())) # See General Note 1
-    "Select Lower Date Range"
+    req((!isTruthy(Date_Year$Lower()) | !isTruthy(Date_Year$Upper())) & !isTruthy(Date_Year$Years()) ) # See General Note 1
+    "Select Date Range or Years"
+  })
+  
+  # Text - Select Month
+  output$text_no_month <- renderText({
+    req(is.null(Month()))
+    "- Select Months"
   })
 
   # Text - Number of Samples - Words
@@ -274,42 +262,15 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
     req(Df3()) # See General Note 1
     "Number of Samples in Selected Data:"
   })
-
+  
   # Text - Number of Samples - Number
   output$text_num <- renderText({
     req(Df3()) # See General Note 1
     Df3() %>% summarise(n()) %>% paste()
   })
 
-
-
-
-
 ##################################################
 # Advanced Filter
-
-  ### Month Selection
-
-  # server - Using the custom Module CHECKBOX_SELECT_ALL, see script of dev manual
-  Month <- callModule(CHECKBOX_SELECT_ALL, "month",
-                            label = "Months:",
-                            choices = reactive({month.name}),
-                            selected = reactive({month.name}),
-                            colwidth = 3,
-                            inline = TRUE)
-
-
-  ### Year Selection
-
-  # Choices
-  year_choices <- c(rev(year(seq(as.Date("1980-01-01"), Sys.Date(), "years")))) # Change to first year of data
-
-  # server - Using the custom Module SELECT_SELECT_ALL, see script of dev manual
-  Year <- callModule(SELECT_SELECT_ALL, "year",
-                           label = "Years:",
-                           choices = reactive({year_choices}),
-                           selected = reactive({year_choices}),
-                           colwidth = 3)
 
 
   ### Flag Selection
@@ -320,10 +281,8 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
   # server - Using the custom Module SELECT_SELECT_ALL, see script of dev manual
   Flag <- callModule(SELECT_SELECT_ALL, "flag",
                      label = "Select flag(s) to EXCLUDE from the data:",
-                     choices = reactive({df_flags$label}),
+                     Choices = reactive({df_flags$label}),
                      colwidth = 3)
-
-
 
   # Subset the Sample Flag Index by the flags selected to exclude - this results in a vector of IDs to filter out
   flagged_ids <- reactive({
@@ -332,24 +291,7 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
       .$SampleID
   })
 
-  # # Convert the selected flag items to a list of numbers that match the flag code
-  # flagsSelected <- reactive({
-  #   req(input$flag())
-  #   as.numeric(substr(input$flag,1, 3))
-  # })
-  # # Subset the Sample Flag Index by the dfs in the active filter and by the flags selected to exclude
-  # # This results in a list of IDs to filter out
-  # flagged_ids <- reactive({
-  #   # req(input$flag)
-  #   if(length(flagsSelected()) > 0){
-  #     filter(df_flag_sample_index$SampleID,
-  #            df_flag_sample_index$Dataset %in% dfs & df_flag_sample_index$FlagCode %in% flagsSelected())
-  #   } else {
-  #     NA
-  #   }
-  # })
-
-
+  
   ### Storm Sample Selection
 
   # Filter df_flag_sample_index so that only flag 114 (Storm Sample Flag) are included
@@ -359,28 +301,28 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
       .$SampleID
   })
 
-
-  # Storm <- reactive({input$storm})
-  # nonStorm <- reactive({input$nonstorm})
-  # # Filter df_flag_sample_index so that only flag 114 for dfs are included
-  # storm_ids <- reactive({
-  #   filter(df_flag_sample_index$SampleID,
-  #          df_flag_sample_index$Dataset %in% dfs & df_flag_sample_index$FlagCode == 114)
-  # })
-
-
+  
+  # ### Depth Filter (Profile)
+  
+  # UI
+  output$depth_ui <- renderUI({
+    if(type == "profile"){
+      max_depth <- max(df$Depthm)
+      tagList(
+        wellPanel(
+          sliderInput(ns("depth"),"Depth Range", min = 0, max = max_depth, value = c(0, max_depth))
+        )
+      )
+    }
+  })
+  
 
   ### Reactive List of (non-reactive) Dataframes - filter for selected site, param, value range, date, and remove rows with NA for Result
 
   Df3 <- reactive({
 
-    # if either month or year is empty (non selected), then do not run. This will result in no data, so will draw errors
-    req(Month(), Year()) # See General Note _
-
-    # filter by month and year
-    df_temp <- Df2() %>% filter(as.character(month(Date, label = TRUE, abbr = FALSE)) %in% Month(),
-                                year(Date) %in% Year(),
-                                !is.na(Result))
+    # Assign a temporary dataframe and filter NAs
+    df_temp <- Df2() %>% filter(!is.na(Result))
 
     # filter out Selected Flags
     if(isTruthy(Flag()) & isTruthy(df_flag_sample_index)){
@@ -394,7 +336,14 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
 
     # filter out Non Storm Samples if unchecked
     if(input$nonstorm != TRUE & isTruthy(df_flag_sample_index)){
-      df_temp <- df_temp %>% filter((ID %in% storm_ids()))
+      df_temp <- df_temp %>% filter(ID %in% storm_ids())
+    }
+    
+    # filter out Depth for Profile Data
+    if(isTruthy(input$depth)){
+      df_temp <- df_temp %>% 
+        filter(Depthm >= input$depth[1],
+               Depthm <= input$depth[2])
     }
 
     df_temp
@@ -403,18 +352,7 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
 
 
   ### Texts - Tell the user to Select a Input type when none is chosen but neccessary
-
-  # Text - Select Month
-  output$text_no_month <- renderText({
-    req(is.null(Month()))
-    "- Select Months"
-  })
-
-  # Text - Select Month
-  output$text_no_year <- renderText({
-    req(is.null(Year()))
-    "- Select Years"
-  })
+  
 
   # Text - Select Storm Sample Types when none are selected
   output$text_no_storm <- renderText({
@@ -452,17 +390,8 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
 #####################################################
 # CSV output and Table
 
-  # Dataframe for output and Table
-  Df_Table <- reactive({
-    if(input$wide){
-      Df3_Wide()
-    } else{
-      Df3()
-    }
-  })
-
   # render Datatable
-  output$table <- renderDataTable(Df_Table(), selection = 'none')
+  output$table <- renderDataTable(Df3(), selection = 'none')
 
   # Downloadable csv of selected dataset
   output$download_data <- downloadHandler(
@@ -470,7 +399,7 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
       paste("DCRExportedWQData", ".csv", sep = "")
     },
     content = function(file) {
-      write_csv(Df_Table(), file)
+      write_csv(Df3(), file)
     }
   )
 
