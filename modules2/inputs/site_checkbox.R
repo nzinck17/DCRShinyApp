@@ -21,10 +21,10 @@ SITE_CHECKBOX_UI <- function(id) {
     fluidRow(
       # Site Selection
       wellPanel(
-        CHECKBOX_SELECT_ALL_UI(ns("site_primary")),
+        uiOutput(ns("site_primary_ui")),
         br(),
         uiOutput(ns("site_nonprimary_category_ui")),
-        CHECKBOX_SELECT_ALL_UI(ns("site_nonprimary"))
+        uiOutput(ns("site_nonprimary_ui"))
       ) # end Well Panel
     )
   ) # end taglist
@@ -47,18 +47,18 @@ SITE_CHECKBOX <- function(input, output, session, df) {
   ### Site - Primary
 
   # List
-  Site_Primary_Choices <- reactive({
-    df %>% 
-      filter(grepl("Primary", LocationCategory)) %>%
-      .$LocationLabel %>% unique()
+  site_primary_choices <- df %>% 
+    filter(grepl("Primary", LocationCategory)) %>%
+    .$LocationLabel %>% unique()
+
+  # Primary Site INput Widget
+  output$site_primary_ui <- renderUI({
+    checkboxGroupInput(ns("site_primary"),
+                       label =  "Primary Active Sites:",
+                       choices = site_primary_choices)
   })
 
-  # Server
-  Site_Primary <- callModule(CHECKBOX_SELECT_ALL, "site_primary",
-                             label =  "Primary Active Sites:",
-                             Choices = Site_Primary_Choices)
-
-
+  
 
   ### Site - Non Primary Categories
 
@@ -79,6 +79,7 @@ SITE_CHECKBOX <- function(input, output, session, df) {
   
 
 
+  
   ### Site - NonPrimary Sites
 
   # List
@@ -90,16 +91,19 @@ SITE_CHECKBOX <- function(input, output, session, df) {
       factor() %>%
       levels()
   })
-
-  # Server
-  Site_Nonprimary <- callModule(CHECKBOX_SELECT_ALL, "site_nonprimary",
-                                label = "Sites:",
-                                Choices = Site_Nonprimary_Choices)
-
+  
+  # NonPrimary Site INput Widget
+  output$site_nonprimary_ui <- renderUI({
+    if(isTruthy(input$site_nonprimary_category)){
+    checkboxGroupInput(ns("site_nonprimary"),
+                       label =  paste0("Other Sites (", paste(input$site_nonprimary_category, collapse = ", "), ") :"),
+                       choices = Site_Nonprimary_Choices())
+    }
+  })
 
 
   ### Return selected site list "site" from callModule
-  return(reactive({c(Site_Primary(), Site_Nonprimary())}))
+  return(reactive({c(input$site_primary, input$site_nonprimary)}))
 
 } # end Server Function
 
