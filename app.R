@@ -25,7 +25,7 @@
  }
 
 #### NOTE - Shiny must be installed and loaded in the LaunchAppGitHub.R script - any other packages requred should be listed below
-packages <- c("shiny", "rmarkdown", "knitr", "tidyverse", "lubridate", "plotly", "leaflet", "RColorBrewer",
+packages <- c("shiny","shinyjs", "rmarkdown", "knitr", "tidyverse", "lubridate", "plotly", "leaflet", "RColorBrewer",
               "DT", "akima", "odbc", "DBI", "scales", "stringr", "cowplot", "shinythemes","rgdal", "reshape2")
 ipak(packages)
 
@@ -622,27 +622,6 @@ server <- function(input, output, session) {
   callModule(REPORT_CUSTOM, "mod_trib_ware_rep", df = df_trib_ware, df_site = df_trib_ware_site)
   callModule(REPORT_CUSTOM, "mod_trib_wach_rep", df = df_trib_wach, df_site = df_trib_wach_site)
 
-#######################################################################
-# Footer
-
-  output$footer_ui <- renderUI({
-
-    update_date <- "Coming Soon"
-
-    text_db <- 
-
-    tagList(
-      hr(),
-      column(4,
-             strong(paste("Data last updated:", last_update)),
-             br()
-      ),
-      column(8,
-             tags$div(tags$em("Created by Nick Zinck, University of Massachusetts; and Dan Crocker, Massachusetts Department of Conservation and Recreation"), align = "right"),
-             br()
-      )
-    )
-  })
 
 #######################################################################
 # Images
