@@ -30,8 +30,15 @@ packages <- c("shiny", "rmarkdown", "knitr", "tidyverse", "lubridate", "plotly",
 ipak(packages)
 
 ## Fetch all of the cached rds data for the app:
+
+    user <-  Sys.getenv("USERNAME")
+    
     # Directory with saved .rds files
-    datadir <- config[1]
+    if (user == "bkeevan") {
+      datadir <- config[14]
+    } else {
+      datadir <- config[1]
+    }
 
     # Make a list of all the .rds files using full path
     rds_files <- list.files(datadir,full.names = TRUE ,pattern = "\\.rds$")
@@ -131,8 +138,12 @@ ui <- tagList(
   useShinyjs(),
 
   # Create the Top Navigation Bar as well as define aesthetics
-  navbarPage(NULL, position = "fixed-top", inverse = TRUE, collapsible = TRUE, theme = shinytheme("cerulean"),
-             windowTitle = "WAVE", footer = uiOutput("footer_ui"),
+  navbarPage(NULL, position = "fixed-top", inverse = TRUE, collapsible = TRUE, theme = shinytheme("cerulean"), windowTitle = "WAVE", 
+             footer = tagList(hr(),
+               column(4,strong(paste("Data last updated:", last_update)),br()),
+               column(8,tags$div(tags$em("Created by Nick Zinck, University of Massachusetts; and Dan Crocker, 
+                                         Massachusetts Department of Conservation and Recreation"), align = "right"), br())
+             ),
 
 ######################################################
 # Home Page
@@ -618,12 +629,12 @@ server <- function(input, output, session) {
 
     update_date <- "Coming Soon"
 
-    text_db <- paste("Data last updated:", update_date)
+    text_db <- 
 
     tagList(
       hr(),
       column(4,
-             strong(text_db),
+             strong(paste("Data last updated:", last_update)),
              br()
       ),
       column(8,
