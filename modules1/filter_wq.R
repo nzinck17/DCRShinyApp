@@ -23,7 +23,7 @@ FILTER_WQ_UI <- function(id) {
   tagList(
     br(),
     wellPanel(
-      em('Select and filter data to view, export and to use in the "Plots" and "Statistics" tabs. To view and use the full (unfiltered) data, check the box below.'),
+      em('Select and filter data to view, export, and use in the "Plots" and "Statistics" tabs. To view and use the full (unfiltered) data, check the box below.'),
       checkboxInput(ns("full_data"), "Use Full Dataset")
     ),
     tabsetPanel(
