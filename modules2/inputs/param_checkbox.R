@@ -20,7 +20,7 @@ PARAM_CHECKBOX_UI <- function(id) {
   tagList(
     # Parameter Selection
     wellPanel(
-      uiOutput(ns("type_ui")),
+      CHECKBOX_SELECT_ALL_UI(ns("type")),
       br(),
       uiOutput(ns("range_ui"))
     ) # end Well Panel
@@ -41,7 +41,7 @@ PARAM_CHECKBOX <- function(input, output, session, Df, selectall = FALSE, colwid
   
 
   # Non Historical (when a Parameter has been used  in the last 5 years). See General Note 6
-  parameters_non_historical <- reactive({
+  Parameters_Non_Historical <- reactive({
     Df() %>%
       filter(Date > Sys.Date()-years(5), Date < Sys.Date()) %>%
       .$Parameter %>%
@@ -52,9 +52,9 @@ PARAM_CHECKBOX <- function(input, output, session, Df, selectall = FALSE, colwid
   
   
   # Parameters which have data at any Site (in the mofule's df) within 5 years.
-  param_new_choices <- reactive({
+  Param_New_Choices <- reactive({
     Df() %>%
-      filter(Parameter %in% parameters_non_historical()) %>%
+      filter(Parameter %in% Parameters_Non_Historical()) %>%
       .$Parameter %>%
       factor() %>%
       levels()
@@ -63,9 +63,9 @@ PARAM_CHECKBOX <- function(input, output, session, Df, selectall = FALSE, colwid
   
   
   # Parameters which do NOT have data at any Site (in the mofule's Df) within 5 years.
-  param_old_choices <- reactive({
+  Param_Old_Choices <- reactive({
     Df() %>%
-      filter(!(Parameter %in% parameters_non_historical())) %>%
+      filter(!(Parameter %in% Parameters_Non_Historical())) %>%
       .$Parameter %>%
       factor() %>%
       levels()
@@ -73,32 +73,22 @@ PARAM_CHECKBOX <- function(input, output, session, Df, selectall = FALSE, colwid
 
   
   # Combine new and old
-  param_choices <- reactive({
-    c(param_new_choices(), param_old_choices())
+  Param_Choices <- reactive({
+    c(Param_New_Choices(), Param_Old_Choices())
   })
   
-  
-  # Select All to Start?
-  selected <- reactive({
-    if(selectall == FALSE){
-      NULL
-    }else{
-      param_choices()
-    }
-  })
+
   
   
-  # Parameter - Selection UI
-  output$type_ui <- renderUI({
-    ns <- session$ns # see General Note 1
-    CHECKBOX_SELECT_ALL_UI(ns("type"))
-  })
+  # # Parameter - Selection UI
+  # output$type_ui <- renderUI({
+  #   ns <- session$ns # see General Note 1
+  #   CHECKBOX_SELECT_ALL_UI(ns("type"))
+  # })
   
   Type <- callModule(CHECKBOX_SELECT_ALL, "type",
                      label = "Parameters:",
-                     choices = param_choices,
-                     selected = selected,
-                     colwidth = colwidth)
+                     Choices = Param_Choices)
   
   
   # Parameter Value Range Bar UI
@@ -122,7 +112,7 @@ PARAM_CHECKBOX <- function(input, output, session, Df, selectall = FALSE, colwid
   })
   
   # Retuens a list of reactive expressions.
-  return(list(Type = reactive({Type()}), # could also just write Type = Type
+  return(list(Type = Type, # could also just write Type = Type
               Range_Min = reactive({input$range[1]}), 
               Range_Max = reactive({input$range[2]})))
 

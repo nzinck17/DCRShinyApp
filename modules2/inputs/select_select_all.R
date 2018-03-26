@@ -31,44 +31,39 @@ SELECT_SELECT_ALL_UI <- function(id) {
 # Thus do not use () in callModule argument for reactives
 # For non reactives wrap with "reactive" to make into a reactive expression.
 
-SELECT_SELECT_ALL <- function(input, output, session, label, choices, selected = reactive(NULL), colwidth = 3, hidden = FALSE) { 
+SELECT_SELECT_ALL <- function(input, output, session, label, Choices, Selected = reactive(NULL), colwidth = 3, hidden = FALSE) { 
   
   ns <- session$ns # see General Note 1
   
   # Select Input Widget
   output$selectinput_ui <- renderUI({
     ns <- session$ns # see General Note 1
-    selectInput(inputId = ns("selectinput"), label = label, choices = choices(), selected = selected(), multiple = TRUE)
+    selectInput(inputId = ns("selectinput"), label = label, choices = Choices(), selected = Selected(), multiple = TRUE)
   })
   
-  ### Update the Checkbox basaed on Action Buttons
+  ### Update the Checkbox based on Action Buttons
   observeEvent(input$select_all, {
-    updateSelectInput(session = session, inputId = "selectinput", label = NULL, choices = choices(), selected = choices())
+    updateSelectInput(session = session, inputId = "selectinput", label = NULL, choices = Choices(), selected = Choices())
   })
   
   observeEvent(input$select_def, {
-    updateSelectInput(session = session, inputId = "selectinput", label = NULL, choices = choices(), selected = selected())
+    updateSelectInput(session = session, inputId = "selectinput", label = NULL, choices = Choices(), selected = Selected())
   })
   
   observeEvent(input$unselect_all, {
-    updateSelectInput(session = session, inputId = "selectinput", label = NULL, choices = choices())
+    updateSelectInput(session = session, inputId = "selectinput", label = NULL, choices = Choices())
   })
   
   
   # Create Action Buttons to Select All/ Unselect All/ Select Default
   output$actionbuttons <- renderUI({
     # If selected is not NULL or ALL
-    if(is.null(selected()) | length(choices()) == length(selected())) {
+    if(is.null(Selected()) | length(Choices()) == length(Selected())) {
       # Size Buttons according to column width (input)
       if(colwidth >= 3){
         tagList(
           fluidRow(actionButton(inputId = ns("select_all"), label = "Select All", width = "48%"), 
                    actionButton(inputId = ns("unselect_all"), label = "Unselect All", width = "48%"))
-        )
-      }else if(colwidth == 2){
-        tagList(
-          fluidRow(actionButton(inputId = ns("select_all"), label = "Select All", width = "98%")), 
-          fluidRow(actionButton(inputId = ns("unselect_all"), label = "Unselect All", width = "98%"))
         )
       } else {
         tagList(

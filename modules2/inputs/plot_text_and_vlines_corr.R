@@ -29,7 +29,7 @@ PLOT_TEXT_AND_VLINES_TIME_UI <- function(id) {
                         strong("Custom Text 1"),
                         checkboxInput(ns("text1"), "Show Text"),
                         textInput(ns("text1_text"), "Text"),
-                        dateInput(ns("text1_x"), "X Location", value = Sys.Date()),
+                        numericInput(ns("text1_x"), "X Locatoin", value = 0),
                         numericInput(ns("text1_y"), "Y Locatoin", value = 0)
                       )
                ),
@@ -38,7 +38,7 @@ PLOT_TEXT_AND_VLINES_TIME_UI <- function(id) {
                         strong("Custom Text 2"),
                         checkboxInput(ns("text2"), "Show Text"),
                         textInput(ns("text2_text"), "Text"),
-                        dateInput(ns("text2_x"), "X Location", value = Sys.Date()),
+                        numericInput(ns("text2_x"), "X Locatoin", value = 0),
                         numericInput(ns("text2_y"), "Y Locatoin", value = 0)
                       )
                ),
@@ -47,7 +47,7 @@ PLOT_TEXT_AND_VLINES_TIME_UI <- function(id) {
                         strong("Custom Text 3"),
                         checkboxInput(ns("text3"), "Show Text"),
                         textInput(ns("text3_text"), "Text"),
-                        dateInput(ns("text3_x"), "X Location", value = Sys.Date()),
+                        numericInput(ns("text3_x"), "X Locatoin", value = 0),
                         numericInput(ns("text3_y"), "Y Locatoin", value = 0)
                       )
                ),
@@ -56,7 +56,7 @@ PLOT_TEXT_AND_VLINES_TIME_UI <- function(id) {
                         strong("Custom Text 4"),
                         checkboxInput(ns("text4"), "Show Text"),
                         textInput(ns("text4_text"), "Text"),
-                        dateInput(ns("text4_x"), "X Location", value = Sys.Date()),
+                        numericInput(ns("text4_x"), "X Locatoin", value = 0),
                         numericInput(ns("text4_y"), "Y Locatoin", value = 0)
                       )
                )
@@ -71,7 +71,7 @@ PLOT_TEXT_AND_VLINES_TIME_UI <- function(id) {
                       wellPanel(
                         strong("Vertical Line 1"),
                         checkboxInput(ns("vline1"), "Show Line"),
-                        dateInput(ns("vline1_int"), "X intercept", value = Sys.Date()),
+                        numericInput(ns("vline1_int"), "X Locatoin", value = 0),
                         radioButtons(ns("vline1_type"), "Line Type",
                                      choices = c("solid", "dashed", "dotted"),
                                      inline = TRUE),
@@ -85,7 +85,7 @@ PLOT_TEXT_AND_VLINES_TIME_UI <- function(id) {
                       wellPanel(
                         strong("Vertical Line 2"),
                         checkboxInput(ns("vline2"), "Show Line"),
-                        dateInput(ns("vline2_int"), "X intercept", value = Sys.Date()),
+                        numericInput(ns("vline2_int"), "X Locatoin", value = 0),
                         radioButtons(ns("vline2_type"), "Line Type",
                                      choices = c("solid", "dashed", "dotted"),
                                      inline = TRUE),
@@ -126,7 +126,7 @@ PLOT_TEXT_AND_VLINES_TIME <- function(input, output, session, P) {
     if(input$text1 == TRUE){
       p <- p + annotate(geom="text",
                         label = input$text1_text,
-                        x = as.POSIXct(input$text1_x),
+                        x = input$text1_x,
                         y = input$text1_y)
     }
 
@@ -134,7 +134,7 @@ PLOT_TEXT_AND_VLINES_TIME <- function(input, output, session, P) {
     if(input$text2 == TRUE){
       p <- p + annotate(geom="text",
                         label = input$text2_text,
-                        x = as.POSIXct(input$text2_x),
+                        x = input$text2_x,
                         y = input$text2_y)
     }
 
@@ -142,7 +142,7 @@ PLOT_TEXT_AND_VLINES_TIME <- function(input, output, session, P) {
     if(input$text3 == TRUE){
       p <- p + annotate(geom="text",
                         label = input$text3_text,
-                        x = as.POSIXct(input$text3_x),
+                        x = input$text3_x,
                         y = input$text3_y)
     }
 
@@ -150,7 +150,7 @@ PLOT_TEXT_AND_VLINES_TIME <- function(input, output, session, P) {
     if(input$text4 == TRUE){
       p <- p + annotate(geom="text",
                         label = input$text4_text,
-                        x = as.POSIXct(input$text4_x),
+                        x = input$text4_x,
                         y = input$text4_y)
     }
     
@@ -158,7 +158,7 @@ PLOT_TEXT_AND_VLINES_TIME <- function(input, output, session, P) {
     
     # Vertical Line 1
     if(input$vline1 == TRUE){
-      p <- p + geom_vline(xintercept = as.POSIXct(input$vline1_int),
+      p <- p + geom_vline(xintercept = input$vline1_int,
                           linetype = input$vline1_type,
                           size = input$vline1_size,
                           alpha = input$vline1_alpha)
@@ -166,7 +166,7 @@ PLOT_TEXT_AND_VLINES_TIME <- function(input, output, session, P) {
     
     # Vertical Line 2
     if(input$vline2 == TRUE){
-      p <- p + geom_vline(xintercept = as.POSIXct(input$vline2_int),
+      p <- p + geom_vline(xintercept = input$vline2_int,
                           linetype = input$vline2_type,
                           size = input$vline2_size,
                           alpha = input$vline2_alpha)

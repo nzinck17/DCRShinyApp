@@ -32,26 +32,26 @@ CHECKBOX_SELECT_ALL_UI <- function(id) {
 # Thus do not use () in callModule argument for reactives
 # For non reactives wrap with "reactive" to make into a reactive expression.
 
-CHECKBOX_SELECT_ALL <- function(input, output, session, label, choices, selected = reactive(NULL), 
+CHECKBOX_SELECT_ALL <- function(input, output, session, label, Choices, Selected = reactive(NULL), 
                               colwidth = 3, hidden = FALSE, inline = FALSE) { 
   
   output$checkbox_ui <- renderUI({
     ns <- session$ns # see General Note 1
-    checkboxGroupInput(inputId = ns("checkbox"), label = label, choices = choices(), selected = selected(), inline = inline)
+    checkboxGroupInput(inputId = ns("checkbox"), label = label, choices = Choices(), selected = Selected(), inline = inline)
   })
   
   
   ### Update the Checkbox basaed on Action Buttons
   observeEvent(input$select_all, {
-    updateCheckboxGroupInput(session = session, inputId = "checkbox", label = NULL, choices = choices(), selected = choices(), inline = inline)
+    updateCheckboxGroupInput(session = session, inputId = "checkbox", label = NULL, choices = Choices(), selected = Choices(), inline = inline)
   })
   
   observeEvent(input$select_def, {
-    updateCheckboxGroupInput(session = session, inputId = "checkbox", label = NULL, choices = choices(), selected = selected(), inline = inline)
+    updateCheckboxGroupInput(session = session, inputId = "checkbox", label = NULL, choices = Choices(), selected = Selected(), inline = inline)
   })
   
   observeEvent(input$unselect_all, {
-    updateCheckboxGroupInput(session = session, inputId = "checkbox", label = NULL, choices = choices(), inline = inline)
+    updateCheckboxGroupInput(session = session, inputId = "checkbox", label = NULL, choices = Choices(), inline = inline)
   })
   
   
@@ -59,7 +59,7 @@ CHECKBOX_SELECT_ALL <- function(input, output, session, label, choices, selected
   output$actionbuttons <- renderUI({
     ns <- session$ns # see General Note 1
     # If selected is not NULL or ALL
-    if(is.null(selected()) | length(choices()) == length(selected())) { 
+    if(is.null(Selected()) | length(Choices()) == length(Selected())) { 
       # Size Buttons according to column width (input)
       if(colwidth >= 3){
         tagList(
