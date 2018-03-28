@@ -17,9 +17,9 @@ DATE_SELECT_UI <- function(id) {
 
   ns <- NS(id) # see General Note 1
 
-  tagList(
+  tagList(h4("DATE FILTER:", align = "left"),
     uiOutput(ns("date_ui")),
-    h5("OR", align = "center"),
+    h5("AND/OR", align = "center"),
     uiOutput(ns("year_ui"))
   ) # end taglist
 
@@ -35,7 +35,7 @@ DATE_SELECT_UI <- function(id) {
 # For non reactives wrap with "reactive" to make into a reactive expression.
 
 DATE_SELECT <- function(input, output, session, Df, hidden = FALSE) {
-  
+
   ns <- session$ns # see General Note 1
 
   # Min and Max Dates for Sites Selected
@@ -83,34 +83,34 @@ DATE_SELECT <- function(input, output, session, Df, hidden = FALSE) {
                       max = save_selected_upper)
     }
   })
-  
-  
+
+
   ### Year Selection
-  
+
   # Choices
   Year_Choices <- reactive({c(rev(year(seq(Date_Min(), Date_Max(), "years"))))}) # Change to first year of data
-  
+
   # Parameter Selection UI
   output$year_ui <- renderUI({
     selectInput(ns("year"), "Year(s):", choices=Year_Choices(), multiple = TRUE)
   })
-  
+
   # To fill back in previously selected - Memory
   observe({
-    
+
     # save the Parameter Type input for when the Site selection changes. Isolate so does not cause reactivity
     isolate({
       save_selected <- input$year
     })
-    
+
     # If Site list is changed but not empty then generate a Select Input with the...
     # parameters for that Site and autoselect previous selected parameter
     if(Df() %>% summarise(n()) %>% unlist() != 0){
-      
+
       updateSelectInput(session, inputId = "year", label = "Year(s):",
                         choices = Year_Choices(),
                         selected = save_selected)
-      
+
     # If Site list is empty than make a parameter list of just the previously listed item to save it.
     } else {
       updateSelectInput(session, inputId = "year", label = "Year(s):",

@@ -34,7 +34,7 @@ FILTER_WQ_UI <- function(id) {
                      fluidRow(h3("Main Selections", align = "center")),
                      fluidRow(
                        column(3,
-                              div(actionButton(ns("refresh"), "Reset Selections / Filters"), align = "center"), 
+                              div(actionButton(ns("refresh"), "Reset Selections / Filters"), align = "center"),
                               br(),
                               wellPanel(
                                 h3(textOutput(ns("text_full_data")), align = "center"),
@@ -54,7 +54,7 @@ FILTER_WQ_UI <- function(id) {
                               uiOutput(ns("site_ui"))
                        ), # end Column
                        column(4,
-                              # Parameter INput - Using Module Parameter Select
+                              # Parameter Input - Using Module Parameter Select
                               PARAM_SELECT_UI(ns("param")),
                               br(),
                               wellPanel(
@@ -90,7 +90,7 @@ FILTER_WQ_UI <- function(id) {
                                 checkboxInput(ns("nonstorm"),
                                               label =  "Include Non-Storm Samples",
                                               value = TRUE)
-                                
+
                               ), # end Well Panel
                               uiOutput(ns("depth_ui"))
                        ), # end column
@@ -195,7 +195,7 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
   Df1 <- reactive({
     # A Site must be selected in order for Df1 (or anything that uses Df1()) to be executed
     req(Site())
-    
+
     df %>% filter(LocationLabel %in% Site())
 
   })
@@ -208,7 +208,7 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
 
   # Date Range and Year Using Date_Select Module
   Date_Year <- callModule(DATE_SELECT, "date", Df = Df1)
-  
+
   # Month Selection
   Month <- callModule(CHECKBOX_SELECT_ALL, "month",
                       label = "Months:",
@@ -216,12 +216,12 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
                       Selected = reactive({month.name}),
                       colwidth = 3,
                       inline = TRUE)
-  
+
 
   # Reactive Dataframe - filter for param, value range, date, and remove rows with NA for Result
   Df2 <- reactive({
     # Wait for all neccesary Inputs to Proceed
-    req(Param$Type(), Param$Range_Min(), Param$Range_Min(), Month(),
+    req(Param$Type(), Param$Range_Min(), Param$Range_Max(), Month(),
         (isTruthy(Date_Year$Lower()) & isTruthy(Date_Year$Upper())) | isTruthy(Date_Year$Years())) # See General Note _
 
     Df1() %>%
@@ -233,24 +233,22 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
              (Date > Date_Year$Lower() & Date < Date_Year$Upper()) | year(Date) %in% Date_Year$Years(),
              # Filter by Month
              as.character(month(Date, label = TRUE, abbr = FALSE)) %in% Month())
-             
+
   })
 
 
 ##################################################
 # Advanced Filter
 
-
   ### Flag Selection
-
-  # Choices
-  flag_choices <- df_flags$label[df_flags$Flag_ID != 114]
 
   # server - Using the custom Module SELECT_SELECT_ALL, see script of dev manual
   Flag <- callModule(SELECT_SELECT_ALL, "flag",
                      label = "Select flag(s) to EXCLUDE from the data:",
-                     Choices = reactive({df_flags$label}),
+                     Choices = reactive({df_flags$label[match(sort(unique(df_flag_sample_index$FlagCode)),
+                                                              df_flags$Flag_ID) & df_flags$Flag_ID != 114]}),
                      colwidth = 3)
+
 
   # Subset the Sample Flag Index by the flags selected to exclude - this results in a vector of IDs to filter out
   flagged_ids <- reactive({
@@ -259,7 +257,6 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
       .$SampleID
   })
 
-  
   ### Storm Sample Selection
 
   # Filter df_flag_sample_index so that only flag 114 (Storm Sample Flag) are included
@@ -269,9 +266,8 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
       .$SampleID
   })
 
-  
   # ### Depth Filter (Profile)
-  
+
   # UI
   output$depth_ui <- renderUI({
     if(type == "profile"){
@@ -283,7 +279,7 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
       )
     }
   })
-  
+
 
   ### Reactive List of (non-reactive) Dataframes - filter for selected site, param, value range, date, and remove rows with NA for Result
 
@@ -298,18 +294,18 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
     }
 
     # filter out Storm Samples if unchecked
-    if(input$storm != TRUE & isTruthy(df_flag_sample_index)){
+    if(input$storm != TRUE & isTruthy(df_flag_sample_index)){ # Box is unchecked apply filter to remove storm samples
       df_temp <- df_temp %>% filter(!(ID %in% storm_ids()))
     }
 
     # filter out Non Storm Samples if unchecked
-    if(input$nonstorm != TRUE & isTruthy(df_flag_sample_index)){
+    if(input$nonstorm != TRUE & isTruthy(df_flag_sample_index)){ # Box is unchecked apply filter to remove non-storm samples
       df_temp <- df_temp %>% filter(ID %in% storm_ids())
     }
-    
+
     # filter out Depth for Profile Data
     if(isTruthy(input$depth)){
-      df_temp <- df_temp %>% 
+      df_temp <- df_temp %>%
         filter(Depthm >= input$depth[1],
                Depthm <= input$depth[2])
     }
@@ -321,8 +317,8 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
 
 ########################################################
 # Create Final Dataframes for use Table, Export, Plots, and Statistics
-  
-  # If Full dataframe is used or if selection/filters are used 
+
+  # If Full dataframe is used or if selection/filters are used
   # Reactive Dataframe - Long Format (Regular format)
   Df4 <- reactive({
     if(input$full_data){
@@ -353,7 +349,7 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
              Season = getSeason(Date),
              Month = month.abb[lubridate::month(Date)])
   })
-  
+
 
 #####################################################
 # CSV output and Table
@@ -370,58 +366,58 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
       write_csv(Df4(), file)
     }
   )
-  
+
 ######################################################
 # Texts
-  
+
   # Text - Number of Samples - Words
   output$text_num_text <- renderText({
     req(Df4()) # See General Note 1
     "Number of Samples in Selected Data:"
   })
-  
+
   # Text - Number of Samples - Number
   output$text_num <- renderText({
     req(Df4()) # See General Note 1
     Df4() %>% summarise(n()) %>% paste()
   })
-  
+
   # Text - Select Month
   output$text_full_data <- renderText({
     req(input$full_data)
     "Full Data Selected"
   })
-  
+
   # Text - Select Site
   output$text_site_null <- renderText({
     req(!isTruthy(Site()), !(input$full_data))
     "Select Site(s)"
   })
-  
+
   # Text - Select Param
   output$text_param_null <- renderText({
     req(!isTruthy(Param$Type()), !(input$full_data))
     "Select Parameter"
   })
-  
+
   # Text - Select Param
   output$text_date_null <- renderText({
     req(!isTruthy(Date_Year$Lower()) | !isTruthy(Date_Year$Upper()), !isTruthy(Date_Year$Years()), !(input$full_data))
     "Select Date Range or Years"
   })
-  
+
   # Text - Select Month
   output$text_no_month <- renderText({
     req(!isTruthy(Month()), !(input$full_data))
     "Select Months"
   })
-  
+
   # Text - Select Storm Sample Types when none are selected
   output$text_no_storm <- renderText({
     req(!(input$storm), !(input$nonstorm), !(input$full_data))
     "- Please Select Storm Sample Types"
   })
-  
+
 #####################################################
 # Other
 
@@ -434,11 +430,11 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
       Site()
     }
   })
-  
+
   # Site Map Generation from Site_Map Module
   callModule(SITE_MAP, "site_map", df_site = df_site, Site_List = Site_List)
-  
-  
+
+
   ### Refresh Button
   observeEvent(input$refresh, {
     shinyjs::reset("form")

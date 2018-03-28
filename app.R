@@ -31,14 +31,12 @@ ipak(packages)
 
 user <-  Sys.getenv("USERNAME")
 
-
 ## Fetch all of the cached rds data for the app:
 
-    user <-  Sys.getenv("USERNAME")
-    
     # Directory with saved .rds files
     if (user == "bkeevan") {
       datadir <- config[14]
+      df_users <- readRDS(paste0(config[1],"/df_users.rds"))
     } else {
       datadir <- config[1]
     }
@@ -50,17 +48,24 @@ user <-  Sys.getenv("USERNAME")
     data <- lapply(rds_files, readRDS)
 
     # Make a list of the df names by eliminating extension from files
-    df_names <- gsub(".rds", "", list.files(datadir))
+    df_names <- gsub(".rds", "", list.files(datadir, pattern = "\\.rds$"))
 
     # name each df in the data object appropriately
     names(data) <- df_names
     # Extract each element of the data object into the global environment
     list2env(data ,.GlobalEnv)
 
+# Get user information
+username <- paste(df_users$FirstName[df_users$EmailUserName == user],df_users$LastName[df_users$EmailUserName == user],sep = " ")
+useremail <- df_users$EmailAcct[df_users$EmailUserName == user]
+userlocation <- df_users$Location[df_users$EmailUserName == user]
+
 #source("sources/Settings.R")
-
-    tab_selected = "Wachusett"
-
+if(userlocation == "Quabbin"){
+  tab_selected = "Quabbin"
+} else {
+  tab_selected = "Wachusett"
+}
 ### Format Changes - ! to be moved to Update_Wave !
 
   df_chem_quab <- df_chem_quab %>% rename(LocationDepth = Sampling_Level)
@@ -141,10 +146,10 @@ ui <- tagList(
   useShinyjs(),
 
   # Create the Top Navigation Bar as well as define aesthetics
-  navbarPage(NULL, position = "fixed-top", inverse = TRUE, collapsible = TRUE, theme = shinytheme("cerulean"), windowTitle = "WAVE", 
+  navbarPage(NULL, position = "fixed-top", inverse = TRUE, collapsible = TRUE, theme = shinytheme("cerulean"), windowTitle = "WAVE",
              footer = tagList(hr(),
                column(4,strong(paste("Data last updated:", last_update)),br()),
-               column(8,tags$div(tags$em("Created by Nick Zinck, University of Massachusetts; and Dan Crocker, 
+               column(8,tags$div(tags$em("Created by Nick Zinck, University of Massachusetts; and Dan Crocker,
                                          Massachusetts Department of Conservation and Recreation"), align = "right"), br())
              ),
 
@@ -179,7 +184,7 @@ tabPanel("Tributary",
              navlistPanel(widths = c(2, 10),
                           tabPanel("Select / Filter Data", icon=icon("filter"), FILTER_WQ_UI("mod_trib_quab_filter")),
                           tabPanel("--- Plots", icon = icon("line-chart"),
-                                   br(), wellPanel(em('Plots use data from the "Select / Filter Data" tab. 
+                                   br(), wellPanel(em('Plots use data from the "Select / Filter Data" tab.
                                                       Each plot may have additional selections, filters, and options.')),
                                    tabsetPanel(
                                      tabPanel("Time-Series Scatter", PLOT_TIME_WQ_UI("mod_trib_quab_plot_time")),
@@ -486,7 +491,9 @@ server <- function(input, output, session) {
 
   # Filter
   Df_Trib_Wach <- callModule(FILTER_WQ, "mod_trib_wach_filter", df = df_trib_wach, df_site = df_trib_wach_site,
-                             df_flags = df_flags, df_flag_sample_index = df_flag_sample_index, type = "wq")
+                             df_flags = df_flags,
+                             df_flag_sample_index = df_flag_sample_index[df_flag_sample_index$Dataset == "df_trib_bact_wach",],
+                             type = "wq")
 
   # Plots
   callModule(PLOT_TIME_WQ, "mod_trib_wach_plot_time", Df = Df_Trib_Wach$Long)
@@ -553,8 +560,11 @@ server <- function(input, output, session) {
   ### Bacteria
 
   # Filter
-  Df_Bact_Wach <- callModule(FILTER_WQ, "mod_bact_wach_filter", df = df_bact_wach, df_site = df_bact_wach_site,
-                             df_flags = df_flags, df_flag_sample_index = df_flag_sample_index, type = "wq")
+  Df_Bact_Wach <- callModule(FILTER_WQ, "mod_bact_wach_filter",
+                             df = df_bact_wach,
+                             df_site = df_bact_wach_site,
+                             df_flags = df_flags, df_flag_sample_index = df_flag_sample_index[df_flag_sample_index$Dataset == "df_trib_bact_wach",],
+                             type = "wq")
 
   # Plots
   callModule(PLOT_TIME_WQ, "mod_bact_wach_plot_time", Df = Df_Bact_Wach$Long)
@@ -575,7 +585,11 @@ server <- function(input, output, session) {
   ### Chemical
 
   # Filter
-  Df_Chem_Wach <- callModule(FILTER_WQ, "mod_chem_wach_filter", df = df_chem_wach, df_site = df_chem_wach_site, type = "wq_depth")
+  Df_Chem_Wach <- callModule(FILTER_WQ, "mod_chem_wach_filter",
+                             df = df_chem_wach,
+                             df_site = df_chem_wach_site,
+                             df_flags = df_flags, df_flag_sample_index = df_flag_sample_index[df_flag_sample_index$Dataset == "df_chem_wach",],
+                             type = "wq_depth")
 
   # Plots
   callModule(PLOT_TIME_WQ, "mod_chem_wach_plot_time", Df = Df_Chem_Wach$Long) # Update to Depth specific plot

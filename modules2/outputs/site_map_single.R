@@ -10,9 +10,9 @@
 ##############################################################################################################################
 
 SITE_MAP_SINGLE_UI <- function(id) {
-  
+
   ns <- NS(id) # see General Note 1
-  
+
   tagList(
     leafletOutput(ns("map"), height = 350 )
   ) # end taglist
@@ -24,25 +24,25 @@ SITE_MAP_SINGLE_UI <- function(id) {
 ##############################################################################################################################
 
 SITE_MAP_SINGLE <- function(input, output, session, Site) {
-  
+
   # Base Leaflet Map - See General Note 3
-  
+
   output$map <- renderLeaflet({
-    
+
     req(Site())
-    
+
     leaflet(data = Site()) %>%
       addProviderTiles(providers$Esri.WorldImagery,
                        options = providerTileOptions(noWrap = TRUE)) %>%
-      addMarkers(lng = ~LocationLong, lat = ~LocationLat,
-                       label= ~LocationLabel,
-                       popup = ~paste("ID =", Site, "<br/>", 
-                                      "Description =", LocationDescription, "<br/>",
-                                      "Lat = ", LocationLat, "<br/>", 
-                                      "Long = ", LocationLong, "<br/>",
-                                      "Elev = ", LocationElevFt, "ft")
+      addMarkers(lng = ~Longitude, lat = ~Latitude,
+                       label= ~Location,
+                       popup = ~paste("ID =", Location, "<br/>",
+                                      "Description =", Description, "<br/>",
+                                      "Lat = ", Latitude, "<br/>",
+                                      "Long = ", Longitude, "<br/>",
+                                      "Elev = ", `Elevation (ft)`,"ft")
                  )
   })
-  
-  
+
+
 } # end Server Function
