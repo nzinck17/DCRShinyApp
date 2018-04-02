@@ -14,7 +14,7 @@
 
 ####################################################################################################
 # Load Libraries and Script (Sources, Modules, and Functions)
-#####################################################################################################
+####################################################################################################
 
 ## ipak function
  ipak <- function(pkg){
@@ -55,10 +55,16 @@ user <-  Sys.getenv("USERNAME")
     # Extract each element of the data object into the global environment
     list2env(data ,.GlobalEnv)
 
-# Get user information
-username <- paste(df_users$FirstName[df_users$EmailUserName == user],df_users$LastName[df_users$EmailUserName == user],sep = " ")
-useremail <- df_users$EmailAcct[df_users$EmailUserName == user]
-userlocation <- df_users$Location[df_users$EmailUserName == user]
+    # Get user information
+if(user %in% df_users$EmailUserName){
+  username <- paste(df_users$FirstName[df_users$EmailUserName == user],df_users$LastName[df_users$EmailUserName == user],sep = " ")
+  useremail <- df_users$EmailAcct[df_users$EmailUserName == user]
+  userlocation <- df_users$Location[df_users$EmailUserName == user]
+} else {
+  username <- "non-DCR"
+  useremail <- "other"
+  userlocation <- "non-DCR"
+}
 
 #source("sources/Settings.R")
 if(userlocation == "Quabbin"){
@@ -369,78 +375,80 @@ tabPanel("Hydro/Met",
                   column(3, imageOutput("wave_image6", height = 50), align = "left"),
                   column(6, h2("Hydrology and Meteorology Data", align = "center")),
                   column(3, imageOutput("DCR_BlueLeaf3", height = 50), align = "right")
+                  )
          ),
-         tabsetPanel(
-           tabPanel("Quabbin",
-                    navlistPanel(widths = c(2, 10),
-                                 tabPanel("Select / Filter Data", icon=icon("filter"), FILTER_WQ_UI("mod_trib_quab_filter")),
-                                 tabPanel("--- Plots", icon = icon("line-chart"),
-                                          br(), wellPanel(em('Plots use data from the "Select / Filter Data" tab.
-                                                             Each plot may have additional selections, filters, and options.')),
-                                          tabsetPanel(
-                                            tabPanel("Time-Series Scatter", PLOT_TIME_WQ_UI("mod_trib_quab_plot_time")),
-                                            tabPanel("Correlation Scatter", PLOT_CORR_WQ_UI("mod_trib_quab_plot_corr")),
-                                            tabPanel("Distribution Charts", DISTRIBUTION_WQ_UI("mod_trib_quab_plot_dist"))
-                                          )
-                                          ),
-                                 tabPanel("--- Statistics", icon = icon("calculator"),
-                                          br(), wellPanel(em('Statistics use data from the "Select / Filter Data" tab')),
-                                          tabsetPanel(
-                                            tabPanel("Summary Statistics", STAT_TIME_WQ_UI("mod_trib_quab_stat_sum")),
-                                            tabPanel("Temporal Statistics", fluidRow(h5("Mann-Kendall Stats to come"))),
-                                            tabPanel("Correlation Matrix", PLOT_CORR_MATRIX_WQ_UI("mod_trib_quab_stat_cormat"))
-                                          )
-                                 ),
-                                 tabPanel("Geospatial", icon = icon("map-marker"), MAP_PLOT_UI("mod_trib_quab_map", df = df_trib_quab)),
-                                 tabPanel("Metadata", icon = icon("table"), METADATA_UI("mod_trib_quab_meta"))
-           ) # end navlist panel
-           ),
-           tabPanel("Ware",
-                    navlistPanel(widths = c(2, 10),
-                                 tabPanel("Select / Filter Data", icon = icon("filter"), FILTER_WQ_UI("mod_trib_ware_filter")),
-                                 tabPanel("--- Plots", icon = icon("line-chart"),
-                                          br(), wellPanel(em('Plots use data from the "Select / Filter Data" tab')),
-                                          tabsetPanel(
-                                            tabPanel("Time-Series Scatter", PLOT_TIME_WQ_UI("mod_trib_ware_plot_time")),
-                                            tabPanel("Correlation Scatter", PLOT_CORR_WQ_UI("mod_trib_ware_plot_corr")),
-                                            tabPanel("Distribution Charts", DISTRIBUTION_WQ_UI("mod_trib_ware_plot_dist"))
-                                          )
-                                 ),
-                                 tabPanel("--- Statistics", icon = icon("calculator"),
-                                          br(), wellPanel(em('Statistics use data from the "Select / Filter Data" tab')),
-                                          tabsetPanel(
-                                            tabPanel("Summary Statistics", STAT_TIME_WQ_UI("mod_trib_ware_stat_sum")),
-                                            tabPanel("Temporal Statistics", fluidRow(h5("Mann-Kendall Stats to come"))),
-                                            tabPanel("Correlation Matrix", PLOT_CORR_MATRIX_WQ_UI("mod_trib_ware_stat_cormat"))
-                                          )
-                                 ),
-                                 tabPanel("Geospatial", icon = icon("map-marker"), MAP_PLOT_UI("mod_trib_ware_map", df = df_trib_ware)),
-                                 tabPanel("Metadata", icon = icon("table"), fluidRow(h5("See Quabbin Tab. Can add data here in future")))
-                    ) # end navlist panel
-           ),
-           tabPanel("Wachusett",
-                    navlistPanel(widths = c(2, 10),
-                                 tabPanel("Select / Filter Data", icon = icon("filter"), FILTER_WQ_UI("mod_trib_wach_filter")),
-                                 tabPanel("--- Plots", icon = icon("line-chart"),
-                                          br(),wellPanel(em('Plots use data from the "Select / Filter Data" tab')),
-                                          tabsetPanel(
-                                            tabPanel("Time-Series Scatter", PLOT_TIME_WQ_UI("mod_trib_wach_plot_time")),
-                                            tabPanel("Correlation Scatter", PLOT_CORR_WQ_UI("mod_trib_wach_plot_corr")),
-                                            tabPanel("Distribution Charts", DISTRIBUTION_WQ_UI("mod_trib_wach_plot_dist"))
-                                          )
-                                 ),
-                                 tabPanel("--- Statistics", icon = icon("calculator"),
-                                          br(), wellPanel(em('Statistics use data from the "Select / Filter Data" tab')),
-                                          tabsetPanel(
-                                            tabPanel("Summary Statistics", STAT_TIME_WQ_UI("mod_trib_wach_stat_sum")),
-                                            tabPanel("Temporal Statistics", fluidRow(h5("Mann-Kendall Stats to come"))),
-                                            tabPanel("Correlation Matrix", PLOT_CORR_MATRIX_WQ_UI("mod_trib_wach_stat_cormat"))
-                                          )
-                                 ),
-                                 tabPanel("Geospatial", icon = icon("map-marker"), MAP_PLOT_UI("mod_trib_wach_map", df = df_trib_wach)),
-                                 tabPanel("Metadata", icon = icon("table"), METADATA_UI("mod_trib_wach_meta"))
-                    ) # end navlist panel
-           ),
+
+
+         #   tabPanel("Quabbin",
+         #            navlistPanel(widths = c(2, 10),
+         #                         tabPanel("Select / Filter Data", icon=icon("filter"), FILTER_WQ_UI("mod_trib_quab_filter")),
+         #                         tabPanel("--- Plots", icon = icon("line-chart"),
+         #                                  br(), wellPanel(em('Plots use data from the "Select / Filter Data" tab.
+         #                                                     Each plot may have additional selections, filters, and options.')),
+         #                                  tabsetPanel(
+         #                                    tabPanel("Time-Series Scatter", PLOT_TIME_WQ_UI("mod_trib_quab_plot_time")),
+         #                                    tabPanel("Correlation Scatter", PLOT_CORR_WQ_UI("mod_trib_quab_plot_corr")),
+         #                                    tabPanel("Distribution Charts", DISTRIBUTION_WQ_UI("mod_trib_quab_plot_dist"))
+         #                                  )
+         #                                  ),
+         #                         tabPanel("--- Statistics", icon = icon("calculator"),
+         #                                  br(), wellPanel(em('Statistics use data from the "Select / Filter Data" tab')),
+         #                                  tabsetPanel(
+         #                                    tabPanel("Summary Statistics", STAT_TIME_WQ_UI("mod_trib_quab_stat_sum")),
+         #                                    tabPanel("Temporal Statistics", fluidRow(h5("Mann-Kendall Stats to come"))),
+         #                                    tabPanel("Correlation Matrix", PLOT_CORR_MATRIX_WQ_UI("mod_trib_quab_stat_cormat"))
+         #                                  )
+         #                         ),
+         #                         tabPanel("Geospatial", icon = icon("map-marker"), MAP_PLOT_UI("mod_trib_quab_map", df = df_trib_quab)),
+         #                         tabPanel("Metadata", icon = icon("table"), METADATA_UI("mod_trib_quab_meta"))
+         #   ) # end navlist panel
+         #   ),
+         #   tabPanel("Ware",
+         #            navlistPanel(widths = c(2, 10),
+         #                         tabPanel("Select / Filter Data", icon = icon("filter"), FILTER_WQ_UI("mod_trib_ware_filter")),
+         #                         tabPanel("--- Plots", icon = icon("line-chart"),
+         #                                  br(), wellPanel(em('Plots use data from the "Select / Filter Data" tab')),
+         #                                  tabsetPanel(
+         #                                    tabPanel("Time-Series Scatter", PLOT_TIME_WQ_UI("mod_trib_ware_plot_time")),
+         #                                    tabPanel("Correlation Scatter", PLOT_CORR_WQ_UI("mod_trib_ware_plot_corr")),
+         #                                    tabPanel("Distribution Charts", DISTRIBUTION_WQ_UI("mod_trib_ware_plot_dist"))
+         #                                  )
+         #                         ),
+         #                         tabPanel("--- Statistics", icon = icon("calculator"),
+         #                                  br(), wellPanel(em('Statistics use data from the "Select / Filter Data" tab')),
+         #                                  tabsetPanel(
+         #                                    tabPanel("Summary Statistics", STAT_TIME_WQ_UI("mod_trib_ware_stat_sum")),
+         #                                    tabPanel("Temporal Statistics", fluidRow(h5("Mann-Kendall Stats to come"))),
+         #                                    tabPanel("Correlation Matrix", PLOT_CORR_MATRIX_WQ_UI("mod_trib_ware_stat_cormat"))
+         #                                  )
+         #                         ),
+         #                         tabPanel("Geospatial", icon = icon("map-marker"), MAP_PLOT_UI("mod_trib_ware_map", df = df_trib_ware)),
+         #                         tabPanel("Metadata", icon = icon("table"), fluidRow(h5("See Quabbin Tab. Can add data here in future")))
+         #            ) # end navlist panel
+         #   ),
+           # tabPanel("Wachusett",
+           #          navlistPanel(widths = c(2, 10),
+           #                       tabPanel("Select / Filter Data", icon = icon("filter"), FILTER_WQ_UI("mod_trib_wach_filter")),
+           #                       tabPanel("--- Plots", icon = icon("line-chart"),
+           #                                br(),wellPanel(em('Plots use data from the "Select / Filter Data" tab')),
+           #                                tabsetPanel(
+           #                                  tabPanel("Time-Series Scatter", PLOT_TIME_WQ_UI("mod_trib_wach_plot_time")),
+           #                                  tabPanel("Correlation Scatter", PLOT_CORR_WQ_UI("mod_trib_wach_plot_corr")),
+           #                                  tabPanel("Distribution Charts", DISTRIBUTION_WQ_UI("mod_trib_wach_plot_dist"))
+           #                                )
+           #                       )#,
+         #                         tabPanel("--- Statistics", icon = icon("calculator"),
+         #                                  br(), wellPanel(em('Statistics use data from the "Select / Filter Data" tab')),
+         #                                  tabsetPanel(
+         #                                    tabPanel("Summary Statistics", STAT_TIME_WQ_UI("mod_trib_wach_stat_sum")),
+         #                                    tabPanel("Temporal Statistics", fluidRow(h5("Mann-Kendall Stats to come"))),
+         #                                    tabPanel("Correlation Matrix", PLOT_CORR_MATRIX_WQ_UI("mod_trib_wach_stat_cormat"))
+         #                                  )
+         #                         ),
+         #                         tabPanel("Geospatial", icon = icon("map-marker"), MAP_PLOT_UI("mod_trib_wach_map", df = df_trib_wach)),
+         #                         tabPanel("Metadata", icon = icon("table"), METADATA_UI("mod_trib_wach_meta"))
+           #          ) # end navlist panel
+           # ),
          # tabsetPanel(
          #   tabPanel("Quabbin",
          #            navlistPanel(widths = c(2, 10),
@@ -604,9 +612,9 @@ tabPanel("Hydro/Met",
          #                        )
            # ) # end navlist panel
            # ),  # End Tab Panel Wachusett
-           selected = tab_selected
-         ) # End Tabset Panel
-), #End Tab Panel Hydro/Met
+           # selected = tab_selected
+         # ) # End Tabset Panel
+# ), #End Tab Panel Hydro/Met
 
 ####################################################################
 # Forestry

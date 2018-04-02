@@ -242,13 +242,11 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
 
   ### Flag Selection
 
-  # server - Using the custom Module SELECT_SELECT_ALL, see script of dev manual
+  # # server - Using the custom Module SELECT_SELECT_ALL, see script of dev manual
   Flag <- callModule(SELECT_SELECT_ALL, "flag",
                      label = "Select flag(s) to EXCLUDE from the data:",
-                     Choices = reactive({df_flags$label[match(sort(unique(df_flag_sample_index$FlagCode)),
-                                                              df_flags$Flag_ID) & df_flags$Flag_ID != 114]}),
+                     Choices = reactive({sort(unique(df_flags$label[df_flags$Flag_ID %in% df_flag_sample_index$FlagCode & df_flags$Flag_ID != 114]))}),
                      colwidth = 3)
-
 
   # Subset the Sample Flag Index by the flags selected to exclude - this results in a vector of IDs to filter out
   flagged_ids <- reactive({
