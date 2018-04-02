@@ -157,14 +157,12 @@ ui <- tagList(
 # Home Page
 
 tabPanel("Home",
-
          fluidRow(
            column(3, imageOutput("dcr_image", height = 80), align = "left"),
            column(6, imageOutput("wave_image1", height = 80), align = "center"),
            column(3, imageOutput("umass_image", height = 80), align = "right")
          ),
          HOME_UI("home")
-
 ),
 
 
@@ -172,12 +170,11 @@ tabPanel("Home",
 # Tributary Water Quality Data
 
 tabPanel("Tributary",
-
-
   # Title
   fluidRow(
-           column(2, imageOutput("wave_image3", height = 50), align = "center"),
-           column(10, h2("Tributary Water Quality Data", align = "center"))
+           column(3, imageOutput("wave_image3", height = 50), align = "left"),
+           column(6, h2("Tributary Water Quality Data", align = "center")),
+           column(3, imageOutput("DCR_BlueLeaf1", height = 50), align = "right")
   ),
   tabsetPanel(
     tabPanel("Quabbin",
@@ -252,9 +249,7 @@ tabPanel("Tributary",
     ),
     selected = tab_selected
   )
-
-), # end Tributary tabpanel (page)
-
+),  # end Tabpanel (page)
 
 #############################################################
 # Reservoir
@@ -263,8 +258,9 @@ tabPanel("Reservoir",
 
    # Title
    fluidRow(
-            column(2, imageOutput("wave_image4", height = 50), align = "center"),
-            column(10, h2("Reservoir Water Quality Data", align = "center"))
+            column(3, imageOutput("wave_image4", height = 50), align = "left"),
+            column(6, h2("Reservoir Water Quality Data", align = "center")),
+            column(3, imageOutput("DCR_BlueLeaf2", height = 50), align = "right")
    ),
    tabsetPanel(
      tabPanel("Quabbin",
@@ -366,14 +362,251 @@ tabPanel("Reservoir",
 ###################################################################
 # Hydrology/Meteorology
 
-tabPanel("Met/Hydro",
+tabPanel("Hydro/Met",
 
          # Title
          fluidRow(
-                  column(2, imageOutput("wave_image6", height = 50), align = "center"),
-                  column(10, h2("Hydrology and Meteorology Data", align = "center"))
-         )
-),
+                  column(3, imageOutput("wave_image6", height = 50), align = "left"),
+                  column(6, h2("Hydrology and Meteorology Data", align = "center")),
+                  column(3, imageOutput("DCR_BlueLeaf3", height = 50), align = "right")
+         ),
+         tabsetPanel(
+           tabPanel("Quabbin",
+                    navlistPanel(widths = c(2, 10),
+                                 tabPanel("Select / Filter Data", icon=icon("filter"), FILTER_WQ_UI("mod_trib_quab_filter")),
+                                 tabPanel("--- Plots", icon = icon("line-chart"),
+                                          br(), wellPanel(em('Plots use data from the "Select / Filter Data" tab.
+                                                             Each plot may have additional selections, filters, and options.')),
+                                          tabsetPanel(
+                                            tabPanel("Time-Series Scatter", PLOT_TIME_WQ_UI("mod_trib_quab_plot_time")),
+                                            tabPanel("Correlation Scatter", PLOT_CORR_WQ_UI("mod_trib_quab_plot_corr")),
+                                            tabPanel("Distribution Charts", DISTRIBUTION_WQ_UI("mod_trib_quab_plot_dist"))
+                                          )
+                                          ),
+                                 tabPanel("--- Statistics", icon = icon("calculator"),
+                                          br(), wellPanel(em('Statistics use data from the "Select / Filter Data" tab')),
+                                          tabsetPanel(
+                                            tabPanel("Summary Statistics", STAT_TIME_WQ_UI("mod_trib_quab_stat_sum")),
+                                            tabPanel("Temporal Statistics", fluidRow(h5("Mann-Kendall Stats to come"))),
+                                            tabPanel("Correlation Matrix", PLOT_CORR_MATRIX_WQ_UI("mod_trib_quab_stat_cormat"))
+                                          )
+                                 ),
+                                 tabPanel("Geospatial", icon = icon("map-marker"), MAP_PLOT_UI("mod_trib_quab_map", df = df_trib_quab)),
+                                 tabPanel("Metadata", icon = icon("table"), METADATA_UI("mod_trib_quab_meta"))
+           ) # end navlist panel
+           ),
+           tabPanel("Ware",
+                    navlistPanel(widths = c(2, 10),
+                                 tabPanel("Select / Filter Data", icon = icon("filter"), FILTER_WQ_UI("mod_trib_ware_filter")),
+                                 tabPanel("--- Plots", icon = icon("line-chart"),
+                                          br(), wellPanel(em('Plots use data from the "Select / Filter Data" tab')),
+                                          tabsetPanel(
+                                            tabPanel("Time-Series Scatter", PLOT_TIME_WQ_UI("mod_trib_ware_plot_time")),
+                                            tabPanel("Correlation Scatter", PLOT_CORR_WQ_UI("mod_trib_ware_plot_corr")),
+                                            tabPanel("Distribution Charts", DISTRIBUTION_WQ_UI("mod_trib_ware_plot_dist"))
+                                          )
+                                 ),
+                                 tabPanel("--- Statistics", icon = icon("calculator"),
+                                          br(), wellPanel(em('Statistics use data from the "Select / Filter Data" tab')),
+                                          tabsetPanel(
+                                            tabPanel("Summary Statistics", STAT_TIME_WQ_UI("mod_trib_ware_stat_sum")),
+                                            tabPanel("Temporal Statistics", fluidRow(h5("Mann-Kendall Stats to come"))),
+                                            tabPanel("Correlation Matrix", PLOT_CORR_MATRIX_WQ_UI("mod_trib_ware_stat_cormat"))
+                                          )
+                                 ),
+                                 tabPanel("Geospatial", icon = icon("map-marker"), MAP_PLOT_UI("mod_trib_ware_map", df = df_trib_ware)),
+                                 tabPanel("Metadata", icon = icon("table"), fluidRow(h5("See Quabbin Tab. Can add data here in future")))
+                    ) # end navlist panel
+           ),
+           tabPanel("Wachusett",
+                    navlistPanel(widths = c(2, 10),
+                                 tabPanel("Select / Filter Data", icon = icon("filter"), FILTER_WQ_UI("mod_trib_wach_filter")),
+                                 tabPanel("--- Plots", icon = icon("line-chart"),
+                                          br(),wellPanel(em('Plots use data from the "Select / Filter Data" tab')),
+                                          tabsetPanel(
+                                            tabPanel("Time-Series Scatter", PLOT_TIME_WQ_UI("mod_trib_wach_plot_time")),
+                                            tabPanel("Correlation Scatter", PLOT_CORR_WQ_UI("mod_trib_wach_plot_corr")),
+                                            tabPanel("Distribution Charts", DISTRIBUTION_WQ_UI("mod_trib_wach_plot_dist"))
+                                          )
+                                 ),
+                                 tabPanel("--- Statistics", icon = icon("calculator"),
+                                          br(), wellPanel(em('Statistics use data from the "Select / Filter Data" tab')),
+                                          tabsetPanel(
+                                            tabPanel("Summary Statistics", STAT_TIME_WQ_UI("mod_trib_wach_stat_sum")),
+                                            tabPanel("Temporal Statistics", fluidRow(h5("Mann-Kendall Stats to come"))),
+                                            tabPanel("Correlation Matrix", PLOT_CORR_MATRIX_WQ_UI("mod_trib_wach_stat_cormat"))
+                                          )
+                                 ),
+                                 tabPanel("Geospatial", icon = icon("map-marker"), MAP_PLOT_UI("mod_trib_wach_map", df = df_trib_wach)),
+                                 tabPanel("Metadata", icon = icon("table"), METADATA_UI("mod_trib_wach_meta"))
+                    ) # end navlist panel
+           ),
+         # tabsetPanel(
+         #   tabPanel("Quabbin",
+         #            navlistPanel(widths = c(2, 10),
+         #                         "Streamflow",
+         #                         tabPanel("Select / Filter Data", icon = icon("filter"), FILTER_WQ_UI("mod_prof_quab_filter"))#,
+         #                         tabPanel("--- Hydrographs", icon = icon("line-chart"),
+         #                                  br(), wellPanel(em('Plots use data from the "Select / Filter Data" tab')),
+         #                                  tabsetPanel(
+         #                                    tabPanel("Recent Conditions", PLOT_TIME_WQ_UI("mod_chem_quab_plot_time")),
+         #                                    tabPanel("Custom Hydrographs", PLOT_CORR_WQ_UI("mod_chem_quab_plot_corr")),
+         #                                    tabPanel("Flow Duration", PLOT_CORR_WQ_UI("mod_chem_quab_plot_corr")),
+         #                                    tabPanel("Boxplots", PLOT_CORR_WQ_UI("mod_chem_quab_plot_corr")),
+         #                                    tabPanel("Ratings", PLOT_CORR_WQ_UI("mod_chem_quab_plot_corr")),
+         #                                    tabPanel("Loading", DISTRIBUTION_WQ_UI("mod_chem_quab_plot_dist"))
+         #                                  )
+         #                         )#,
+                                #  tabPanel("--- Hydro Stats", icon = icon("calculator"),
+                                #           br(), wellPanel(em('Statistics use data from the "Select / Filter Data" tab')),
+                                #           tabsetPanel(
+                                #             tabPanel("Summary Statistics", STAT_TIME_DEPTH_WQ_UI("mod_chem_quab_stat_sum")),
+                                #             tabPanel("Temporal Statistics", fluidRow(h5("Mann-Kendall Stats to come"))),
+                                #             tabPanel("Historical Statistics", PLOT_CORR_MATRIX_WQ_UI("mod_chem_quab_stat_cormat"))
+                                #           )
+                                #  ),
+                                #  tabPanel("--- Modeling", icon = icon("calculator"),
+                                #           br(), wellPanel(em('Statistics use data from the "Select / Filter Data" tab')),
+                                #           tabsetPanel(
+                                #             tabPanel("Prep Model Data", STAT_TIME_DEPTH_WQ_UI("mod_chem_quab_stat_sum")),
+                                #             tabPanel("Loadflex", fluidRow(h5("Mann-Kendall Stats to come"))),
+                                #             tabPanel("Hagemann Model", PLOT_CORR_MATRIX_WQ_UI("mod_chem_quab_stat_cormat"))
+                                #           )
+                                #  ),
+                                #  tabPanel("Ratings", icon = icon("calculator"),
+                                #           tabsetPanel(
+                                #             tabPanel("Curves", STAT_TIME_DEPTH_WQ_UI("mod_chem_quab_stat_sum")),
+                                #             tabPanel("Tables", PLOT_CORR_MATRIX_WQ_UI("mod_chem_quab_stat_cormat"))
+                                #           )
+                                #  ),
+                                #  "Precipitation",
+                                #  tabPanel("Map Overview", icon=icon("map-marker"), FILTER_WQ_UI("mod_chem_wach_filter")),
+                                #  tabPanel("Select / Filter Data", icon=icon("filter"), FILTER_WQ_UI("mod_prof_quab_filter")),
+                                #  tabPanel("--- Plots", icon = icon("line-chart"),
+                                #           br(), wellPanel(em('Plots use data from the "Select / Filter Data" tab')),
+                                #           tabsetPanel(
+                                #             tabPanel("Heat Map", PROF_HEATMAP_UI("mod_prof_quab_heat")),
+                                #             tabPanel("Line Plot", PROF_LINE_UI("mod_prof_quab_line", df_prof_quab)),
+                                #             tabPanel("Distribution Charts", DISTRIBUTION_WQ_UI("mod_prof_quab_plot_dist"))
+                                #           )
+                                #  ),
+                                #  tabPanel("--- Stats/Tables", icon = icon("calculator"),
+                                #           br(), wellPanel(em('Statistics use data from the "Select / Filter Data" tab')),
+                                #           tabsetPanel(
+                                #             tabPanel("Prep Model Data", STAT_TIME_DEPTH_WQ_UI("mod_chem_quab_stat_sum")),
+                                #             tabPanel("Loadflex", fluidRow(h5("Mann-Kendall Stats to come"))),
+                                #             tabPanel("Hagemann Model", PLOT_CORR_MATRIX_WQ_UI("mod_chem_quab_stat_cormat"))
+                                #           )
+                                #  ),
+                                #  "Water Supply",
+                                #  tabPanel("Reservoirs/Transfers", icon=icon("calculator"),
+                                #           #br(),wellPanel(em('Plots use data from the "Select / Filter Data" tab')),
+                                #           tabsetPanel(
+                                #             tabPanel("Flows/Transfers", PLOT_TIME_WQ_UI("mod_chem_wach_plot_time")),
+                                #             tabPanel("Historical Elevation/Storage ", PLOT_CORR_WQ_UI("mod_chem_wach_plot_corr"))
+                                #           )
+                                # ),
+                                # tabPanel("Snowpack", icon = icon("calculator"),
+                                #          tabsetPanel(
+                                #            tabPanel("Map Overview", icon=icon("map-marker"), FILTER_WQ_UI("mod_chem_wach_filter")),
+                                #            tabPanel("Summary Statistics", STAT_TIME_DEPTH_WQ_UI("mod_chem_quab_stat_sum")),
+                                #            tabPanel("Temporal Statistics", fluidRow(h5("Mann-Kendall Stats to come"))),
+                                #            tabPanel("Correlation Matrix", PLOT_CORR_MATRIX_WQ_UI("mod_chem_quab_stat_cormat"))
+                                #          )
+                                # ),
+                                # tabPanel("Groundwater", icon=icon("calculator"),
+                                #           tabsetPanel(
+                                #             tabPanel("Map Overview", icon=icon("map-marker"), FILTER_WQ_UI("mod_chem_wach_filter")),
+                                #             tabPanel("Plots", STAT_TIME_DEPTH_WQ_UI("mod_chem_wach_stat_sum")),
+                                #             tabPanel("Stats/Tables", STAT_TIME_DEPTH_WQ_UI("mod_chem_wach_stat_sum"))
+                                #           )
+                                # )
+                    # ) # end navlist panel
+           # ), # end tab panel Quab
+           # tabPanel("Wachusett",
+           #          navlistPanel(widths = c(2, 10),
+           #                       "Streamflow",
+           #                       tabPanel("Select / Filter Data", icon = icon("filter"), FILTER_WQ_UI("mod_flow_quab_filter"))#,
+         #                        tabPanel("--- Hydrographs", icon = icon("line-chart"),
+         #                                 br(), wellPanel(em('Plots use data from the "Select / Filter Data" tab')),
+         #                                 tabsetPanel(
+         #                                   tabPanel("Recent Conditions", PLOT_TIME_WQ_UI("mod_chem_quab_plot_time")),
+         #                                   tabPanel("Custom Hydrographs", PLOT_CORR_WQ_UI("mod_chem_quab_plot_corr")),
+         #                                   tabPanel("Flow Duration", PLOT_CORR_WQ_UI("mod_chem_quab_plot_corr")),
+         #                                   tabPanel("Boxplots", PLOT_CORR_WQ_UI("mod_chem_quab_plot_corr")),
+         #                                   tabPanel("Ratings", PLOT_CORR_WQ_UI("mod_chem_quab_plot_corr")),
+         #                                   tabPanel("Loading", DISTRIBUTION_WQ_UI("mod_chem_quab_plot_dist"))
+         #                                 )
+         #                        ),
+         #                        tabPanel("--- Hydro Stats", icon = icon("calculator"),
+         #                                 br(), wellPanel(em('Statistics use data from the "Select / Filter Data" tab')),
+         #                                 tabsetPanel(
+         #                                   tabPanel("Summary Statistics", STAT_TIME_DEPTH_WQ_UI("mod_chem_quab_stat_sum")),
+         #                                   tabPanel("Temporal Statistics", fluidRow(h5("Mann-Kendall Stats to come"))),
+         #                                   tabPanel("Historical Statistics", PLOT_CORR_MATRIX_WQ_UI("mod_chem_quab_stat_cormat"))
+         #                                 )
+         #                        ),
+         #                        tabPanel("--- Modeling", icon = icon("calculator"),
+         #                                 br(), wellPanel(em('Statistics use data from the "Select / Filter Data" tab')),
+         #                                 tabsetPanel(
+         #                                   tabPanel("Prep Model Data", STAT_TIME_DEPTH_WQ_UI("mod_chem_quab_stat_sum")),
+         #                                   tabPanel("Loadflex", fluidRow(h5("Mann-Kendall Stats to come"))),
+         #                                   tabPanel("Hagemann Model", PLOT_CORR_MATRIX_WQ_UI("mod_chem_quab_stat_cormat"))
+         #                                 )
+         #                        ),
+         #                        tabPanel("Ratings", icon = icon("calculator"),
+         #                                 tabsetPanel(
+         #                                   tabPanel("Curves", STAT_TIME_DEPTH_WQ_UI("mod_chem_quab_stat_sum")),
+         #                                   tabPanel("Tables", PLOT_CORR_MATRIX_WQ_UI("mod_chem_quab_stat_cormat"))
+         #                                 )
+         #                        ),
+         #                        "Precipitation",
+         #                        tabPanel("Map Overview", icon=icon("map-marker"), FILTER_WQ_UI("mod_chem_wach_filter")),
+         #                        tabPanel("Select / Filter Data", icon=icon("filter"), FILTER_WQ_UI("mod_prof_quab_filter")),
+         #                        tabPanel("--- Plots", icon = icon("line-chart"),
+         #                                 br(), wellPanel(em('Plots use data from the "Select / Filter Data" tab')),
+         #                                 tabsetPanel(
+         #                                   tabPanel("Heat Map", PROF_HEATMAP_UI("mod_prof_quab_heat")),
+         #                                   tabPanel("Line Plot", PROF_LINE_UI("mod_prof_quab_line", df_prof_quab)),
+         #                                   tabPanel("Distribution Charts", DISTRIBUTION_WQ_UI("mod_prof_quab_plot_dist"))
+         #                                 )
+         #                        ),
+         #                        tabPanel("--- Stats/Tables", icon = icon("calculator"),
+         #                                 br(), wellPanel(em('Statistics use data from the "Select / Filter Data" tab')),
+         #                                 tabsetPanel(
+         #                                   tabPanel("Prep Model Data", STAT_TIME_DEPTH_WQ_UI("mod_chem_quab_stat_sum")),
+         #                                   tabPanel("Loadflex", fluidRow(h5("Mann-Kendall Stats to come"))),
+         #                                   tabPanel("Hagemann Model", PLOT_CORR_MATRIX_WQ_UI("mod_chem_quab_stat_cormat"))
+         #                                 )
+         #                        ),
+         #                        "Water Supply",
+         #                        tabPanel("Reservoirs/Transfers", icon=icon("line-chart"),
+         #                                 #br(),wellPanel(em('Plots use data from the "Select / Filter Data" tab')),
+         #                                 tabsetPanel(
+         #                                   tabPanel("Flows/Transfers", PLOT_TIME_WQ_UI("mod_chem_wach_plot_time")),
+         #                                   tabPanel("Historical Elevation/Storage ", PLOT_CORR_WQ_UI("mod_chem_wach_plot_corr"))
+         #                                 )
+         #                        ),
+         #                        tabPanel("Snowpack", icon = icon("calculator"),
+         #                                 tabsetPanel(
+         #                                   tabPanel("Map Overview", icon=icon("map-marker"), FILTER_WQ_UI("mod_chem_wach_filter")),
+         #                                   tabPanel("Summary Statistics", STAT_TIME_DEPTH_WQ_UI("mod_chem_quab_stat_sum")),
+         #                                   tabPanel("Temporal Statistics", fluidRow(h5("Mann-Kendall Stats to come"))),
+         #                                   tabPanel("Correlation Matrix", PLOT_CORR_MATRIX_WQ_UI("mod_chem_quab_stat_cormat"))
+         #                                 )
+         #                        ),
+         #                        tabPanel("Groundwater", icon=icon("table"),
+         #                                 tabsetPanel(
+         #                                   tabPanel("Map Overview", icon=icon("map-marker"), FILTER_WQ_UI("mod_chem_wach_filter")),
+         #                                   tabPanel("Plots", STAT_TIME_DEPTH_WQ_UI("mod_chem_wach_stat_sum")),
+         #                                   tabPanel("Stats/Tables", STAT_TIME_DEPTH_WQ_UI("mod_chem_wach_stat_sum"))
+         #                                 )
+         #                        )
+           # ) # end navlist panel
+           # ),  # End Tab Panel Wachusett
+           selected = tab_selected
+         ) # End Tabset Panel
+), #End Tab Panel Hydro/Met
 
 ####################################################################
 # Forestry
@@ -382,8 +615,9 @@ tabPanel("Forestry",
 
          # Title
          fluidRow(
-                  column(2, imageOutput("wave_image7", height = 50), align = "center"),
-                  column(10, h2("Forestry Data", align = "center"))
+                  column(3, imageOutput("wave_image7", height = 50), align = "left"),
+                  column(6, h2("Forestry Data", align = "center")),
+                  column(3, imageOutput("DCR_BlueLeaf4", height = 50), align = "right")
          )
 ),
 
@@ -394,8 +628,9 @@ tabPanel("Report",
 
          # Title
          fluidRow(
-                  column(2, imageOutput("wave_image8", height = 50), align = "center"),
-                  column(10, h2("Report Generation", align = "center"))
+                  column(3, imageOutput("wave_image8", height = 50), align = "left"),
+                  column(6, h2("Report Generation", align = "center")),
+                  column(3, imageOutput("DCR_BlueLeaf5", height = 50), align = "right")
          ),
          navlistPanel(widths = c(2, 10),
                       "Preset Reports",
@@ -649,6 +884,41 @@ server <- function(input, output, session) {
          height= "80")
   }, deleteFile = FALSE)
 
+  # DCR BLUE LEAF IMAGE 1
+  output$DCR_BlueLeaf1 <- renderImage({
+    list(src = "images/DCR_BlueLeaf.jpg",
+         width= "51",
+         height= "50")
+  }, deleteFile = FALSE)
+
+  # DCR BLUE LEAF IMAGE 2
+  output$DCR_BlueLeaf2 <- renderImage({
+    list(src = "images/DCR_BlueLeaf.jpg",
+         width= "51",
+         height= "50")
+  }, deleteFile = FALSE)
+
+  # DCR BLUE LEAF IMAGE 3
+  output$DCR_BlueLeaf3 <- renderImage({
+    list(src = "images/DCR_BlueLeaf.jpg",
+         width= "51",
+         height= "50")
+  }, deleteFile = FALSE)
+
+  # DCR BLUE LEAF IMAGE 4
+  output$DCR_BlueLeaf4 <- renderImage({
+    list(src = "images/DCR_BlueLeaf.jpg",
+         width= "51",
+         height= "50")
+  }, deleteFile = FALSE)
+
+  # DCR BLUE LEAF IMAGE 5
+  output$DCR_BlueLeaf5 <- renderImage({
+    list(src = "images/DCR_BlueLeaf.jpg",
+         width= "51",
+         height= "50")
+  }, deleteFile = FALSE)
+
   # UMass IMAGE
   output$umass_image <- renderImage({
     list(src = "images/UMass.png",
@@ -691,7 +961,6 @@ server <- function(input, output, session) {
          height= "50")
   }, deleteFile = FALSE)
 
-
   # WAVE IMAGE 6
   output$wave_image6 <- renderImage({
     list(src = "images/WAVE.jpg",
@@ -699,14 +968,12 @@ server <- function(input, output, session) {
          height= "50")
   }, deleteFile = FALSE)
 
-
   # WAVE IMAGE 7
   output$wave_image7 <- renderImage({
     list(src = "images/WAVE.jpg",
          width= "225",
          height= "50")
   }, deleteFile = FALSE)
-
 
   # WAVE IMAGE 8
   output$wave_image8 <- renderImage({
