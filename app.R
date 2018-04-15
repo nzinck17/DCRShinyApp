@@ -66,106 +66,57 @@ ipak(packages)
 ### Modules
   
 # Filter - Filter Related Modules
-  
-source("modules1/filter_wq.R")
-source("modules2/inputs/site_checkbox.R")
-source("modules2/inputs/station_level_checkbox.R")
-source("modules2/inputs/param_select.R")
-source("modules2/inputs/param_checkbox.R") # Eventually delete
-source("modules2/inputs/date_select.R")
-source("modules2/inputs/checkbox_select_all.R")
-source("modules2/inputs/select_select_all.R")
-  
-# source("modules/filter/filter_wq.R")
-# source("modules/filter/site_checkbox.R")
-# source("modules/filter/station_level_checkbox.R")
-# source("modules/filter/param_select.R")
-# source("modules/filter/param_checkbox.R") # Eventually delete
-# source("modules/filter/date_select.R")
-# source("modules/filter/checkbox_select_all.R")
-# source("modules/filter/select_select_all.R")
-  
+source("modules/filter/filter_wq.R")
+source("modules/filter/site_checkbox.R")
+source("modules/filter/station_level_checkbox.R")
+source("modules/filter/param_select.R")
+source("modules/filter/param_checkbox.R") # Eventually delete
+source("modules/filter/date_select.R")
+source("modules/filter/checkbox_select_all.R")
+source("modules/filter/select_select_all.R")
   
 # Plots - Modules that generate plots
- 
-source("modules2/outputs/plot_time_wq.R")
-source("modules2/outputs/plot_time_depth_wq.R")
-source("modules2/outputs/plot_corr_wq.R")
-source("modules2/outputs/plot_corr_depth_wq.R")
-source("modules2/outputs/plot_corr_matrix_wq.R")
-source("modules2/outputs/plot_profline_custom.R")
-source("modules1/distribution_wq.R")
-source("modules1/profile_heatmap.R")
-source("modules1/profile_line.R")
-source("modules1/phyto.R")
-  
-# source("modules/plots/plot_time_wq.R")
-# source("modules/plots/plot_time_depth_wq.R")
-# source("modules/plots/plot_corr_wq.R")
-# source("modules/plots/plot_corr_depth_wq.R")
-# source("modules/plots/plot_corr_matrix_wq.R")
-# source("modules/plots/plot_profline_custom.R")
-# source("modules/plots/distribution_wq.R")
-# source("modules/plots/profile_heatmap.R")
-# source("modules/plots/profile_line.R")
+source("modules/plots/plot_time_wq.R")
+source("modules/plots/plot_time_depth_wq.R") # Merge with Plot_Time_wq (with differeing facetting schemes)
+source("modules/plots/plot_corr_wq.R")
+source("modules/plots/plot_corr_depth_wq.R") # Merge with Plot_Corr_wq (with differeing facetting schemes)
+source("modules/plots/plot_corr_matrix_wq.R")
+source("modules/plots/plot_profline_custom.R") # look at Dan's script - faceting - Bring in actual function?
+source("modules/plots/distribution_wq.R")
+source("modules/plots/profile_heatmap.R")
+source("modules/plots/profile_line.R") 
+source("modules/plots/phyto.R")
   
 # Plot Options - Modules containing plot options
-
-source("modules2/inputs/plot_theme_and_hlines.R")
-source("modules2/inputs/plot_text_and_vlines_time.R")
-source("modules2/inputs/plot_text_and_vlines_corr.R")
-source("modules2/inputs/plot_title_and_labels.R")
-source("modules2/inputs/plot_save.R") 
-  
-# source("modules/plot_options/plot_theme_and_hlines.R")
-# source("modules/plot_options/plot_text_and_vlines_time.R")
-# source("modules/plot_options/plot_text_and_vlines_corr.R")
-# source("modules/plot_options/plot_title_and_labels.R")
-# source("modules/plot_options/plot_save.R")
+source("modules/plot_options/plot_theme_and_hlines.R")
+source("modules/plot_options/plot_text_and_vlines_time.R")
+source("modules/plot_options/plot_text_and_vlines_corr.R")
+source("modules/plot_options/plot_title_and_labels.R")
+source("modules/plot_options/plot_save.R")
 
 # Statistics - Modules that generate Statistics
-# Make into One file
-source("modules2/outputs/stats_time_wq.R")
-source("modules2/outputs/stats_time_depth_wq.R")
-source("modules1/profile_table_stats.R")
-  
-# source("modules/stats/stats_time_wq.R")
-# source("modules/stats/stats_time_depth_wq.R")
-# source("modules/stats/profile_table_stats.R")
+  # Make into One file
+source("modules/stats/stats_time_wq.R") # change name to stats_summary
+source("modules/stats/stats_time_depth_wq.R") # Merge into stats_sumamry
+source("modules/stats/profile_table_stats.R") # Merge into stats_summary
   
 # Metadata - Modules for Metadata
- 
-source("modules1/metadata.R")
-
-#source("modules/metadata/metadata.R") 
+source("modules/metadata/metadata.R") # Seperate into multiple Modules
   
 # Maps - Modules that use Leaflet Map generation 
-  
-source("modules1/home.R")
-source("modules1/map_plot.R")
-source("modules2/outputs/site_map.R")
-source("modules2/outputs/site_map_single.R")
-  
-# source("modules/maps/home.R")
-# source("modules/maps/geospatial_plot.R")
-# source("modules/maps/outputs/site_map.R")
-# source("modules/maps/outputs/site_map_single.R")
+source("modules/maps/home.R")
+source("modules/maps/geospatial_plot.R")
+source("modules/maps/site_map.R")
+source("modules/maps/site_map_single.R")
   
 # Reports - Modules for report and document generation 
-  
-source("modules1/report_AWQ.R")
-source("modules1/report_MWQ.R")
-source("modules1/report_custom.R")
-  
-source("modules/report/report_AWQ.R")
-source("modules/report/report_MWQ.R")
-source("modules/report/report_custom.R")
-  
-# Other - Other Modules
+source("modules/reports/report_AWQ.R")
+source("modules/reports/report_MWQ.R")
+source("modules/reports/report_custom.R")
 
 
   
-#source("modules/plots/phyto.R")
+
 
   
 
