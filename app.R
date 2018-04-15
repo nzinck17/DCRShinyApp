@@ -96,7 +96,7 @@ source("modules/plot_options/plot_save.R")
 
 # Statistics - Modules that generate Statistics
   # Make into One file
-source("modules/stats/stats_time_wq.R") # change name to stats_summary
+source("modules/stats/stats_summary.R") 
 source("modules/stats/stats_time_depth_wq.R") # Merge into stats_sumamry
 source("modules/stats/profile_table_stats.R") # Merge into stats_summary
   
