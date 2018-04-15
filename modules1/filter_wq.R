@@ -57,12 +57,8 @@ FILTER_WQ_UI <- function(id) {
                               # Parameter INput - Using Module Parameter Select
                               PARAM_SELECT_UI(ns("param")),
                               br(),
-                              wellPanel(
-                                # Date Input - Using Module Date Select
-                                DATE_SELECT_UI(ns("date")),
-                                # Year Input - Using the custom Module SELECT_SELECT_ALL, see script of dev manual
-                                SELECT_SELECT_ALL_UI(ns("year"))
-                              ),
+                              # Date Input - Using Module Date Select
+                              DATE_SELECT_UI(ns("date")),
                               br(),
                               wellPanel(
                                 # Month Input - Using the custom Module SELECT_SELECT_ALL, see script of dev manual

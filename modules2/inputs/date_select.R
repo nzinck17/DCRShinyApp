@@ -18,9 +18,13 @@ DATE_SELECT_UI <- function(id) {
   ns <- NS(id) # see General Note 1
 
   tagList(
-    uiOutput(ns("date_ui")),
-    h5("OR", align = "center"),
-    uiOutput(ns("year_ui"))
+    wellPanel(
+      em("Dates sampled at selected sites"), br(),
+      uiOutput(ns("date_ui")),
+      uiOutput(ns("text_ui")),
+      #h5("OR", align = "center"),
+      uiOutput(ns("year_ui"))
+    )
   ) # end taglist
 
 } # end UI function
@@ -82,6 +86,13 @@ DATE_SELECT <- function(input, output, session, Df, hidden = FALSE) {
                       min = save_selected_lower,
                       max = save_selected_upper)
     }
+  })
+  
+  
+  # Render "Or (Includes Both)" Text
+  output$text_ui <- renderUI({
+    req(Df() %>% summarise(n()) %>% unlist() != 0)
+    h5("OR (includes both)", align = "center")
   })
   
   
