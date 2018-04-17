@@ -19,7 +19,8 @@ PARAM_SELECT_UI <- function(id) {
 
   tagList(
     # Parameter Selection
-    wellPanel(h4("PARAMETER FILTER:", align = "left"),
+    wellPanel(
+      em("Parameters sampled at selected sites"), br(),
       uiOutput(ns("type_ui")),
       uiOutput(ns("range_ui"))
     ) # end Well Panel
