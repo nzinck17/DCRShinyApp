@@ -16,7 +16,7 @@
 DATE_SELECT_UI <- function(id) {
 
   ns <- NS(id) # see General Note 1
-  
+
   tagList(
     wellPanel(
       em("Dates sampled at selected sites"), br(),
@@ -41,7 +41,6 @@ DATE_SELECT_UI <- function(id) {
 DATE_SELECT <- function(input, output, session, Df, hidden = FALSE) {
 
   ns <- session$ns # see General Note 1
-
   # Min and Max Dates for Sites Selected
   Date_Min <- reactive({Df()$Date %>% min(na.rm=TRUE)})
   Date_Max <- reactive({Df()$Date %>% max(na.rm=TRUE)})
@@ -87,15 +86,15 @@ DATE_SELECT <- function(input, output, session, Df, hidden = FALSE) {
                       max = save_selected_upper)
     }
   })
- 
-  
+
+
   # Render "Or (Includes Both)" Text
   output$text_ui <- renderUI({
     req(Df() %>% summarise(n()) %>% unlist() != 0)
     h5("OR (includes both)", align = "center")
   })
-  
-  
+
+
   ### Year Selection
 
   # Choices
@@ -108,7 +107,6 @@ DATE_SELECT <- function(input, output, session, Df, hidden = FALSE) {
 
   # To fill back in previously selected - Memory
   observe({
-
     # save the Parameter Type input for when the Site selection changes. Isolate so does not cause reactivity
     isolate({
       save_selected <- input$year
@@ -129,8 +127,6 @@ DATE_SELECT <- function(input, output, session, Df, hidden = FALSE) {
                         selected = save_selected)
     }
   })
-
-
 
   return(list(Lower = reactive({input$date[1]}),
               Upper = reactive({input$date[2]}),

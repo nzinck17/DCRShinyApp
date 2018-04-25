@@ -45,7 +45,7 @@ PARAM_SELECT <- function(input, output, session, Df, multiple = TRUE) {
 
   Parameters_Non_Historical <- reactive({
     Df() %>%
-      filter(Date > Sys.Date()-years(5), Date < Sys.Date()) %>%
+      filter(Date > Sys.Date()- years(5), Date < Sys.Date()) %>%
       .$Parameter %>%
       factor() %>%
       levels()

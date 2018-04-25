@@ -20,7 +20,7 @@
  ipak <- function(pkg){
    new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
    if (length(new.pkg))
-     install.packages(new.pkg, dependencies = TRUE, repos="http://cran.rstudio.com/")
+     install.packages(new.pkg, dependencies = TRUE, repos="http://cran.rstudio.com/", quiet = T, verbose = F)
    sapply(pkg, require, character.only = TRUE)
  }
 
@@ -54,7 +54,8 @@ user <-  Sys.getenv("USERNAME")
     names(data) <- df_names
     # Extract each element of the data object into the global environment
     list2env(data ,.GlobalEnv)
-
+    # Remove data
+    rm(data)
     # Get user information
 if(user %in% df_users$EmailUserName){
   username <- paste(df_users$FirstName[df_users$EmailUserName == user],df_users$LastName[df_users$EmailUserName == user],sep = " ")
@@ -72,15 +73,13 @@ if(userlocation == "Quabbin"){
 } else {
   tab_selected = "Wachusett"
 }
-### Format Changes - ! to be moved to Update_Wave !
 
-  df_chem_quab <- df_chem_quab %>% rename(LocationDepth = Sampling_Level)
-
-  
 ### Modules
-  
+
 # Filter - Filter Related Modules
 source("modules/filter/filter_wq.R")
+source("modules/filter/filter_flow.R")
+# source("modules/filter/filter_precip.R")
 source("modules/filter/site_checkbox.R")
 source("modules/filter/station_level_checkbox.R")
 source("modules/filter/param_select.R")
@@ -88,7 +87,7 @@ source("modules/filter/param_checkbox.R") # Eventually delete
 source("modules/filter/date_select.R")
 source("modules/filter/checkbox_select_all.R")
 source("modules/filter/select_select_all.R")
-  
+
 # Plots - Modules that generate plots
 source("modules/plots/plot_time_wq.R")
 source("modules/plots/plot_time_depth_wq.R") # Merge with Plot_Time_wq (with differeing facetting schemes)
@@ -98,9 +97,10 @@ source("modules/plots/plot_corr_matrix_wq.R")
 source("modules/plots/plot_profline_custom.R") # look at Dan's script - faceting - Bring in actual function?
 source("modules/plots/distribution_wq.R")
 source("modules/plots/profile_heatmap.R")
-source("modules/plots/profile_line.R") 
+source("modules/plots/profile_line.R")
 source("modules/plots/phyto.R")
-  
+#source("modules/plots/hydro.R")
+
 # Plot Options - Modules containing plot options
 source("modules/plot_options/plot_theme_and_hlines.R")
 source("modules/plot_options/plot_text_and_vlines_time.R")
@@ -110,29 +110,24 @@ source("modules/plot_options/plot_save.R")
 
 # Statistics - Modules that generate Statistics
   # Make into One file
-source("modules/stats/stats_summary.R") 
+source("modules/stats/stats_summary.R")
 source("modules/stats/stats_time_depth_wq.R") # Merge into stats_sumamry
 source("modules/stats/profile_table_stats.R") # Merge into stats_summary
-  
+# Add Hydro Stats here?
+
 # Metadata - Modules for Metadata
 source("modules/metadata/metadata.R") # Seperate into multiple Modules
-  
-# Maps - Modules that use Leaflet Map generation 
+
+# Maps - Modules that use Leaflet Map generation
 source("modules/maps/home.R")
 source("modules/maps/geospatial_plot.R")
 source("modules/maps/site_map.R")
 source("modules/maps/site_map_single.R")
-  
-# Reports - Modules for report and document generation 
+
+# Reports - Modules for report and document generation
 source("modules/reports/report_AWQ.R")
 source("modules/reports/report_MWQ.R")
 source("modules/reports/report_custom.R")
-
-
-  
-
-
-  
 
 ### Load Functions
 
@@ -163,105 +158,109 @@ ui <- tagList(
                column(4,strong(paste("Data last updated:", last_update)),br()),
                column(8,tags$div(tags$em("Created by Nick Zinck, University of Massachusetts; and Dan Crocker,
                                          Massachusetts Department of Conservation and Recreation"), align = "right"), br())
-             ),
+                ),
 
 ######################################################
 # Home Page
 
-tabPanel("Home",
+  tabPanel("Home",
          fluidRow(
            column(3, imageOutput("dcr_image", height = 80), align = "left"),
            column(6, imageOutput("wave_image1", height = 80), align = "center"),
            column(3, imageOutput("umass_image", height = 80), align = "right")
          ),
          HOME_UI("home")
-),
-
+  ),
 
 ######################################################
 # Tributary Water Quality Data
 
-tabPanel("Tributary",
-  # Title
-  fluidRow(
-           column(3, imageOutput("wave_image3", height = 50), align = "left"),
-           column(6, h2("Tributary Water Quality Data", align = "center")),
-           column(3, imageOutput("DCR_BlueLeaf1", height = 50), align = "right")
-  ),
-  tabsetPanel(
-    tabPanel("Quabbin",
-             navlistPanel(widths = c(2, 10),
-                          tabPanel("Select / Filter Data", icon=icon("filter"), FILTER_WQ_UI("mod_trib_quab_filter")),
-                          tabPanel("--- Plots", icon = icon("line-chart"),
-                                   br(), wellPanel(em('Plots use data from the "Select / Filter Data" tab.
-                                                      Each plot may have additional selections, filters, and options.')),
-                                   tabsetPanel(
-                                     tabPanel("Time-Series Scatter", PLOT_TIME_WQ_UI("mod_trib_quab_plot_time")),
-                                     tabPanel("Correlation Scatter", PLOT_CORR_WQ_UI("mod_trib_quab_plot_corr")),
-                                     tabPanel("Distribution Charts", DISTRIBUTION_WQ_UI("mod_trib_quab_plot_dist"))
-                                   )
-                          ),
-                          tabPanel("--- Statistics", icon = icon("calculator"),
-                                   br(), wellPanel(em('Statistics use data from the "Select / Filter Data" tab')),
-                                   tabsetPanel(
-                                     tabPanel("Summary Statistics", STAT_TIME_WQ_UI("mod_trib_quab_stat_sum")),
-                                     tabPanel("Temporal Statistics", fluidRow(h5("Mann-Kendall Stats to come"))),
-                                     tabPanel("Correlation Matrix", PLOT_CORR_MATRIX_WQ_UI("mod_trib_quab_stat_cormat"))
-                                   )
-                          ),
-                          tabPanel("Geospatial", icon = icon("map-marker"), MAP_PLOT_UI("mod_trib_quab_map", df = df_trib_quab)),
-                          tabPanel("Metadata", icon = icon("table"), METADATA_UI("mod_trib_quab_meta"))
-             ) # end navlist panel
+  tabPanel("Tributary",
+    # Title
+    fluidRow(
+      column(3, imageOutput("wave_image3", height = 50), align = "left"),
+      column(6, h2("Tributary Water Quality Data", align = "center")),
+      column(3, imageOutput("DCR_BlueLeaf1", height = 50), align = "right")
     ),
-    tabPanel("Ware",
-             navlistPanel(widths = c(2, 10),
-                          tabPanel("Select / Filter Data", icon = icon("filter"), FILTER_WQ_UI("mod_trib_ware_filter")),
-                          tabPanel("--- Plots", icon = icon("line-chart"),
-                                   br(), wellPanel(em('Plots use data from the "Select / Filter Data" tab')),
-                                   tabsetPanel(
-                                     tabPanel("Time-Series Scatter", PLOT_TIME_WQ_UI("mod_trib_ware_plot_time")),
-                                     tabPanel("Correlation Scatter", PLOT_CORR_WQ_UI("mod_trib_ware_plot_corr")),
-                                     tabPanel("Distribution Charts", DISTRIBUTION_WQ_UI("mod_trib_ware_plot_dist"))
-                                   )
-                          ),
-                          tabPanel("--- Statistics", icon = icon("calculator"),
-                                   br(), wellPanel(em('Statistics use data from the "Select / Filter Data" tab')),
-                                   tabsetPanel(
-                                     tabPanel("Summary Statistics", STAT_TIME_WQ_UI("mod_trib_ware_stat_sum")),
-                                     tabPanel("Temporal Statistics", fluidRow(h5("Mann-Kendall Stats to come"))),
-                                     tabPanel("Correlation Matrix", PLOT_CORR_MATRIX_WQ_UI("mod_trib_ware_stat_cormat"))
-                                   )
-                          ),
-                          tabPanel("Geospatial", icon = icon("map-marker"), MAP_PLOT_UI("mod_trib_ware_map", df = df_trib_ware)),
-                          tabPanel("Metadata", icon = icon("table"), fluidRow(h5("See Quabbin Tab. Can add data here in future")))
-             ) # end navlist panel
-    ),
-    tabPanel("Wachusett",
-             navlistPanel(widths = c(2, 10),
-                          tabPanel("Select / Filter Data", icon = icon("filter"), FILTER_WQ_UI("mod_trib_wach_filter")),
-                          tabPanel("--- Plots", icon = icon("line-chart"),
-                                   br(),wellPanel(em('Plots use data from the "Select / Filter Data" tab')),
-                                   tabsetPanel(
-                                     tabPanel("Time-Series Scatter", PLOT_TIME_WQ_UI("mod_trib_wach_plot_time")),
-                                     tabPanel("Correlation Scatter", PLOT_CORR_WQ_UI("mod_trib_wach_plot_corr")),
-                                     tabPanel("Distribution Charts", DISTRIBUTION_WQ_UI("mod_trib_wach_plot_dist"))
-                                   )
-                          ),
-                          tabPanel("--- Statistics", icon = icon("calculator"),
-                                   br(), wellPanel(em('Statistics use data from the "Select / Filter Data" tab')),
-                                   tabsetPanel(
-                                     tabPanel("Summary Statistics", STAT_TIME_WQ_UI("mod_trib_wach_stat_sum")),
-                                     tabPanel("Temporal Statistics", fluidRow(h5("Mann-Kendall Stats to come"))),
-                                     tabPanel("Correlation Matrix", PLOT_CORR_MATRIX_WQ_UI("mod_trib_wach_stat_cormat"))
-                                   )
-                          ),
-                          tabPanel("Geospatial", icon = icon("map-marker"), MAP_PLOT_UI("mod_trib_wach_map", df = df_trib_wach)),
-                          tabPanel("Metadata", icon = icon("table"), METADATA_UI("mod_trib_wach_meta"))
-             ) # end navlist panel
-    ),
-    selected = tab_selected
-  )
-),  # end Tabpanel (page)
+    tabsetPanel(
+      tabPanel("Quabbin",
+        navlistPanel(widths = c(2, 10),
+            tabPanel("Select / Filter Data", icon=icon("filter"), FILTER_WQ_UI("mod_trib_quab_filter")),
+            tabPanel("--- Plots", icon = icon("line-chart"),
+              br(),
+              wellPanel(em('Plots use data from the "Select / Filter Data" tab.Each plot may have additional selections, filters, and options.')),
+              tabsetPanel(
+                tabPanel("Time-Series Scatter", PLOT_TIME_WQ_UI("mod_trib_quab_plot_time")),
+                tabPanel("Correlation Scatter", PLOT_CORR_WQ_UI("mod_trib_quab_plot_corr")),
+                tabPanel("Distribution Charts", DISTRIBUTION_WQ_UI("mod_trib_quab_plot_dist"))
+              )
+            ),
+            tabPanel("--- Statistics", icon = icon("calculator"),
+            br(),
+              wellPanel(em('Statistics use data from the "Select / Filter Data" tab')),
+              tabsetPanel(
+                tabPanel("Summary Statistics", STAT_TIME_WQ_UI("mod_trib_quab_stat_sum")),
+                tabPanel("Temporal Statistics", fluidRow(h5("Mann-Kendall Stats to come"))),
+                tabPanel("Correlation Matrix", PLOT_CORR_MATRIX_WQ_UI("mod_trib_quab_stat_cormat"))
+              )
+            ),
+            tabPanel("Geospatial", icon = icon("map-marker"), MAP_PLOT_UI("mod_trib_quab_map", df = df_trib_quab)),
+            tabPanel("Metadata", icon = icon("table"), METADATA_UI("mod_trib_quab_meta"))
+        ) # end navlist panel
+      ),
+      tabPanel("Ware",
+        navlistPanel(widths = c(2, 10),
+          tabPanel("Select / Filter Data", icon = icon("filter"), FILTER_WQ_UI("mod_trib_ware_filter")),
+          tabPanel("--- Plots", icon = icon("line-chart"),
+            br(),
+            wellPanel(em('Plots use data from the "Select / Filter Data" tab')),
+              tabsetPanel(
+                tabPanel("Time-Series Scatter", PLOT_TIME_WQ_UI("mod_trib_ware_plot_time")),
+                tabPanel("Correlation Scatter", PLOT_CORR_WQ_UI("mod_trib_ware_plot_corr")),
+                tabPanel("Distribution Charts", DISTRIBUTION_WQ_UI("mod_trib_ware_plot_dist"))
+              )
+          ),
+          tabPanel("--- Statistics", icon = icon("calculator"),
+            br(),
+            wellPanel(em('Statistics use data from the "Select / Filter Data" tab')),
+            tabsetPanel(
+              tabPanel("Summary Statistics", STAT_TIME_WQ_UI("mod_trib_ware_stat_sum")),
+              tabPanel("Temporal Statistics", fluidRow(h5("Mann-Kendall Stats to come"))),
+              tabPanel("Correlation Matrix", PLOT_CORR_MATRIX_WQ_UI("mod_trib_ware_stat_cormat"))
+            )
+          ),
+          tabPanel("Geospatial", icon = icon("map-marker"), MAP_PLOT_UI("mod_trib_ware_map", df = df_trib_ware)),
+          tabPanel("Metadata", icon = icon("table"), fluidRow(h5("See Quabbin Tab. Can add data here in future")))
+        ) # end navlist panel
+      ),
+      tabPanel("Wachusett",
+        navlistPanel(widths = c(2, 10),
+          tabPanel("Select / Filter Data", icon = icon("filter"), FILTER_WQ_UI("mod_trib_wach_filter")),
+          tabPanel("--- Plots", icon = icon("line-chart"),
+            br(),
+            wellPanel(em('Plots use data from the "Select / Filter Data" tab')),
+            tabsetPanel(
+              tabPanel("Time-Series Scatter", PLOT_TIME_WQ_UI("mod_trib_wach_plot_time")),
+              tabPanel("Correlation Scatter", PLOT_CORR_WQ_UI("mod_trib_wach_plot_corr")),
+              tabPanel("Distribution Charts", DISTRIBUTION_WQ_UI("mod_trib_wach_plot_dist"))
+            )
+          ),
+          tabPanel("--- Statistics", icon = icon("calculator"),
+            br(),
+            wellPanel(em('Statistics use data from the "Select / Filter Data" tab')),
+            tabsetPanel(
+              tabPanel("Summary Statistics", STAT_TIME_WQ_UI("mod_trib_wach_stat_sum")),
+              tabPanel("Temporal Statistics", fluidRow(h5("Mann-Kendall Stats to come"))),
+              tabPanel("Correlation Matrix", PLOT_CORR_MATRIX_WQ_UI("mod_trib_wach_stat_cormat"))
+            )
+          ),
+          tabPanel("Geospatial", icon = icon("map-marker"), MAP_PLOT_UI("mod_trib_wach_map", df = df_trib_wach)),
+          tabPanel("Metadata", icon = icon("table"), METADATA_UI("mod_trib_wach_meta"))
+        ) # end navlist panel
+      ),
+      selected = tab_selected
+    )
+),  # end Tributary Tabpanel (page)
 
 #############################################################
 # Reservoir
@@ -354,19 +353,20 @@ tabPanel("Reservoir",
                            "Profile",
                            tabPanel("Select / Filter Data", icon=icon("filter"), FILTER_WQ_UI("mod_prof_wach_filter")),
                            tabPanel("--- Plots", icon=icon("line-chart"),
-                                    br(), wellPanel(em('Plots use data from the "Select / Filter Data" tab')),
-                                    tabsetPanel(
-                                      tabPanel("Heat Map", PROF_HEATMAP_UI("mod_prof_wach_heat")),
-                                      tabPanel("Line Plot", PROF_LINE_UI("mod_prof_wach_line", df_prof_wach)),
-                                      tabPanel("Distribution Charts", DISTRIBUTION_WQ_UI("mod_prof_wach_plot_dist"))
-                                    )
+                              br(),
+                              wellPanel(em('Plots use data from the "Select / Filter Data" tab')),
+                              tabsetPanel(
+                                tabPanel("Heat Map", PROF_HEATMAP_UI("mod_prof_wach_heat")),
+                                tabPanel("Line Plot", PROF_LINE_UI("mod_prof_wach_line", df_prof_wach)),
+                                tabPanel("Distribution Charts", DISTRIBUTION_WQ_UI("mod_prof_wach_plot_dist"))
+                              )
                            ),
                            tabPanel("Table and Summary", PROF_TABLE_STAT_UI("mod_prof_wach_sum", df_prof_wach)),
                            tabPanel("Metadata", icon=icon("table"), METADATA_UI("mod_prof_wach_meta")),
                            "Biological",
                            tabPanel("Phytoplankton", PHYTO_UI("mod_phyto_wach_plots", df_phyto_wach))
-              ) # end navlist panel
-     ),
+            ) # end navlist panel
+     ), # End TabPanel Watersheds
      selected = tab_selected
    )
  ),  # end Tabpanel (page)
@@ -374,27 +374,181 @@ tabPanel("Reservoir",
 ###################################################################
 # Hydrology/Meteorology
 
-tabPanel("Hydro/Met",
+  tabPanel("Hydro/Met",
 
-         # Title
-         fluidRow(
-                  column(3, imageOutput("wave_image6", height = 50), align = "left"),
-                  column(6, h2("Hydrology and Meteorology Data", align = "center")),
-                  column(3, imageOutput("DCR_BlueLeaf3", height = 50), align = "right")
-                  )
-),
-
-
-         # ) # end navlist panel
-           # ),  # End Tab Panel Wachusett
-           # selected = tab_selected
-         # ) # End Tabset Panel
-# ), #End Tab Panel Hydro/Met
+    # Header
+    fluidRow(
+      column(3, imageOutput("wave_image6", height = 50), align = "left"),
+      column(6, h2("Hydrology and Meteorology Data", align = "center")),
+      column(3, imageOutput("DCR_BlueLeaf3", height = 50), align = "right")
+    ),
+    tabsetPanel(
+      tabPanel("Quabbin",
+          navlistPanel(widths = c(2, 10),
+            "Streamflow",
+            tabPanel("Select / Filter Data", icon = icon("filter"), FILTER_WQ_UI("mod_flow_quab_filter")),
+            tabPanel("--- Plots/Ratings", icon = icon("line-chart"),
+                     br(),
+                     wellPanel(em('Plots use data from the "Select / Filter Data" tab')),
+                     tabsetPanel(
+                       tabPanel("Hydrographs", PLOT_CORR_WQ_UI("mod_flow_quab_hydrographs")),
+                       tabPanel("Flow Duration", PLOT_CORR_WQ_UI("mod_flow_quab_flowdur")),
+                       tabPanel("Boxplots", PLOT_CORR_WQ_UI("mod_flow_quab_boxplots")),
+                       tabPanel("Ratings", PLOT_CORR_WQ_UI("mod_flow_quab_ratings"))
+                     )
+            ),
+            tabPanel("--- Streamflow Stats", icon = icon("calculator"),
+                     br(),
+                     wellPanel(em('Statistics use data from the "Select / Filter Data" tab')),
+                     tabsetPanel(
+                       tabPanel("Summary Statistics", STAT_TIME_DEPTH_WQ_UI("mod_flow_quab_stat_sum")),
+                       tabPanel("Historical Statistics", PLOT_CORR_MATRIX_WQ_UI("mod_flow_quab_stat_hist"))
+                     )
+            ),
+            tabPanel("--- Modeling", icon = icon("calculator"),
+                     br(),
+                     wellPanel(em('Statistics use data from the "Select / Filter Data" tab')),
+                     tabsetPanel(
+                       tabPanel("Loadflex", PLOT_CORR_MATRIX_WQ_UI("mod_flow_quab_loadflex")),
+                       tabPanel("Hagemann Model", PLOT_CORR_MATRIX_WQ_UI("mod_flow_quab_hagemann"))
+                     )
+            ),
+            tabPanel("Ratings", icon = icon("calculator"),
+                     tabsetPanel(
+                       tabPanel("Rating Curves", STAT_TIME_DEPTH_WQ_UI("mod_flow_quab_ratcurve")),
+                       tabPanel("Rating Tables", PLOT_CORR_MATRIX_WQ_UI("mod_chem_quab_rattable"))
+                     )
+            ),
+            "Precipitation",
+            tabPanel("Select / Filter Data", icon=icon("filter"), FILTER_WQ_UI("mod_precip_quab_filter")),
+            tabPanel("--- Plots", icon = icon("line-chart"),
+                     br(),
+                     wellPanel(em('Plots use data from the "Select / Filter Data" tab')),
+                     tabsetPanel(
+                       tabPanel("Current Conditions", PROF_HEATMAP_UI("mod_precip_quab_current")),
+                       tabPanel("Historical Precip", PROF_LINE_UI("mod_precip_quab_hist", df_prof_quab)),
+                       tabPanel("Distribution Charts", DISTRIBUTION_WQ_UI("mod_precip_quab_plot_dist"))
+                     )
+            ),
+            tabPanel("--- Stats/Tables", icon = icon("calculator"),
+                     br(),
+                      wellPanel(em('Statistics use data from the "Select / Filter Data" tab')),
+                      tabsetPanel(
+                        tabPanel("Summary Statistics", STAT_TIME_DEPTH_WQ_UI("mod_precip_quab_stat_sum")),
+                        tabPanel("Historical Statistics", PLOT_CORR_MATRIX_WQ_UI("mod_precip_quab_stat_hist"))
+                      )
+            ),
+            "Water Supply",
+            tabPanel("Reservoirs/Transfers", icon=icon("calculator"),
+                     br(),
+                     wellPanel(em('Plots use data from the "Select / Filter Data" tab')),
+                     tabsetPanel(
+                       tabPanel("Flows/Transfers", PLOT_TIME_WQ_UI("mod_ws_quab_flowtrans")),
+                       tabPanel("Historical Elevation/Storage ", PLOT_CORR_WQ_UI("mod_ws_quab_elev_stor"))
+                     )
+            ),
+            tabPanel("Snowpack", icon = icon("calculator"),
+                     tabsetPanel(
+                       tabPanel("Map Overview", icon=icon("map-marker"), FILTER_WQ_UI("mod_snow_quab_map")),
+                       tabPanel("Summary Statistics", STAT_TIME_DEPTH_WQ_UI("mod_snow_quab_stat_sum"))
+                     )
+            ),
+            tabPanel("Groundwater", icon=icon("calculator"),
+                     tabsetPanel(
+                       tabPanel("Map Overview", icon=icon("map-marker"), FILTER_WQ_UI("mod_gw_quab_map")),
+                       tabPanel("Plots", STAT_TIME_DEPTH_WQ_UI("mod_gw_quab_plots")),
+                       tabPanel("Stats/Tables", STAT_TIME_DEPTH_WQ_UI("mod_gw_quab_stats"))
+                     )
+            )
+          ) # end navlist panel
+      ), # End Tab Panel Quabbin
+      tabPanel("Wachusett",
+          navlistPanel(widths = c(2, 10),
+              "Streamflow",
+              tabPanel("Select / Filter Data", icon = icon("filter"), FILTER_FLOW_UI("mod_flow_wach_filter")),
+              tabPanel("--- Plots/Ratings", icon = icon("line-chart"),
+                       br(),
+                       wellPanel(em('Plots use data from the "Select / Filter Data" tab')),
+                       tabsetPanel(
+                         tabPanel("Hydrographs", PLOT_CORR_WQ_UI("mod_flow_wach_hydrographs")),
+                         tabPanel("Flow Duration", PLOT_CORR_WQ_UI("mod_flow_wach_flowdur")),
+                         tabPanel("Boxplots", PLOT_CORR_WQ_UI("mod_flow_wach_boxplots")),
+                         tabPanel("Ratings", PLOT_CORR_WQ_UI("mod_flow_wach_ratings"))
+                       )
+              ),
+              tabPanel("--- Streamflow Stats", icon = icon("calculator"),
+                       br(),
+                       wellPanel(em('Statistics use data from the "Select / Filter Data" tab')),
+                       tabsetPanel(
+                         tabPanel("Summary Statistics", STAT_TIME_DEPTH_WQ_UI("mod_flow_wach_stat_sum")),
+                         tabPanel("Historical Statistics", PLOT_CORR_MATRIX_WQ_UI("mod_flow_wach_stat_hist"))
+                       )
+              ),
+              tabPanel("--- Modeling", icon = icon("calculator"),
+                       br(),
+                       wellPanel(em('Statistics use data from the "Select / Filter Data" tab')),
+                       tabsetPanel(
+                         tabPanel("Loadflex", PLOT_CORR_MATRIX_WQ_UI("mod_flow_wach_loadflex")),
+                         tabPanel("Hagemann Model", PLOT_CORR_MATRIX_WQ_UI("mod_flow_wach_hagemann"))
+                       )
+              ),
+              tabPanel("Ratings", icon = icon("calculator"),
+                       tabsetPanel(
+                         tabPanel("Rating Curves", STAT_TIME_DEPTH_WQ_UI("mod_flow_wach_ratcurve")),
+                         tabPanel("Rating Tables", PLOT_CORR_MATRIX_WQ_UI("mod_chem_wach_rattable"))
+                       )
+              ),
+              "Precipitation",
+              tabPanel("Select / Filter Data", icon=icon("filter"), FILTER_WQ_UI("mod_precip_wach_filter")),
+              tabPanel("--- Plots", icon = icon("line-chart"),
+                       br(),
+                       wellPanel(em('Plots use data from the "Select / Filter Data" tab')),
+                       tabsetPanel(
+                         tabPanel("Current Conditions", PROF_HEATMAP_UI("mod_precip_wach_current")),
+                         tabPanel("Historical Precip", PROF_LINE_UI("mod_precip_wach_hist", df_prof_wach)),
+                         tabPanel("Distribution Charts", DISTRIBUTION_WQ_UI("mod_precip_wach_plot_dist"))
+                       )
+              ),
+              tabPanel("--- Stats/Tables", icon = icon("calculator"),
+                       br(),
+                       wellPanel(em('Statistics use data from the "Select / Filter Data" tab')),
+                       tabsetPanel(
+                         tabPanel("Summary Statistics", STAT_TIME_DEPTH_WQ_UI("mod_precip_wach_stat_sum")),
+                         tabPanel("Historical Statistics", PLOT_CORR_MATRIX_WQ_UI("mod_precip_wach_stat_hist"))
+                       )
+              ),
+              "Water Supply",
+              tabPanel("Reservoirs/Transfers", icon=icon("calculator"),
+                       br(),
+                       wellPanel(em('Plots use data from the "Select / Filter Data" tab')),
+                       tabsetPanel(
+                         tabPanel("Flows/Transfers", PLOT_TIME_WQ_UI("mod_ws_wach_flowtrans")),
+                         tabPanel("Historical Elevation/Storage ", PLOT_CORR_WQ_UI("mod_ws_wach_elev_stor"))
+                       )
+              ),
+              tabPanel("Snowpack", icon = icon("calculator"),
+                       tabsetPanel(
+                         tabPanel("Map Overview", icon=icon("map-marker"), FILTER_WQ_UI("mod_snow_wach_map")),
+                         tabPanel("Summary Statistics", STAT_TIME_DEPTH_WQ_UI("mod_snow_wach_stat_sum"))
+                       )
+              ),
+              tabPanel("Groundwater", icon=icon("calculator"),
+                       tabsetPanel(
+                         tabPanel("Map Overview", icon=icon("map-marker"), FILTER_WQ_UI("mod_gw_wach_map")),
+                         tabPanel("Plots", STAT_TIME_DEPTH_WQ_UI("mod_gw_wach_plots")),
+                         tabPanel("Stats/Tables", STAT_TIME_DEPTH_WQ_UI("mod_gw_wach_stats"))
+                       )
+              )
+          ) # end navlist panel
+      ), # End TabPanel Watersheds
+      selected = tab_selected
+    )
+  ),  # end Tabpanel (page)
 
 ####################################################################
 # Forestry
 
-tabPanel("Forestry",
+  tabPanel("Forestry",
 
          # Title
          fluidRow(
@@ -402,12 +556,12 @@ tabPanel("Forestry",
                   column(6, h2("Forestry Data", align = "center")),
                   column(3, imageOutput("DCR_BlueLeaf4", height = 50), align = "right")
          )
-),
+  ), # End Tab Panel Forestry
 
 #########################################################
 # Reports
 
-tabPanel("Report",
+  tabPanel("Report",
 
          # Title
          fluidRow(
@@ -441,9 +595,7 @@ tabPanel("Report",
                                )
                       )
          ) # end navlist
-
-) # end tabpanel (page)
-
+      )   #End Tab Panel Reports
 #########################################################
 ) # end tagList
 
@@ -485,7 +637,6 @@ server <- function(input, output, session) {
   # MetaData
   callModule(METADATA, "mod_trib_quab_meta", df = df_trib_quab, df_site = df_trib_quab_site, df_param = df_quab_param)
 
-
   ### Ware
 
   # Filter
@@ -508,9 +659,11 @@ server <- function(input, output, session) {
   ### Wachusett
 
   # Filter
-  Df_Trib_Wach <- callModule(FILTER_WQ, "mod_trib_wach_filter", df = df_trib_wach, df_site = df_trib_wach_site,
+  Df_Trib_Wach <- callModule(FILTER_WQ, "mod_trib_wach_filter",
+                             df = df_trib_wach,
+                             df_site = df_trib_wach_site,
                              df_flags = df_flags,
-                             df_flag_sample_index = df_flag_sample_index[df_flag_sample_index$Dataset == "df_trib_bact_wach",],
+                             df_flag_index = df_wach_flag_index[df_wach_flag_index$Dataset == "df_trib_bact_wach",],
                              type = "wq")
 
   # Plots
@@ -553,7 +706,7 @@ server <- function(input, output, session) {
   callModule(PLOT_CORR_MATRIX_WQ, "mod_chem_quab_stat_cormat", Df = Df_Chem_Quab$Wide)
 
   # MetaData
-  callModule(METADATA, "mod_chem_quab_meta", df = df_chem_quab, df_site = df_chem_quab_site, df_param = df_chem_param)
+  callModule(METADATA, "mod_chem_quab_meta", df = df_chem_quab, df_site = df_chem_quab_site, df_param = df_quab_param)
 
   ### Profile
 
@@ -581,7 +734,8 @@ server <- function(input, output, session) {
   Df_Bact_Wach <- callModule(FILTER_WQ, "mod_bact_wach_filter",
                              df = df_bact_wach,
                              df_site = df_bact_wach_site,
-                             df_flags = df_flags, df_flag_sample_index = df_flag_sample_index[df_flag_sample_index$Dataset == "df_trib_bact_wach",],
+                             df_flags = df_flags,
+                             df_flag_index = df_wach_flag_index[df_wach_flag_index$Dataset == "df_trib_bact_wach",],
                              type = "wq")
 
   # Plots
@@ -606,7 +760,8 @@ server <- function(input, output, session) {
   Df_Chem_Wach <- callModule(FILTER_WQ, "mod_chem_wach_filter",
                              df = df_chem_wach,
                              df_site = df_chem_wach_site,
-                             df_flags = df_flags, df_flag_sample_index = df_flag_sample_index[df_flag_sample_index$Dataset == "df_chem_wach",],
+                             df_flags = df_flags,
+                             df_flag_index = df_wach_flag_index[df_wach_flag_index$Dataset == "df_chem_wach",],
                              type = "wq_depth")
 
   # Plots
@@ -645,6 +800,53 @@ server <- function(input, output, session) {
 
 ####################################################################
 # Hydrology/Meteorology/Statistics
+
+### STREAMFLOW
+  # # Filter
+  Df_Flow_Wach <- callModule(FILTER_FLOW, "mod_flow_wach_filter",
+                             df = df_wach_flow,
+                             df_site = df_trib_wach_site,
+                             df_wq = df_trib_wach,
+                             df_flags = df_flags,
+                             df_flag_index = df_wach_flag_index[df_wach_flag_index$Dataset == "df_hobo_wach",],
+                             type = "wq"
+                            )
+  #
+  # callModule(FLOW_PLOTS, "mod_flow_wach_plots", Df = Df_Flow_Wach$Long)
+  # callModule(FLOW_STATS, "mod_prof_wach_line", df = df_prof_wach)
+  # callModule(FLOW_FLOWDUR, "mod_prof_wach_plot_dist", Df = Df_Prof_Wach$Long)
+  # callModule(FLOW_BOXPLOTS, "mod_prof_wach_plot_dist", Df = Df_Prof_Wach$Long)
+  # callModule(FLOW_RATINGS, "mod_prof_wach_plot_dist", Df = Df_Prof_Wach$Long)
+  # callModule(FLOW_LOADING, "mod_prof_wach_plot_dist", Df = Df_Prof_Wach$Long)
+  #
+  # ### PRECIP
+  #
+  # # Filter
+  # Df_Precip_Wach <- callModule(FILTER_PRECIP, "mod_precip_wach_filter",
+  #                             df_precip = df_wach_precip_daily,
+  #                             type = "wq")
+  #
+  # callModule(PRECIP_MAP, "mod_prof_wach_plot_dist", Df = Df_Prof_Wach$Long)
+  # callModule(PRECIP, "mod_prof_wach_plot_dist", Df = Df_Prof_Wach$Long)
+  # callModule(PRECIP_PLOTS, "mod_prof_wach_plot_dist", Df = Df_Prof_Wach$Long)
+  # callModule(PRECIP_STATS, "mod_prof_wach_plot_dist", Df = Df_Prof_Wach$Long)
+  # ### PRECIP
+  #
+  # # WATERSUPPLY
+  # # Filter
+  # Df_wSupply_Wach <- callModule(FILTER_WSUPPLY, "mod_wsupply_wach_filter",
+  #                              df_wsupply = df_wsupply_wach,
+  #                              type = "wq")
+  #
+  # callModule(WSUPPLY_RESTRANS, "mod_prof_wach_plot_dist", Df = Df_Prof_Wach$Long)
+  # callModule(WSUPPLY_SNOW, "mod_prof_wach_plot_dist", Df = Df_Prof_Wach$Long)
+  # callModule(WSUPPLY_GWATER, "mod_prof_wach_plot_dist", Df = Df_Prof_Wach$Long)
+
+
+
+
+
+
 
 ####################################################################
 # Reports

@@ -5,7 +5,7 @@
 #     Written by: Nick Zinck, Spring 2017
 ##############################################################################################################################
 
-# Notes: 
+# Notes:
 #   1. req() will delay the rendering of a widget or other reactive object until a certain logical expression is TRUE or not NULL
 #
 # To-Do List:
@@ -17,11 +17,11 @@
 ##############################################################################################################################
 
 PLOT_TIME_DEPTH_WQ_UI <- function(id) {
-  
+
   ns <- NS(id) # see General Note 1
-  
+
   tagList(
-    
+
     plotlyOutput(ns("plot"), width = "100%", height = 600),
     # Plot Options
     fluidRow(br(), br()),
@@ -30,17 +30,17 @@ PLOT_TIME_DEPTH_WQ_UI <- function(id) {
              tabsetPanel(
                tabPanel("Display Options", br(), br(),
                         column(2,
-                               radioButtons(ns("plot_display_theme"), "Theme:", 
-                                            choices= c("Gray", 
-                                                       "Black and White",  
-                                                       "Line Draw", 
-                                                       "Light", 
-                                                       "Dark", 
-                                                       "Minimal", 
+                               radioButtons(ns("plot_display_theme"), "Theme:",
+                                            choices= c("Gray",
+                                                       "Black and White",
+                                                       "Line Draw",
+                                                       "Light",
+                                                       "Dark",
+                                                       "Minimal",
                                                        "Classic"))
                         ), # end column
                         column(2,
-                               checkboxGroupInput(ns("plot_display_log"), "Misc. Display :", 
+                               checkboxGroupInput(ns("plot_display_log"), "Misc. Display :",
                                                   choices= c("Log-scale Y Axis"))
                         ), # end column
                         column(2,
@@ -50,7 +50,7 @@ PLOT_TIME_DEPTH_WQ_UI <- function(id) {
                ), # end Tab Panel
                tabPanel("Trends and Lines", br(), br(),
                         column(2,
-                               radioButtons(ns("plot_line_trend"), "Add Trendline:", 
+                               radioButtons(ns("plot_line_trend"), "Add Trendline:",
                                             choices= c("None",
                                                        "Linear" = "lm",
                                                        "Curve" = "loess")),
@@ -86,19 +86,19 @@ PLOT_TIME_DEPTH_WQ_UI <- function(id) {
                ),
                tabPanel("Title and Axis Labels", br(), br(),
                         column(3,
-                               radioButtons(ns("plot_title"), "Title Options:", 
+                               radioButtons(ns("plot_title"), "Title Options:",
                                             choices= c("None", "Auto", "Custom"),
                                             selected = "Auto"),
                                textInput(ns("plot_title_text"), "")
                         ), # end column
                         column(3,
-                               radioButtons(ns("plot_xlab"), "X Label Options:", 
+                               radioButtons(ns("plot_xlab"), "X Label Options:",
                                             choices= c("None", "Auto", "Custom"),
                                             selected = "Auto"),
                                textInput(ns("plot_xlab_text"), "")
                         ), # end column
                         column(3,
-                               radioButtons(ns("plot_ylab"), "Y Label Options:", 
+                               radioButtons(ns("plot_ylab"), "Y Label Options:",
                                             choices= c("None", "Auto", "Custom"),
                                             selected = "Auto"),
                                textInput(ns("plot_ylab_text"), "")
@@ -106,8 +106,8 @@ PLOT_TIME_DEPTH_WQ_UI <- function(id) {
                ), # end Tab Panel
                tabPanel("Grouping (Color/Shape)", br(), br(),
                         column(3,
-                               radioButtons(ns("plot_color"), label = "Group with Colors:", 
-                                            choices = c("None" = 1, 
+                               radioButtons(ns("plot_color"), label = "Group with Colors:",
+                                            choices = c("None" = 1,
                                                         "Station" = "Station",
                                                         "Sampling Level" = "Sampling_Level",
                                                         "met/hydro filter 1 (select group)" = "met1",
@@ -117,8 +117,8 @@ PLOT_TIME_DEPTH_WQ_UI <- function(id) {
                         ), # end column
                         # new column
                         column(3,
-                               radioButtons(ns("plot_shape"), label = "Group with Shapes:", 
-                                            choices = c("None" = 1, 
+                               radioButtons(ns("plot_shape"), label = "Group with Shapes:",
+                                            choices = c("None" = 1,
                                                         "Station" = "Station",
                                                         "Sampling Level" = "Sampling_Level",
                                                         "met/hydro filter 1 (select group)" = "met1",
@@ -132,19 +132,19 @@ PLOT_TIME_DEPTH_WQ_UI <- function(id) {
                                downloadButton(ns('save_plot'), "Save Plot")
                         ),
                         column(2,
-                               radioButtons(ns("plot_save_size"), "Plot Size:", 
+                               radioButtons(ns("plot_save_size"), "Plot Size:",
                                             choices= c("small",
                                                        "medium",
                                                        "large"))
                         ),
                         column(2,
-                               radioButtons(ns("plot_save_type"), "File Type:", 
+                               radioButtons(ns("plot_save_type"), "File Type:",
                                             choices= c("pdf",
                                                        "jpg",
                                                        "png"))
                         ),
                         column(2,
-                               checkboxGroupInput(ns("plot_save_grid"), "Gridline Override:", 
+                               checkboxGroupInput(ns("plot_save_grid"), "Gridline Override:",
                                                   choices= c("major gridlines",
                                                              "minor gridlines"))
                         ) # end column
@@ -152,7 +152,7 @@ PLOT_TIME_DEPTH_WQ_UI <- function(id) {
              ) # end tabSet Panel
       ), # end Column
       # extend the page with a right column of blank rows (hack at keeping the page the same height no matter the tab open)
-      column(1, br(), br(), br(), br(), br(), br(), br(), br(), br(), br(), br(), 
+      column(1, br(), br(), br(), br(), br(), br(), br(), br(), br(), br(), br(),
              br(), br(), br(), br(), br(), br(), br(), br(), br(), br(), br(), br()
       )
     ) # Fluid Row
@@ -165,54 +165,54 @@ PLOT_TIME_DEPTH_WQ_UI <- function(id) {
 ##############################################################################################################################
 
 PLOT_TIME_DEPTH_WQ <- function(input, output, session, Df) {
-  
-  
+
+
 ### Text For Plot
-  
+
   # Station Text
   text_station <- reactive({
     Df()$Station %>% factor() %>% levels() %>% paste()
   })
-  
+
   # Depth Text
   text_depth <- reactive({
-    Df()$Depthm %>% factor() %>% levels() %>% paste()
+    Df()$Depth_m %>% factor() %>% levels() %>% paste()
   })
-  
+
   # Param Text
   text_param <- reactive({
     Df()$Parameter %>% factor() %>% levels() %>% paste()
   })
-  
+
   # Units Text
   text_units <- reactive({
     Df()$Units %>% factor() %>% levels() %>% paste()
   })
-  
+
   # Date Text - Start
   text_date_start <- reactive({
     Df()$Date %>% min(na.rm = TRUE) %>% paste()
   })
-  
+
   # Date Text - End
   text_date_end <- reactive({
     Df()$Date %>% max(na.rm = TRUE) %>% paste()
   })
-  
+
 
 
 ### PLOT
-  
+
   # Plot Creation
-  
+
   p <- reactive({
-    
+
     # Features in which all plot options have in common
     p <- ggplot(Df(), aes(x = Date, y = Result))
-      
+
 
 # Display Tab
-    
+
     # Theme based on selection
     if(input$plot_display_theme == "Gray"){
       p <- p + theme_gray()
@@ -240,14 +240,14 @@ PLOT_TIME_DEPTH_WQ <- function(input, output, session, Df) {
     if("Log-scale Y Axis" %in% input$plot_display_log){
       p <- p + scale_y_log10()
     }
-    
+
 # Grouping and Trendline
-    
+
     # Group by both Color and Shape when both selected
     if(input$plot_color != 1 & input$plot_shape != 1){
       p <- p + geom_point(aes_string(color = input$plot_color, shape = input$plot_shape), size = input$plot_display_psize)
       if(input$plot_line_trend != "None"){
-        p <- p + geom_smooth(method = input$plot_line_trend, 
+        p <- p + geom_smooth(method = input$plot_line_trend,
                              size = input$plot_line_trend_size,
                              se = input$plot_line_trend_ribbon,
                              aes_string(color = input$plot_color, linetype = input$plot_shape))
@@ -257,32 +257,32 @@ PLOT_TIME_DEPTH_WQ <- function(input, output, session, Df) {
     else if (input$plot_color != 1){
       p <- p + geom_point(aes_string(color = input$plot_color), size = input$plot_display_psize)
       if(input$plot_line_trend != "None"){
-        p <- p + geom_smooth(method = input$plot_line_trend, 
+        p <- p + geom_smooth(method = input$plot_line_trend,
                              size = input$plot_line_trend_size,
                              se = input$plot_line_trend_ribbon,
                              aes_string(color = input$plot_color))
       }
-    } 
-    # Group by only Shape when only shape grouping is selected 
+    }
+    # Group by only Shape when only shape grouping is selected
     else if (input$plot_shape != 1){
       p <- p + geom_point(aes_string(shape = input$plot_shape), size = input$plot_display_psize)
       if(input$plot_line_trend != "None"){
-        p <- p + geom_smooth(method = input$plot_line_trend, 
+        p <- p + geom_smooth(method = input$plot_line_trend,
                              size = input$plot_line_trend_size,
                              se = input$plot_line_trend_ribbon,
                              aes_string(linetype = input$plot_shape))
       }
-    } 
+    }
     # No Grouping Selected
     else {
       p <- p + geom_point(size = input$plot_display_psize)
       if(input$plot_line_trend != "None"){
-        p <- p + geom_smooth(method = input$plot_line_trend, 
+        p <- p + geom_smooth(method = input$plot_line_trend,
                              size = input$plot_line_trend_size,
                              se = input$plot_line_trend_ribbon)
       }
     }
-    
+
     # Facet for Sites if no grouping for site is selected and number of sites is greater than 1
     if(input$plot_color != "Station" & input$plot_shape != "Station" & length(c(input$station)) > 1){
       if(input$plot_color != "SamplingLevel" & input$plot_shape != "SamplingLevel" & length(c(input$level)) > 1){
@@ -297,44 +297,44 @@ PLOT_TIME_DEPTH_WQ <- function(input, output, session, Df) {
     }
 
 # Add Lines
-    
+
     # Show Non-Detect Level
     if(input$plot_line_nd == TRUE){
-      p <- p + geom_hline(yintercept = 2, 
+      p <- p + geom_hline(yintercept = 2,
                           linetype = input$plot_line_nd_type,
                           size = input$plot_line_nd_size)
     }
-    
+
     # Show Reprting Limit
     if(input$plot_line_rl == TRUE){
-      p <- p + geom_hline(yintercept = 3, 
+      p <- p + geom_hline(yintercept = 3,
                           linetype = input$plot_line_rl_type,
                           size = input$plot_line_rl_size)
     }
-    
+
     # Performance Standard
     if(input$plot_line_ps == TRUE){
-      p <- p + geom_hline(yintercept = 4, 
+      p <- p + geom_hline(yintercept = 4,
                           linetype = input$plot_line_ps_type,
                           size = input$plot_line_ps_size)
     }
 
 
 # Title and Axis Lables
-    
+
     # Title
     if(input$plot_title == "None"){
       p <- p + ggtitle("")
     }
     if(input$plot_title == "Auto"){
-      p <- p + ggtitle(paste(text_param(), "at", 
+      p <- p + ggtitle(paste(text_param(), "at",
                              text_station(), text_depth(),
                              "from", text_date_start(), "to", text_date_end(), sep= " "))
     }
     if(input$plot_title == "Custom"){
       p <- p + ggtitle(input$plot_title_text)
     }
-    
+
     # X Axis
     if(input$plot_xlab == "None"){
       p <- p + xlab("")
@@ -345,7 +345,7 @@ PLOT_TIME_DEPTH_WQ <- function(input, output, session, Df) {
     if(input$plot_xlab == "Custom"){
       p <- p + xlab(input$plot_xlab_text)
     }
-    
+
     # Y Axis
     if(input$plot_ylab == "None"){
       p <- p + ylab("")
@@ -356,12 +356,12 @@ PLOT_TIME_DEPTH_WQ <- function(input, output, session, Df) {
     if(input$plot_ylab == "Custom"){
       p <- p + ylab(input$plot_ylab_text)
     }
-    
+
 # Save Options
-    
+
     # Size dependent? Change size for saving?
     p <- p + theme(plot_margin = unit(c(0.2, 0.2, 0.2, 0.5), "in"))
-    
+
     # Gridlines for saving options
     if("major gridlines" %in% input$plot_save_grid){
       p <- p + theme(panel.grid.major = element_line())
@@ -369,27 +369,27 @@ PLOT_TIME_DEPTH_WQ <- function(input, output, session, Df) {
     if("minor gridlines" %in% input$plot_save_grid){
       p <- p + theme(panel.grid.minor = element_line())
     }
-    
+
     p
-    
+
   })
-  
-  
+
+
 # Plot Visualization - convert plot to interactive plot and create an plot output object
-  
+
   output$plot <- renderPlotly({
     ggplotly(p())
   })
-  
-  
+
+
   # Plot Print
-  
+
   output$save_plot <- downloadHandler(
     filename = function (){paste(text_param(),' Site ', text_station(), text_depth(), ' from ', text_date_start(),' to ', text_date_end(), '.png', sep='')},
     content = function(file) {ggsave(file, plot = p(), device = "png")},
     contentType = 'image/png'
   )
 
-  
+
 } # end Server Function
 
