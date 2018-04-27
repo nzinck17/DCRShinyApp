@@ -164,23 +164,25 @@ FILTER_FLOW <- function(input, output, session, df, df_site, df_wq, df_flags = N
 
   ns <- session$ns # see General Note 1
   # Change case of DATE column for Date Select, pull into long format for filtering
-  df <- dplyr::rename(df, Date = DATE) %>%
-    gather("Parameter", "Result", 4:(ncol(df)-1), na.rm =T)
+  df <-  df %>%
+    gather("Parameter", "Result", 4:(ncol(df)-1), na.rm =T) %>%
+    mutate(LocationLabel = df_site$LocationLabel[match(df$LOCATION,df_site$Site)])
+
   ### Site Selection
-  loc_choices <- sort(df_site$LocationLabel[df_site$Site %in% unique(df$LOCATION)])
+  loc_choices <- sort(unique(df$LocationLabel))
 
   Site <- callModule(CHECKBOX_SELECT_ALL, "location",
                       label = "Locations:",
                       Choices = reactive({loc_choices}),
                       colwidth = 3,
-                      inline = TRUE)
+                      inline = FALSE)
 
   # Reactive Dataframe - first filter of the dataframe for Site
   Df1 <- reactive({
     # A Site must be selected in order for Df1 (or anything that uses Df1()) to be executed
     req(Site())
 
-    df %>% filter(LOCATION %in% df_site$Site[df_site$LocationLabel %in% Site()])
+    df %>% filter(LocationLabel %in% Site())
 
   })
 
