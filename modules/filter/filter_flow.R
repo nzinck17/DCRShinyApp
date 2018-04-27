@@ -166,7 +166,7 @@ FILTER_FLOW <- function(input, output, session, df, df_site, df_wq, df_flags = N
   # Change case of DATE column for Date Select, pull into long format for filtering
   df <-  df %>%
     gather("Parameter", "Result", 4:(ncol(df)-1), na.rm =T) %>%
-    mutate(LocationLabel = df_site$LocationLabel[match(df$LOCATION,df_site$Site)])
+    mutate(LocationLabel = df_site$LocationLabel[match(LOCATION,df_site$Site)])
 
   ### Site Selection
   loc_choices <- sort(unique(df$LocationLabel))
