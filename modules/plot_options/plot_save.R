@@ -32,7 +32,7 @@ PLOT_SAVE_UI <- function(id) {
                                                 "png"),
                                      inline = TRUE),
                         br(),
-                        checkboxGroupInput(ns("legend_pos"), "Legend Position:",
+                        radioButtons(ns("legend_pos"), "Legend Position:",
                                            choices= c("right",
                                                       "bottom-horizontal",
                                                       "bottom-vertical"))
