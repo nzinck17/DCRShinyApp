@@ -51,12 +51,12 @@ STAT_TIME_WQ <- function(input, output, session, Df) {
   
   output$summary <- renderTable({
     
-    # Add Year, season, and Month Columns
-    sum_1 <- Df() %>%
-      mutate(Year = as.integer(lubridate::year(Date)), 
-             Season = getSeason(Date),
-             Month = month.abb[lubridate::month(Date)]
-      )
+    # # Add Year, season, and Month Columns
+    # sum_1 <- Df() %>%
+    #   mutate(Year = as.integer(lubridate::year(Date)), 
+    #          Season = getSeason(Date),
+    #          Month = month.abb[lubridate::month(Date)]
+    #   )
     
     # Group by time (year, season, month)
     if (input$summary_group_time == 1){
@@ -82,7 +82,7 @@ STAT_TIME_WQ <- function(input, output, session, Df) {
     sum_dots <- c("Parameter", sum_dots)
     
     # Applying Grouping (stats is always grouped by parameter)
-    sum_2 <- sum_1 %>% group_by_(.dots = sum_dots)
+    sum_2 <- Df() %>% group_by_(.dots = sum_dots)
     
     # Making the Sumamry Statistic Columns
     sum_2 %>% summarise(`number of samples` = n(),
