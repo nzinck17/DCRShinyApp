@@ -34,7 +34,8 @@ PLOT_SAVE_UI <- function(id) {
                         br(),
                         checkboxGroupInput(ns("legend_pos"), "Legend Position:",
                                            choices= c("right",
-                                                      "bottom"))
+                                                      "bottom-horizontal",
+                                                      "bottom-vertical"))
                  ),
                  column(6,
                         numericInput(ns("save_width"), "Plot Width (inches):", 11,
@@ -94,8 +95,10 @@ PLOT_SAVE <- function(input, output, session, P, Plot_Name) {
     
     p <- P()
     
-    if(input$legend_pos == "bottom"){
+    if(input$legend_pos == "bottom-horizontal"){
       p <- p + theme(legend.position="bottom")
+    } else if(input$legend_pos == "bottom-vertical"){
+      p <- p + theme(legend.position="bottom",legend.direction="vertical")
     }
     
     # Margin Options
