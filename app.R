@@ -447,10 +447,10 @@ server <- function(input, output, session) {
   # Plots
   callModule(PLOT_TIME_WQ, "mod_trib_quab_plot_time", Df = Df_Trib_Quab$Long)
   callModule(PLOT_CORR_WQ, "mod_trib_quab_plot_corr", Df = Df_Trib_Quab$Long)
-  callModule(DISTRIBUTION_WQ, "mod_trib_quab_plot_dist", Df = Df_Trib_Quab$Long)
+  callModule(DISTRIBUTION_WQ, "mod_trib_quab_plot_dist", Df = Df_Trib_Quab$Stat)
 
   # Stats
-  callModule(STAT_TIME_WQ, "mod_trib_quab_stat_sum", Df = Df_Trib_Quab$Long)  # Push in $Stats and get rid in module
+  callModule(STAT_TIME_WQ, "mod_trib_quab_stat_sum", Df = Df_Trib_Quab$Stat)
   # temp stats
   callModule(PLOT_CORR_MATRIX_WQ, "mod_trib_quab_stat_cormat", Df = Df_Trib_Quab$Wide)
 
@@ -469,10 +469,10 @@ server <- function(input, output, session) {
   # Plots
   callModule(PLOT_TIME_WQ, "mod_trib_ware_plot_time", Df = Df_Trib_Ware$Long)
   callModule(PLOT_CORR_WQ, "mod_trib_ware_plot_corr", Df = Df_Trib_Ware$Long)
-  callModule(DISTRIBUTION_WQ, "mod_trib_ware_plot_dist", Df = Df_Trib_Ware$Long)
+  callModule(DISTRIBUTION_WQ, "mod_trib_ware_plot_dist", Df = Df_Trib_Ware$Stat)
 
   # Stats
-  callModule(STAT_TIME_WQ, "mod_trib_ware_stat_sum", Df = Df_Trib_Ware$Long)  # Push in $Stats and get rid in module
+  callModule(STAT_TIME_WQ, "mod_trib_ware_stat_sum", Df = Df_Trib_Ware$Stat)
   # temp stats
   callModule(PLOT_CORR_MATRIX_WQ, "mod_trib_ware_stat_cormat", Df = Df_Trib_Ware$Wide)
 
@@ -489,10 +489,10 @@ server <- function(input, output, session) {
   # Plots
   callModule(PLOT_TIME_WQ, "mod_trib_wach_plot_time", Df = Df_Trib_Wach$Long)
   callModule(PLOT_CORR_WQ, "mod_trib_wach_plot_corr", Df = Df_Trib_Wach$Long)
-  callModule(DISTRIBUTION_WQ, "mod_trib_wach_plot_dist", Df = Df_Trib_Wach$Long)
+  callModule(DISTRIBUTION_WQ, "mod_trib_wach_plot_dist", Df = Df_Trib_Wach$Stat)
 
   # Stats
-  callModule(STAT_TIME_WQ, "mod_trib_wach_stat_sum", Df = Df_Trib_Wach$Long)  # Push in $Stats and get rid in module
+  callModule(STAT_TIME_WQ, "mod_trib_wach_stat_sum", Df = Df_Trib_Wach$Stat)
   # temp stats
   callModule(PLOT_CORR_MATRIX_WQ, "mod_trib_wach_stat_cormat", Df = Df_Trib_Wach$Wide)
 
@@ -518,10 +518,10 @@ server <- function(input, output, session) {
   # Plots
   callModule(PLOT_TIME_WQ, "mod_chem_quab_plot_time", Df = Df_Chem_Quab$Long) # Update to Depth specific plot
   callModule(PLOT_CORR_WQ, "mod_chem_quab_plot_corr", Df = Df_Chem_Quab$Long) # Update to Depth Specific Plot
-  callModule(DISTRIBUTION_WQ, "mod_chem_quab_plot_dist", Df = Df_Chem_Quab$Long) # Depth Specific?
+  callModule(DISTRIBUTION_WQ, "mod_chem_quab_plot_dist", Df = Df_Chem_Quab$Stat) # Depth Specific?
 
   # Stats
-  callModule(STAT_TIME_DEPTH_WQ, "mod_chem_quab_stat_sum", Df = Df_Chem_Quab$Long) # Push in $Stats and get rid in module
+  callModule(STAT_TIME_DEPTH_WQ, "mod_chem_quab_stat_sum", Df = Df_Chem_Quab$Stat)
   # temp stats
   callModule(PLOT_CORR_MATRIX_WQ, "mod_chem_quab_stat_cormat", Df = Df_Chem_Quab$Wide)
 
@@ -536,7 +536,7 @@ server <- function(input, output, session) {
   # Plots
   callModule(PROF_HEATMAP, "mod_prof_quab_heat", Df = Df_Prof_Quab$Long)
   callModule(PROF_LINE, "mod_prof_quab_line", df = df_prof_quab)
-  callModule(DISTRIBUTION_WQ, "mod_prof_quab_plot_dist", Df = Df_Prof_Quab$Long)
+  callModule(DISTRIBUTION_WQ, "mod_prof_quab_plot_dist", Df = Df_Prof_Quab$Stat)
 
   # Table and Stats
   callModule(PROF_TABLE_STAT, "mod_prof_quab_sum", df = df_prof_quab)
@@ -557,10 +557,10 @@ server <- function(input, output, session) {
   # Plots
   callModule(PLOT_TIME_WQ, "mod_bact_wach_plot_time", Df = Df_Bact_Wach$Long)
   callModule(PLOT_CORR_WQ, "mod_bact_wach_plot_corr", Df = Df_Bact_Wach$Long)
-  callModule(DISTRIBUTION_WQ, "mod_bact_wach_plot_dist", Df = Df_Bact_Wach$Long)
+  callModule(DISTRIBUTION_WQ, "mod_bact_wach_plot_dist", Df = Df_Bact_Wach$Stat)
 
   # Stats
-  callModule(STAT_TIME_WQ, "mod_bact_wach_stat_sum", Df = Df_Bact_Wach$Long)  # Push in $Stats and get rid in module
+  callModule(STAT_TIME_WQ, "mod_bact_wach_stat_sum", Df = Df_Bact_Wach$Stat)
   # temp stats
   callModule(PLOT_CORR_MATRIX_WQ, "mod_bact_wach_stat_cormat", Df = Df_Bact_Wach$Wide)
 
@@ -578,10 +578,10 @@ server <- function(input, output, session) {
   # Plots
   callModule(PLOT_TIME_WQ, "mod_chem_wach_plot_time", Df = Df_Chem_Wach$Long) # Update to Depth specific plot
   callModule(PLOT_CORR_WQ, "mod_chem_wach_plot_corr", Df = Df_Chem_Wach$Long) # Update to Depth Specific Plot
-  callModule(DISTRIBUTION_WQ, "mod_chem_wach_plot_dist", Df = Df_Chem_Wach$Long) # Depth Specific?
+  callModule(DISTRIBUTION_WQ, "mod_chem_wach_plot_dist", Df = Df_Chem_Wach$Stat) # Depth Specific?
 
   # Stats
-  callModule(STAT_TIME_DEPTH_WQ, "mod_chem_wach_stat_sum", Df = Df_Chem_Wach$Long) # Push in $Stats and get rid in module
+  callModule(STAT_TIME_DEPTH_WQ, "mod_chem_wach_stat_sum", Df = Df_Chem_Wach$Stat)
   # temp stats
   callModule(PLOT_CORR_MATRIX_WQ, "mod_chem_wach_stat_cormat", Df = Df_Chem_Wach$Wide)
 
@@ -596,7 +596,7 @@ server <- function(input, output, session) {
   # Plots
   callModule(PROF_HEATMAP, "mod_prof_wach_heat", Df = Df_Prof_Wach$Long)
   callModule(PROF_LINE, "mod_prof_wach_line", df = df_prof_wach)
-  callModule(DISTRIBUTION_WQ, "mod_prof_wach_plot_dist", Df = Df_Prof_Wach$Long)
+  callModule(DISTRIBUTION_WQ, "mod_prof_wach_plot_dist", Df = Df_Prof_Wach$Stat)
 
   # Table and Stats
   callModule(PROF_TABLE_STAT, "mod_prof_wach_sum", df = df_prof_wach)
