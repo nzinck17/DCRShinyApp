@@ -268,7 +268,7 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
     req(input$param2 != "None")
       radioButtons(ns("point_color2"), "Color of Secondary Axis:",
                    choices = c("black", "blue", "red", "green"),
-                   selected = "green",
+                   selected = "blue",
                    inline = TRUE)
   })
 
@@ -412,7 +412,7 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
 
       # Facet for Sites if no grouping for site is selected and number of sites is greater than 1
       if(input$group_color != "LocationLabel" & input$group_shape != "LocationLabel" & length(c(Site())) > 1){
-        p <- p + facet_wrap(~Site, ncol = ceiling(length(c(Site()))/4))
+        p <- p + facet_wrap(~LocationLabel, ncol = ceiling(length(c(Site()))/4))
       }
 
       # Log Scale and Y-axis start at zero
@@ -506,7 +506,7 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
 
       # Facet for Sites if no grouping for site is selected and number of sites is greater than 1
       if(input$group_shape != "LocationLabel" & length(c(Site())) > 1){
-        p <- p + facet_wrap(~Site, ncol = ceiling(length(c(Site()))/4))
+        p <- p + facet_wrap(~LocationLabel, ncol = ceiling(length(c(Site()))/4))
       }
 
     }
