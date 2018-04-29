@@ -86,14 +86,13 @@ STAT_TIME_WQ <- function(input, output, session, Df) {
     
     # Making the Sumamry Statistic Columns
     sum_2 %>% summarise(`number of samples` = n(),
-                        average = mean(Result), 
+                        average = mean(Result),
+                        `stand. dev.` = sd(Result, na.rm=TRUE),
                         min = min(Result, na.rm=TRUE), 
-                        max = max(Result, na.rm=TRUE), 
                         `1st quartile` = quantile(Result, 0.25),
                         median = median(Result),
                         `3rd quartile` = quantile(Result, 0.75),
-                        variance = var(Result, na.rm=TRUE), 
-                        `stand. dev.` = sd(Result, na.rm=TRUE),
+                        max = max(Result, na.rm=TRUE),
                         `geometric mean` = gm_mean(Result))
   })
   
