@@ -51,11 +51,7 @@ FILTER_FLOW_UI <- function(id) {
                               ) # end Well Panel
                        ), # end Column
                        column(5,
-                              checkboxGroupInput(ns("site"),
-                                                 label = "Choose Location(s):",
-                                                 choices = site_choices(),
-                                                 width = "100%",
-                                                 inline = FALSE)
+                              uiOutput(ns("site_ui"))
                        ), # end Column
                        column(4,
                               # Parameter Input - Using Module Parameter Select
@@ -177,6 +173,15 @@ FILTER_FLOW <- function(input, output, session, df, df_site, df_wq, df_flags = N
     df_site %>% .$LocationLabel %>% sort() %>% paste()
   })
 
+  output$site_ui <- renderUI({
+    checkboxGroupInput(ns("site"),
+                      label = "Choose Location(s):",
+                      choices = site_choices(),
+                      width = "100%",
+                      inline = FALSE)
+  })
+
+
   ### Parameter and Range Selection
   parameter_choices <- reactive({
       # req(Df1)
@@ -208,7 +213,6 @@ FILTER_FLOW <- function(input, output, session, df, df_site, df_wq, df_flags = N
                 value = c(minrange(),maxrange()),
                 round = TRUE)
   })
-  # output$site_ui <- renderUI({SITE_CHECKBOX_UI(ns("site"))})
 
   # observe({
   #   Df1()
