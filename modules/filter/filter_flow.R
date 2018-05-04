@@ -53,7 +53,7 @@ FILTER_FLOW_UI <- function(id) {
                        column(5,
                               checkboxGroupInput(ns("site"),
                                                  label = "Choose Location(s):",
-                                                 choices = df_site %>% .$LocationLabel %>% sort() %>% paste(),
+                                                 choices = site_choices,
                                                  width = "100%",
                                                  inline = FALSE)
                        ), # end Column
@@ -173,7 +173,10 @@ FILTER_FLOW <- function(input, output, session, df, df_site, df_wq, df_flags = N
   # df <- df_wach_flow
 
   ### Site Selection
-  site_choices <- df_site %>% .$LocationLabel %>% sort() %>% paste()
+  site_choices <- reactive({
+    df_site %>% .$LocationLabel %>% sort() %>% paste()
+  })
+
   ### Parameter and Range Selection
   parameter_choices <- reactive({
       # req(Df1)
