@@ -53,8 +53,7 @@ FILTER_FLOW_UI <- function(id) {
                        column(5,
                               checkboxGroupInput(ns("site"),
                                                  label = "Choose Location(s):",
-                                                 choices = site_choices,
-                                                 selected = site_choices,
+                                                 choices = df_site %>% .$LocationLabel %>% sort() %>% paste(),
                                                  width = "100%",
                                                  inline = FALSE)
                        ), # end Column
