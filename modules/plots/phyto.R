@@ -27,7 +27,7 @@ PHYTO_UI <- function(id,df) {
 
   ns <- NS(id) # see General Note 1
   df <- df %>%
-    mutate(Year = year(df$Date))
+    mutate(Year = year(Date))
 
   tagList(
     tabsetPanel(

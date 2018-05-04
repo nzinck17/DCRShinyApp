@@ -51,11 +51,18 @@ FILTER_FLOW_UI <- function(id) {
                               ) # end Well Panel
                        ), # end Column
                        column(5,
-                              CHECKBOX_SELECT_ALL_UI(ns("location"))
+                              checkboxGroupInput(ns("site"),
+                                                 label = "Choose Location(s):",
+                                                 choices = site_choices,
+                                                 selected = site_choices,
+                                                 width = "100%",
+                                                 inline = FALSE)
                        ), # end Column
                        column(4,
                               # Parameter Input - Using Module Parameter Select
-                              PARAM_SELECT_UI(ns("param")),
+                              # Select 1 Parameter
+                              uiOutput(ns("param_ui")),
+                              uiOutput(ns("valrange_ui")),
                               br(),
                               # Date Input - Using Module Date Select
                               DATE_SELECT_UI(ns("date")),
@@ -164,32 +171,68 @@ FILTER_FLOW <- function(input, output, session, df, df_site, df_wq, df_flags = N
 
   ns <- session$ns # see General Note 1
   # Change case of DATE column for Date Select, pull into long format for filtering
-  df <-  df %>%
-    gather("Parameter", "Result", 4:(ncol(df)-1), na.rm =T) %>%
-    mutate(LocationLabel = df_site$LocationLabel[match(LOCATION,df_site$Site)])
+  # df <- df_wach_flow
 
   ### Site Selection
-  loc_choices <- sort(unique(df$LocationLabel))
+  site_choices <- df_site %>% .$LocationLabel %>% sort() %>% paste()
+  ### Parameter and Range Selection
+  parameter_choices <- reactive({
+      # req(Df1)
+      Df1() %>% .$Parameter %>% unique() %>% sort() %>% paste()
+    })
 
-  Site <- callModule(CHECKBOX_SELECT_ALL, "location",
-                      label = "Locations:",
-                      Choices = reactive({loc_choices}),
-                      colwidth = 3,
-                      inline = FALSE)
+  minrange <- reactive({
+      # req(Df1)
+      min(Df1()$Result)
+    })
+  maxrange <- reactive({
+    # req(Df1)
+      max(Df1()$Result)
+    })
+
+  output$param_ui <- renderUI({
+    selectInput(ns("param"),
+                label = "Choose Parameter(s):",
+                choices = parameter_choices(),
+                multiple = TRUE,
+                selected = "")
+  })
+
+  output$valrange_ui <- renderUI({
+    sliderInput(ns("valrange"),
+                label = "Restrict value range of selection:",
+                min = minrange(),
+                max = maxrange(),
+                value = c(minrange(),maxrange()),
+                round = TRUE)
+  })
+  # output$site_ui <- renderUI({SITE_CHECKBOX_UI(ns("site"))})
+
+  # observe({
+  #   Df1()
+  #   # Control the value, min, max, and step.
+  #   # Step size is 2 when input value is even; 1 when value is odd.
+  #   updateSliderInput(session,
+  #                     "valrange",
+  #                     min = minrange(),
+  #                     max = maxrange(),
+  #                     value = c(minrange():maxrange()),
+  #                     round = TRUE)
+  # })
 
   # Reactive Dataframe - first filter of the dataframe for Site
   Df1 <- reactive({
     # A Site must be selected in order for Df1 (or anything that uses Df1()) to be executed
-    req(Site())
+    req(input$site)
 
-    df %>% filter(LocationLabel %in% Site())
+    df %>% filter(LocationLabel %in% input$site)
 
   })
 
   ### Parameter and Date Range
 
   # Parameter Selection using Param_Select Module
-  Param <- callModule(PARAM_SELECT, "param", Df = Df1)
+  # Param <- callModule(PARAM_SELECT, "param", Df = Df1)
 
   # Date Range and Year Using Date_Select Module
   Date_Year <- callModule(DATE_SELECT, "date", Df = Df1)
@@ -205,16 +248,16 @@ FILTER_FLOW <- function(input, output, session, df, df_site, df_wq, df_flags = N
   # Reactive Dataframe - filter for param, value range, date, and remove rows with NA for Result
   Df2 <- reactive({
     # Wait for all neccesary Inputs to Proceed
-    req(Param$Type(), Param$Range_Min(), Param$Range_Max(), Month(),
+    req(input$param, input$valrange, Month(),
         (isTruthy(Date_Year$Lower()) & isTruthy(Date_Year$Upper())) | isTruthy(Date_Year$Years())) # See General Note _
 
     Df1() %>%
       # filter by parameter, parameter value range, and by date range
-      filter(Parameter %in% Param$Type(),
+      filter(Parameter %in% input$param,
              # Filter by Result Range
-             Result > Param$Range_Min(), Result < Param$Range_Max(),
+             Result >= input$valrange[1], Result <= input$valrange[2],
              # Filter by either Date Range or By Years (Include both)
-             (Date > Date_Year$Lower() & Date < Date_Year$Upper()) | year(Date) %in% Date_Year$Years(),
+             (Date >= Date_Year$Lower() & Date <= Date_Year$Upper()) | year(Date) %in% Date_Year$Years(),
              # Filter by Month
              as.character(month(Date, label = TRUE, abbr = FALSE)) %in% Month())
 
@@ -294,7 +337,6 @@ FILTER_FLOW <- function(input, output, session, df, df_site, df_wq, df_flags = N
     }
   })
 
-
   # Reactive Dataframe - Wide Format (for Correlation ScatterPlot and Correlation Matrix)
   Df4_Wide <- reactive({
     # require Dataframe to be more than zero observations - prevent from crashing
@@ -315,7 +357,6 @@ FILTER_FLOW <- function(input, output, session, df, df_site, df_wq, df_flags = N
              Season = getSeason(Date),
              Month = month.abb[lubridate::month(Date)])
   })
-
 
   #####################################################
   # CSV output and Table
@@ -356,13 +397,13 @@ FILTER_FLOW <- function(input, output, session, df, df_site, df_wq, df_flags = N
 
   # Text - Select Site
   output$text_site_null <- renderText({
-    req(!isTruthy(Site()), !(input$full_data))
+    req(!isTruthy(input$site), !(input$full_data))
     "Select Site(s)"
   })
 
   # Text - Select Param
   output$text_param_null <- renderText({
-    req(!isTruthy(Param$Type()), !(input$full_data))
+    req(!isTruthy(input$param), !(input$full_data))
     "Select Parameter"
   })
 
@@ -393,7 +434,7 @@ FILTER_FLOW <- function(input, output, session, df, df_site, df_wq, df_flags = N
     if(input$full_data){
       df_site$LocationLabel
     } else {
-      Site()
+      input$site
     }
   })
 

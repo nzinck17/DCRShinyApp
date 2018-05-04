@@ -80,6 +80,7 @@ if(userlocation == "Quabbin"){
 source("modules/filter/filter_wq.R")
 source("modules/filter/filter_flow.R")
 # source("modules/filter/filter_precip.R")
+
 source("modules/filter/site_checkbox.R")
 source("modules/filter/station_level_checkbox.R")
 source("modules/filter/param_select.R")
@@ -99,7 +100,7 @@ source("modules/plots/distribution_wq.R")
 source("modules/plots/profile_heatmap.R")
 source("modules/plots/profile_line.R")
 source("modules/plots/phyto.R")
-#source("modules/plots/hydro.R")
+source("modules/plots/plot_flow.R")
 
 # Plot Options - Modules containing plot options
 source("modules/plot_options/plot_theme_and_hlines.R")
@@ -133,6 +134,7 @@ source("modules/reports/report_custom.R")
 
 source("functions/stat_functions.R")
 source("functions/phyto_plots.R")
+source("functions/flow_plots.R")
 
 ###################################################################################
 ##################################  User Interface  ###############################
@@ -391,10 +393,10 @@ tabPanel("Reservoir",
                      br(),
                      wellPanel(em('Plots use data from the "Select / Filter Data" tab')),
                      tabsetPanel(
-                       tabPanel("Hydrographs", PLOT_CORR_WQ_UI("mod_flow_quab_hydrographs")),
-                       tabPanel("Flow Duration", PLOT_CORR_WQ_UI("mod_flow_quab_flowdur")),
-                       tabPanel("Boxplots", PLOT_CORR_WQ_UI("mod_flow_quab_boxplots")),
-                       tabPanel("Ratings", PLOT_CORR_WQ_UI("mod_flow_quab_ratings"))
+                       # tabPanel("Hydrographs", PLOT_FLOW_UI("mod_flow_quab_hydrographs")),
+                       # tabPanel("Flow Duration", PLOT_CORR_WQ_UI("mod_flow_quab_flowdur")),
+                       # tabPanel("Boxplots", PLOT_CORR_WQ_UI("mod_flow_quab_boxplots")),
+                       # tabPanel("Ratings", PLOT_CORR_WQ_UI("mod_flow_quab_ratings"))
                      )
             ),
             tabPanel("--- Streamflow Stats", icon = icon("calculator"),
@@ -413,12 +415,12 @@ tabPanel("Reservoir",
                        tabPanel("Hagemann Model", PLOT_CORR_MATRIX_WQ_UI("mod_flow_quab_hagemann"))
                      )
             ),
-            tabPanel("Ratings", icon = icon("calculator"),
-                     tabsetPanel(
-                       tabPanel("Rating Curves", STAT_TIME_DEPTH_WQ_UI("mod_flow_quab_ratcurve")),
-                       tabPanel("Rating Tables", PLOT_CORR_MATRIX_WQ_UI("mod_chem_quab_rattable"))
-                     )
-            ),
+            # tabPanel("Ratings", icon = icon("calculator"),
+            #          tabsetPanel(
+            #            tabPanel("Rating Curves", STAT_TIME_DEPTH_WQ_UI("mod_flow_quab_ratcurve")),
+            #            tabPanel("Rating Tables", PLOT_CORR_MATRIX_WQ_UI("mod_chem_quab_rattable"))
+            #          )
+            # ),
             "Precipitation",
             tabPanel("Select / Filter Data", icon=icon("filter"), FILTER_WQ_UI("mod_precip_quab_filter")),
             tabPanel("--- Plots", icon = icon("line-chart"),
@@ -470,10 +472,10 @@ tabPanel("Reservoir",
                        br(),
                        wellPanel(em('Plots use data from the "Select / Filter Data" tab')),
                        tabsetPanel(
-                         tabPanel("Hydrographs", PLOT_CORR_WQ_UI("mod_flow_wach_hydrographs")),
-                         tabPanel("Flow Duration", PLOT_CORR_WQ_UI("mod_flow_wach_flowdur")),
-                         tabPanel("Boxplots", PLOT_CORR_WQ_UI("mod_flow_wach_boxplots")),
-                         tabPanel("Ratings", PLOT_CORR_WQ_UI("mod_flow_wach_ratings"))
+                         tabPanel("Hydrographs", PLOT_FLOW_UI("mod_flow_wach_hydrograph"))
+                         # tabPanel("Flow Duration", PLOT_DURATION_UI("mod_flow_wach_flowdur")),
+                         # tabPanel("Boxplots", PLOT_BOX_UI("mod_flow_wach_boxplots")),
+                         # tabPanel("Ratings", RATINGS_UI("mod_flow_wach_ratings"))
                        )
               ),
               tabPanel("--- Streamflow Stats", icon = icon("calculator"),
@@ -492,12 +494,12 @@ tabPanel("Reservoir",
                          tabPanel("Hagemann Model", PLOT_CORR_MATRIX_WQ_UI("mod_flow_wach_hagemann"))
                        )
               ),
-              tabPanel("Ratings", icon = icon("calculator"),
-                       tabsetPanel(
-                         tabPanel("Rating Curves", STAT_TIME_DEPTH_WQ_UI("mod_flow_wach_ratcurve")),
-                         tabPanel("Rating Tables", PLOT_CORR_MATRIX_WQ_UI("mod_chem_wach_rattable"))
-                       )
-              ),
+              # tabPanel("Ratings", icon = icon("calculator"),
+              #          tabsetPanel(
+              #            tabPanel("Rating Curves", STAT_TIME_DEPTH_WQ_UI("mod_flow_wach_ratcurve")),
+              #            tabPanel("Rating Tables", PLOT_CORR_MATRIX_WQ_UI("mod_chem_wach_rattable"))
+              #          )
+              # ),
               "Precipitation",
               tabPanel("Select / Filter Data", icon=icon("filter"), FILTER_WQ_UI("mod_precip_wach_filter")),
               tabPanel("--- Plots", icon = icon("line-chart"),
@@ -805,20 +807,23 @@ server <- function(input, output, session) {
   # # Filter
   Df_Flow_Wach <- callModule(FILTER_FLOW, "mod_flow_wach_filter",
                              df = df_wach_flow,
-                             df_site = df_trib_wach_site,
+                             df_site = df_trib_wach_site[!is.na(df_trib_wach_site$LocationFlow),],
                              df_wq = df_trib_wach,
                              df_flags = df_flags,
                              df_flag_index = df_wach_flag_index[df_wach_flag_index$Dataset == "df_hobo_wach",],
                              type = "wq"
                             )
-  #
-  # callModule(FLOW_PLOTS, "mod_flow_wach_plots", Df = Df_Flow_Wach$Long)
-  # callModule(FLOW_STATS, "mod_prof_wach_line", df = df_prof_wach)
-  # callModule(FLOW_FLOWDUR, "mod_prof_wach_plot_dist", Df = Df_Prof_Wach$Long)
-  # callModule(FLOW_BOXPLOTS, "mod_prof_wach_plot_dist", Df = Df_Prof_Wach$Long)
-  # callModule(FLOW_RATINGS, "mod_prof_wach_plot_dist", Df = Df_Prof_Wach$Long)
-  # callModule(FLOW_LOADING, "mod_prof_wach_plot_dist", Df = Df_Prof_Wach$Long)
-  #
+
+  callModule(PLOT_FLOW, "mod_flow_wach_hydrograph",
+             Df = Df_Flow_Wach$Long,
+             df2 = df_trib_wach,
+             df_site = df_trib_wach_site[!is.na(df_trib_wach_site$LocationFlow),],
+             df_precip = df_wach_prcp_daily)
+  # callModule(PLOT_DURATION, "mod_flow_wach_flowdur", Df = Df_Prof_Wach$Long)
+  # callModule(PLOT_BOX, "mod_flow_wach_boxplots", Df = Df_Prof_Wach$Long)
+  # callModule(FLOW_RATINGS, "mod_flow_wach_ratings", Df = Df_Prof_Wach$Long)
+  # callModule(RATINGS, "mod_prof_wach_plot_dist", Df = Df_Prof_Wach$Long)
+
   # ### PRECIP
   #
   # # Filter
@@ -841,12 +846,6 @@ server <- function(input, output, session) {
   # callModule(WSUPPLY_RESTRANS, "mod_prof_wach_plot_dist", Df = Df_Prof_Wach$Long)
   # callModule(WSUPPLY_SNOW, "mod_prof_wach_plot_dist", Df = Df_Prof_Wach$Long)
   # callModule(WSUPPLY_GWATER, "mod_prof_wach_plot_dist", Df = Df_Prof_Wach$Long)
-
-
-
-
-
-
 
 ####################################################################
 # Reports
@@ -973,14 +972,7 @@ server <- function(input, output, session) {
 session$onSessionEnded(function() {
       stopApp()
     })
-
 } # end server function
 
 #combines the user interface and server (it's a must)
 shinyApp(ui = ui, server = server)
-
-
-
-
-
-
