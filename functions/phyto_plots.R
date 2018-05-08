@@ -112,7 +112,7 @@ secchi <- df_secchi_wach # Eventually this needs to be changed to a df argument 
 # make the data subsets
 
 # This is the Blue Line - usually 1-4 m
-GTA_epi <- df[df$Taxa == "Grand Total" & df$Year %in% vyear & df$Depth_m >= epi_min & df$Depth_m <= epi_max &
+GTA_epi <- df[df$Taxa == "Grand Total" & year(df$Date) %in% vyear & df$Depth_m >= epi_min & df$Depth_m <= epi_max &
       df$Station %in% locs,] %>%
   group_by(Date) %>%
   drop_na() %>%
@@ -122,7 +122,7 @@ names(GTA_epi) <- c("date","value","dataset")
 GTA_epi$dataset <- factor(GTA_epi$dataset)
 
 # This is the black line, 6-14 m
-GTA_em <- df[df$Taxa == "Grand Total" & df$Year %in% vyear & df$Depth_m >= em_min & df$Depth_m <= em_max &
+GTA_em <- df[df$Taxa == "Grand Total" & year(df$Date) %in% vyear & df$Depth_m >= em_min & df$Depth_m <= em_max &
       df$Station %in% locs,] %>%
   group_by(Date) %>%
   drop_na() %>%
