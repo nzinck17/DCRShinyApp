@@ -359,6 +359,7 @@ tabPanel("Reservoir",
                               wellPanel(em('Plots use data from the "Select / Filter Data" tab')),
                               tabsetPanel(
                                 tabPanel("Heat Map", PROF_HEATMAP_UI("mod_prof_wach_heat")),
+                                tabPanel("Scatter Plot", PLOT_TIME_WQ_UI("mod_prof_wach_plot_time")),
                                 tabPanel("Line Plot", PROF_LINE_UI("mod_prof_wach_line", df_prof_wach)),
                                 tabPanel("Distribution Charts", DISTRIBUTION_WQ_UI("mod_prof_wach_plot_dist"))
                               )
@@ -785,6 +786,7 @@ server <- function(input, output, session) {
   Df_Prof_Wach <- callModule(FILTER_WQ, "mod_prof_wach_filter", df = df_prof_wach, df_site = df_prof_wach_site, type = "profile")
 
   # Plots
+  callModule(PLOT_TIME_WQ, "mod_prof_wach_plot_time", Df = Df_Prof_Wach$Long) # Update to Depth specific plot
   callModule(PROF_HEATMAP, "mod_prof_wach_heat", Df = Df_Prof_Wach$Long)
   callModule(PROF_LINE, "mod_prof_wach_line", df = df_prof_wach)
   callModule(DISTRIBUTION_WQ, "mod_prof_wach_plot_dist", Df = Df_Prof_Wach$Long)
