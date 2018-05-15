@@ -41,6 +41,7 @@ DATE_SELECT_UI <- function(id) {
 DATE_SELECT <- function(input, output, session, Df, hidden = FALSE) {
 
   ns <- session$ns # see General Note 1
+
   # Min and Max Dates for Sites Selected
   Date_Min <- reactive({Df()$Date %>% min(na.rm=TRUE)})
   Date_Max <- reactive({Df()$Date %>% max(na.rm=TRUE)})
@@ -63,8 +64,8 @@ DATE_SELECT <- function(input, output, session, Df, hidden = FALSE) {
   observe({
     # save the Parameter Type input for when the Site selection changes. Isolate so does not cause reactivity
     isolate({
-        save_selected_lower <- input$date[1]
-        save_selected_upper <- input$date[2]
+      save_selected_lower <- input$date[1]
+      save_selected_upper <- input$date[2]
     })
 
     # If Site list is changed but not empty then generate a Select Input with the...
@@ -72,18 +73,18 @@ DATE_SELECT <- function(input, output, session, Df, hidden = FALSE) {
     if(Df() %>% summarise(n()) %>% unlist() != 0){
 
       updateDateRangeInput(session, inputId = "date", label = "Date Range:",
-                      start = save_selected_lower,
-                      end = save_selected_upper,
-                      min = Date_Min(),
-                      max = Sys.Date())
+                           start = save_selected_lower,
+                           end = save_selected_upper,
+                           min = Date_Min(),
+                           max = Sys.Date())
 
       # If Site list is empty than make a date range of the previously selected date range to save it.
     } else {
       updateDateRangeInput(session, inputId = "date", label = "Date Range:",
-                      start = save_selected_lower,
-                      end = save_selected_upper,
-                      min = save_selected_lower,
-                      max = save_selected_upper)
+                           start = save_selected_lower,
+                           end = save_selected_upper,
+                           min = save_selected_lower,
+                           max = save_selected_upper)
     }
   })
 
@@ -107,6 +108,7 @@ DATE_SELECT <- function(input, output, session, Df, hidden = FALSE) {
 
   # To fill back in previously selected - Memory
   observe({
+
     # save the Parameter Type input for when the Site selection changes. Isolate so does not cause reactivity
     isolate({
       save_selected <- input$year
@@ -120,13 +122,15 @@ DATE_SELECT <- function(input, output, session, Df, hidden = FALSE) {
                         choices = Year_Choices(),
                         selected = save_selected)
 
-    # If Site list is empty than make a parameter list of just the previously listed item to save it.
+      # If Site list is empty than make a parameter list of just the previously listed item to save it.
     } else {
       updateSelectInput(session, inputId = "year", label = "Year(s):",
                         choices= save_selected,
                         selected = save_selected)
     }
   })
+
+
 
   return(list(Lower = reactive({input$date[1]}),
               Upper = reactive({input$date[2]}),

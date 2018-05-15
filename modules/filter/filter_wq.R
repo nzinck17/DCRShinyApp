@@ -160,10 +160,10 @@ FILTER_WQ_UI <- function(id) {
 
 FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_flag_index = NULL, type = "wq"){
 
-# Types include: "wq", "wq_depth", and "profile". More can be added
+  # Types include: "wq", "wq_depth", and "profile". More can be added
 
-########################################################
-# Main Selection
+  ########################################################
+  # Main Selection
 
   ns <- session$ns # see General Note 1
 
@@ -191,9 +191,7 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
   Df1 <- reactive({
     # A Site must be selected in order for Df1 (or anything that uses Df1()) to be executed
     req(Site())
-
     df %>% filter(LocationLabel %in% Site())
-
   })
 
 
@@ -217,7 +215,7 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
   # Reactive Dataframe - filter for param, value range, date, and remove rows with NA for Result
   Df2 <- reactive({
     # Wait for all neccesary Inputs to Proceed
-    req(Param$Type(), Param$Range_Min(), Param$Range_Max(), Month(),
+    req(Param$Type(), Param$Range_Min(), Param$Range_Min(), Month(),
         (isTruthy(Date_Year$Lower()) & isTruthy(Date_Year$Upper())) | isTruthy(Date_Year$Years())) # See General Note _
 
     Df1() %>%
@@ -233,55 +231,39 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
   })
 
 
-##################################################
-# Advanced Filter
+  ##################################################
+  # Advanced Filter
+
 
   ### Flag Selection
-  # # server - Using the custom Module SELECT_)SELECT_ALL, see script of dev manual
-          # Flag <- if(isTruthy(df_flag_index)){
-          #   callModule(SELECT_SELECT_ALL, "flag",
-          #                    label = "Select flag(s) to EXCLUDE from the data:",
-          #                    Choices = reactive({sort(unique(df_flags$label[df_flags$Flag_ID %in% df_flag_index$FlagCode & df_flags$Flag_ID != 114]))}),
-          #                    colwidth = 3)
-          # } else {
-          # Flag <- NULL
-          # }
 
+  # Choices
+  flag_choices <- df_flags$label[df_flags$Flag_ID != 114]
+
+  # server - Using the custom Module SELECT_SELECT_ALL, see script of dev manual
   Flag <- callModule(SELECT_SELECT_ALL, "flag",
                      label = "Select flag(s) to EXCLUDE from the data:",
-                     Choices = reactive({sort(unique(df_flags$label[df_flags$Flag_ID %in% df_flag_index$FlagCode & df_flags$Flag_ID != 114]))}),
+                     Choices = reactive({df_flags$label}),
                      colwidth = 3)
 
   # Subset the Sample Flag Index by the flags selected to exclude - this results in a vector of IDs to filter out
-                # flagged_ids <- reactive({
-                #   req(isTruthy(Flag()) & isTruthy(df_flag_index))
-                #   df_flag_index %>%
-                #     filter(FlagCode %in% as.numeric(substr(Flag(),1, 3))) %>%
-                #     .$SampleID
-                # })
-
   flagged_ids <- reactive({
     df_flag_index %>%
       filter(FlagCode %in% as.numeric(substr(Flag(),1, 3))) %>%
       .$SampleID
   })
 
+
   ### Storm Sample Selection
 
   # Filter df_flag_index so that only flag 114 (Storm Sample Flag) are included
-              # storm_ids <- reactive({
-              #   req(isTruthy(Flag()) & isTruthy(df_flag_index))
-              #   df_flag_index %>%
-              #     filter(FlagCode == 114) %>%
-              #     .$SampleID
-              # })
-
-
   storm_ids <- reactive({
     df_flag_index %>%
       filter(FlagCode == 114) %>%
       .$SampleID
   })
+
+
   # ### Depth Filter (Profile)
 
   # UI
@@ -300,20 +282,22 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
   ### Reactive List of (non-reactive) Dataframes - filter for selected site, param, value range, date, and remove rows with NA for Result
 
   Df3 <- reactive({
+
     # Assign a temporary dataframe and filter NAs
     df_temp <- Df2() %>% filter(!is.na(Result))
+
     # filter out Selected Flags
     if(isTruthy(Flag()) & isTruthy(df_flag_index)){
       df_temp <- df_temp %>% filter(!(ID %in% flagged_ids()))
     }
 
     # filter out Storm Samples if unchecked
-    if(input$storm != TRUE & isTruthy(df_flag_index)){ # Box is unchecked apply filter to remove storm samples
+    if(input$storm != TRUE & isTruthy(df_flag_index)){
       df_temp <- df_temp %>% filter(!(ID %in% storm_ids()))
     }
 
     # filter out Non Storm Samples if unchecked
-    if(input$nonstorm != TRUE & isTruthy(df_flag_index)){ # Box is unchecked apply filter to remove non-storm samples
+    if(input$nonstorm != TRUE & isTruthy(df_flag_index)){
       df_temp <- df_temp %>% filter(ID %in% storm_ids())
     }
 
@@ -329,8 +313,8 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
   })
 
 
-########################################################
-# Create Final Dataframes for use Table, Export, Plots, and Statistics
+  ########################################################
+  # Create Final Dataframes for use Table, Export, Plots, and Statistics
 
   # If Full dataframe is used or if selection/filters are used
   # Reactive Dataframe - Long Format (Regular format)
@@ -365,8 +349,8 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
   })
 
 
-#####################################################
-# CSV output and Table
+  #####################################################
+  # CSV output and Table
 
   # render Datatable
   output$table <- renderDataTable(Df4(), selection = 'none')
@@ -381,8 +365,8 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
     }
   )
 
-######################################################
-# Texts
+  ######################################################
+  # Texts
 
   # Text - Number of Samples - Words
   output$text_num_text <- renderText({
@@ -432,8 +416,8 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
     "- Please Select Storm Sample Types"
   })
 
-#####################################################
-# Other
+  #####################################################
+  # Other
 
   ### Site Map
   # Selected Sites to Highlight Red
@@ -454,8 +438,8 @@ FILTER_WQ <- function(input, output, session, df, df_site, df_flags = NULL, df_f
     shinyjs::reset("form")
   })
 
-#####################################################
-# Return from Module a list of reactive dataframes.
+  #####################################################
+  # Return from Module a list of reactive dataframes.
 
   return(list(Long = Df4,
               Wide = Df4_Wide,

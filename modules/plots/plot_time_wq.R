@@ -152,9 +152,9 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
   # Site List  - Primary Axis Only Plots
   Site <- reactive({
     if(input$param2 == "None"){
-      Df1()$Site %>% factor() %>% levels()
+      Df1()$LocationLabel %>% factor() %>% levels()
     } else{
-      unique(Df1()$Site %>% factor() %>% levels(), Df2()$Site %>% factor() %>% levels())
+      unique(Df1()$LocationLabel %>% factor() %>% levels(), Df2()$LocationLabel %>% factor() %>% levels())
     }
   })
 
@@ -328,7 +328,7 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
   # ONe Y-axis interactive Plotly plot
   output$plot1_inter <- renderPlotly({
     req(input$param2 == "None")# & P2$Gplotly() == TRUE)
-    ggplotly(P5(), tooltip = c("y", "colour", "shape"))
+    ggplotly(P5(), tooltip = c("y", "x", "colour", "shape"))
   })
 
   # ONe Y-axis static Plot
@@ -449,7 +449,7 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
 
       # Facet for Sites if no grouping for site is selected and number of sites is greater than 1
       if(input$group_color != "Site" & input$group_shape != "Site" & length(c(Site())) > 1){
-        p <- p + facet_wrap(~Site, ncol = ceiling(length(c(Site()))/4))
+        p <- p + facet_wrap(~LocationLabel, ncol = ceiling(length(c(Site()))/4))
       }
 
       # Log Scale and Y-axis start at zero
@@ -543,7 +543,7 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
 
       # Facet for Sites if no grouping for site is selected and number of sites is greater than 1
       if(input$group_shape != "Site" & length(c(Site())) > 1){
-        p <- p + facet_wrap(~Site, ncol = ceiling(length(c(Site()))/4))
+        p <- p + facet_wrap(~LocationLabel, ncol = ceiling(length(c(Site()))/4))
       }
 
     }

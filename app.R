@@ -3,7 +3,7 @@
 #     Type: Master file for DCR Shiny App
 #     Description: This Shiny App contains the "master" script for the app. The app contains a ui and server component
 #           and sources R scripts from the App folder
-#     Written by: Nick Zinck, Spring 2017
+#     Written by: Nick Zinck and Dan Crocker, Spring 2017 -  Spring 2018
 ##############################################################################################################################
 
 # Notes:
@@ -303,6 +303,7 @@ tabPanel("Reservoir",
                                     br(), wellPanel(em('Plots use data from the "Select / Filter Data" tab')),
                                     tabsetPanel(
                                       tabPanel("Heat Map", PROF_HEATMAP_UI("mod_prof_quab_heat")),
+                                      tabPanel("Scatter Plot", PLOT_TIME_WQ_UI("mod_prof_quab_plot_time")),
                                       tabPanel("Line Plot", PROF_LINE_UI("mod_prof_quab_line", df_prof_quab)),
                                       tabPanel("Distribution Charts", DISTRIBUTION_WQ_UI("mod_prof_quab_plot_dist"))
                                     )
@@ -718,6 +719,7 @@ server <- function(input, output, session) {
 
   # Plots
   callModule(PROF_HEATMAP, "mod_prof_quab_heat", Df = Df_Prof_Quab$Long)
+  callModule(PLOT_TIME_WQ, "mod_prof_quab_plot_time", Df = Df_Prof_Quab$Long) # Update to Depth specific plot
   callModule(PROF_LINE, "mod_prof_quab_line", df = df_prof_quab)
   callModule(DISTRIBUTION_WQ, "mod_prof_quab_plot_dist", Df = Df_Prof_Quab$Long)
 
