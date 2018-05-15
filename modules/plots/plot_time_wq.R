@@ -170,7 +170,7 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
 
   outputOptions(output, "param1_ui", suspendWhenHidden = FALSE) # see Dev. Manual
 
-  # update when new flag code changes
+  # Save the previously selected Parameter 1 Input when options change (Memory)
   observe({
 
     # save previously selected value
@@ -196,7 +196,7 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
 
   outputOptions(output, "param2_ui", suspendWhenHidden = FALSE) # See Dev. Manual
 
-  # update when new flag code changes
+  # Save the previously selected Parameter 2 Input when options change (Memory)
   observe({
 
     # save previously selected value
@@ -215,25 +215,14 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
   })
 
 
-
-
-  # Flag List
-  # Flag <- reactive({
-  #   if(input$param2 == "None"){
-  #     Df1()$Site %>% factor() %>% levels()
-  #   } else{
-  #     unique(Df1()$Site %>% factor() %>% levels(), Df2()$Site %>% factor() %>% levels())
-  #   }
-  # })
-
   # Color Grouping UI
   output$group_color_ui <- renderUI({
     req(input$param2)
     if(input$param2 == "None"){
-      color_choices <- c("None", "Site", "Flags (needs update)")
+      color_choices <- c("None", "LocationLabel", "Flags (needs update)")
       radioButtons(ns("group_color"), label = "Group with Colors:",
                    choices = color_choices,
-                   selected = "Site")
+                   selected = "LocationLabel")
     } else {
       tagList(
         strong("Group with Colors:"),
@@ -242,44 +231,18 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
     }
   })
 
-  # # update when new flag code changes
-  # observe({
-  #
-  #   # save previously selected value
-  #   isolate({save_selected <- input$group_color})
-  #
-  #   #if(input$param2 == "None"){
-  #     color_choices <- c("None", "Site", "Flags (needs update)")
-  #     updateRadioButtons(session, inputId = "group_color", label = "Parameter:",
-  #                       choices=c(color_choices),
-  #                       selected = save_selected)
-  #   #}
-  # })
 
   # Shape Grouping
   output$group_shape_ui <- renderUI({
     req(input$param2)
 
     # Make so this includes all types of flags. Probably make sticky memory
-    shape_choices <- c("None/Parameter", "Site", "Flags (needs update)")
+    shape_choices <- c("None/Parameter", "LocationLabel", "Flags (needs update)")
 
     radioButtons(ns("group_shape"), label = "Group with Shapes:",
                  choices = shape_choices,
                  selected = "None/Parameter")
   })
-
-  # # update when new flag code changes
-  # observeEvent(c(Df1(),Df2()), {
-  #
-  #   # save previously selected value
-  #   isolate({save_selected <- input$group_shape})
-  #
-  #   shape_choices <- c("None/Parameter", "Site", "Flags (needs update)")
-  #   updateRadioButtons(session, inputId = "group_shape", label = "Parameter:",
-  #                     choices=c(shape_choices),
-  #                     selected = save_selected)
-  #
-  # })
 
 
   # Axis UI - only show options for 1 Parameter plot
@@ -305,7 +268,7 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
     req(input$param2 != "None")
       radioButtons(ns("point_color2"), "Color of Secondary Axis:",
                    choices = c("black", "blue", "red", "green"),
-                   selected = "green",
+                   selected = "blue",
                    inline = TRUE)
   })
 
@@ -448,7 +411,8 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
 
 
       # Facet for Sites if no grouping for site is selected and number of sites is greater than 1
-      if(input$group_color != "Site" & input$group_shape != "Site" & length(c(Site())) > 1){
+
+      if(input$group_color != "LocationLabel" & input$group_shape != "LocationLabel" & length(c(Site())) > 1){
         p <- p + facet_wrap(~LocationLabel, ncol = ceiling(length(c(Site()))/4))
       }
 
@@ -542,7 +506,8 @@ PLOT_TIME_WQ <- function(input, output, session, Df) {
 
 
       # Facet for Sites if no grouping for site is selected and number of sites is greater than 1
-      if(input$group_shape != "Site" & length(c(Site())) > 1){
+
+      if(input$group_shape != "LocationLabel" & length(c(Site())) > 1){
         p <- p + facet_wrap(~LocationLabel, ncol = ceiling(length(c(Site()))/4))
       }
 

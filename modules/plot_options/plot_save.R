@@ -32,9 +32,10 @@ PLOT_SAVE_UI <- function(id) {
                                                 "png"),
                                      inline = TRUE),
                         br(),
-                        checkboxGroupInput(ns("save_grid"), "Gridline Override:",
-                                           choices= c("major gridlines",
-                                                      "minor gridlines"))
+                        radioButtons(ns("legend_pos"), "Legend Position:",
+                                           choices= c("right",
+                                                      "bottom-horizontal",
+                                                      "bottom-vertical"))
                  ),
                  column(6,
                         numericInput(ns("save_width"), "Plot Width (inches):", 11,
@@ -94,13 +95,10 @@ PLOT_SAVE <- function(input, output, session, P, Plot_Name) {
     
     p <- P()
     
-
-    # Gridlines for saving options - nonplotly inage
-    if("major gridlines" %in% input$save_grid){
-      p <- p + theme(panel.grid.major = element_line())
-    }
-    if("minor gridlines" %in% input$save_grid){
-      p <- p + theme(panel.grid.minor = element_line())
+    if(input$legend_pos == "bottom-horizontal"){
+      p <- p + theme(legend.position="bottom")
+    } else if(input$legend_pos == "bottom-vertical"){
+      p <- p + theme(legend.position="bottom",legend.direction="vertical")
     }
     
     # Margin Options
@@ -110,6 +108,8 @@ PLOT_SAVE <- function(input, output, session, P, Plot_Name) {
                                         input$plot_margin_bottom, 
                                         input$plot_margin_left), 
                                       "in"))
+    
+
     
     
     p
