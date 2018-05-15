@@ -32,7 +32,7 @@
 # Total_Cyanophytes 475 mediumturquoise
 # Anabaena 518 palegreen4
 # Microcystis 523 paleturquoise4
-# Grand_Total_Algae 24 black
+# Grand_Total 24 black
 # Other (Select dropdown) 604 slategrey
 
 
@@ -40,20 +40,26 @@
 taxaplot <- function(df,locs,vyear,taxa, color){
 # Function Arguments:
 # df <- df_phyto_wach
-# vyear <- 2017 # Selection unique(phyto)
-# taxa <- "Anabaena"
+# vyear <- 2018 # Selection unique(phyto)
+# taxa <- "Grand Total"
 # locs <- c("BN3417", "CI3409") # Multiple selections Set as default - adjust plot title
 # color <- "dodgerblue"
 ############################################
 # Plot Setup
-  df_thresh <- df_phyto_thresh_wach # df with taxa thresholds
+
+   df_thresh <- df_taxa_wach %>%
+    filter(!is.na(Threshold_early)) %>%
+    select("Name","Threshold_early","Threshold_Tx") %>%
+    dplyr::rename(Taxa = Name)
+  df <- df %>%
+    mutate(Year = year(df$Date))
   df2 <- df[df$Taxa == taxa & df$Year %in% vyear & df$Station %in% locs,]
   title <- paste0(gsub("_", " ", taxa), " at Station(s) ", str_c(locs, collapse = ", "), " in ", vyear)
   xlabel <- "Date"
   ylabel <- paste0(gsub("_", " ", taxa)," Density (ASUs/ml)")
   xmin <- as.Date(paste0(as.numeric(vyear),"-01-01"))
   xmax <- as.Date(paste0(as.numeric(vyear),"-12-31"))
-  taxathreshlist <- c("Anabaena","Synura", "Chrysosphaerella", "Uroglenopsis","Dinobryon")
+  taxathreshlist <- unique(df_thresh$Taxa)
 
 p <- ggplot(df2, aes(x = Date, y = Result)) +
   geom_point(aes(color = factor(taxa),
@@ -72,8 +78,8 @@ p <- ggplot(df2, aes(x = Date, y = Result)) +
   scale_x_date(date_labels = "%b", date_breaks(width = "1 month"), limits = c(xmin,xmax), name = "Date")
 
   if(taxa %in% taxathreshlist) {
-    trigmon <- df_thresh$EarlyMonitoringTrigger[match(paste0(taxa), df_thresh$Taxa)]
-    trigtreat <- df_thresh$TreatmentConsideration[match(paste0(taxa), df_thresh$Taxa)]
+    trigmon <- df_thresh$Threshold_early[match(paste0(taxa), df_thresh$Taxa)]
+    trigtreat <- df_thresh$Threshold_Tx[match(paste0(taxa), df_thresh$Taxa)]
   p <- p + geom_hline(yintercept = trigmon, linetype=2 ) +
     annotate("text", min(df2$Date),trigmon - (0.02 * max(df2$Result)), label = "Early Monitoring Threshold", hjust = "left") +
     geom_hline(yintercept = trigtreat, linetype=5) +
@@ -93,18 +99,20 @@ phytoplot <- function(df,locs,vyear,epi_min,epi_max,em_min,em_max) {
 secchi <- df_secchi_wach # Eventually this needs to be changed to a df argument with ns()
 
 #Function Arguments
-# df <- df_phyto_wach
-# vyear <- 2015
+# df <- df_phyto_wach %>%
+#   mutate(Year = year(df$Date))
+# vyear <- 2018
 # locs <- c("BN3417", "CI3409")
 # epi_min <- 1
 # epi_max <- 4
 # em_min <- 5
 # em_max <- 15
+################################################################################
 
 # make the data subsets
 
 # This is the Blue Line - usually 1-4 m
-GTA_epi <- df[df$Taxa == "Grand_Total_Algae" & df$Year %in% vyear & df$Depthm >= epi_min & df$Depthm <= epi_max &
+GTA_epi <- df[df$Taxa == "Grand Total" & year(df$Date) %in% vyear & df$Depth_m >= epi_min & df$Depth_m <= epi_max &
       df$Station %in% locs,] %>%
   group_by(Date) %>%
   drop_na() %>%
@@ -114,7 +122,7 @@ names(GTA_epi) <- c("date","value","dataset")
 GTA_epi$dataset <- factor(GTA_epi$dataset)
 
 # This is the black line, 6-14 m
-GTA_em <- df[df$Taxa == "Grand_Total_Algae" & df$Year %in% vyear & df$Depthm >= em_min & df$Depthm <= em_max &
+GTA_em <- df[df$Taxa == "Grand Total" & year(df$Date) %in% vyear & df$Depth_m >= em_min & df$Depth_m <= em_max &
       df$Station %in% locs,] %>%
   group_by(Date) %>%
   drop_na() %>%
@@ -182,9 +190,9 @@ p
 
 
 historicplot <- function(df, taxa, locs, vyear, yg1min, yg1max, yg2min, yg2max, yg3min, yg3max, stat, stat1, stat2, stat3, depthmin, depthmax) {
-  # #Function Arguments for data selection
+  #Function Arguments for data selection
   # df <- df_phyto_wach
-  # taxa <- "Anabaena" # Entire list - Alphabetical (single choice)
+  # taxa <- "Asterionella" # Entire list - Alphabetical (single choice)
   # locs <- c("BN3417", "CI3409") # Radio buttons  - default both toggled on
   # vyear <- 2017
   # yg1min <- 2012
@@ -202,6 +210,8 @@ historicplot <- function(df, taxa, locs, vyear, yg1min, yg1max, yg2min, yg2max, 
   # stat3<- "ave_val"
 ###########################################
 # Plot Options
+  df <- df %>%
+    select(-PA)
   taxalabel <- paste0(gsub("_", " ", taxa))
   title <- paste0("Wachusett Reservoir ", taxalabel, " Density by Month")
   subtitle <- paste0("Data included only from Stations: (", str_c(locs, collapse = ", "), "), All Depths")
@@ -209,8 +219,11 @@ historicplot <- function(df, taxa, locs, vyear, yg1min, yg1max, yg2min, yg2max, 
   ylabel <- paste0(gsub("_", " ", taxa)," Density (ASUs/ml)")
   xmin <- as.Date(paste0(as.numeric(vyear),"-01-01"), format = '%Y-%m-%d')
   xmax <- as.Date(paste0(as.numeric(vyear),"-12-31"), format = '%Y-%m-%d')
-  df_thresh <- df_phyto_thresh_wach # df with taxa thresholds
-  taxathreshlist <- c("Anabaena","Synura", "Chrysosphaerella", "Uroglenopsis","Dinobryon")
+  df_thresh <- df_taxa_wach %>%
+    filter(!is.na(Threshold_early)) %>%
+    select("Name","Threshold_early","Threshold_Tx") %>%
+    dplyr::rename(Taxa = Name)
+  taxathreshlist <- unique(df_thresh$Taxa)
   #Define legend labels and colors
   yg0_leg <- paste0(vyear, " ", taxalabel, " Values")
   yg1_leg <- paste0("Years (",yg1min,"-",yg1max,")")
@@ -220,9 +233,11 @@ historicplot <- function(df, taxa, locs, vyear, yg1min, yg1max, yg2min, yg2max, 
   colors <- c("#F49B00", "black", "#7F7F7F", "#77933C")
 
   # Parent data set
-  df <- df[df$Taxa %in% taxa & df$Station %in% locs & df$Depthm >= depthmin & df$Depthm <= depthmax,]
+  df <- df[df$Taxa %in% taxa & df$Station %in% locs & df$Depth_m >= depthmin & df$Depth_m <= depthmax,]
   df$plotdate <- NA
   df$plotdate <- as.Date(paste0(vyear,"-",month(df$Date),"-15"), format = '%Y-%m-%d')
+  df$Year <- year(df$Date)
+  df <- select(df, Station, Year, Date, Depth_m, Taxa, Result, plotdate)
 
 ###  Data subsets by month ###
 
@@ -283,8 +298,8 @@ var3 <- df_yg3[stat3]
           legend.title=element_blank())
 
   if(taxa %in% taxathreshlist) {
-    trigmon <- df_thresh$EarlyMonitoringTrigger[match(paste0(taxa), df_thresh$Taxa)]
-    trigtreat <- df_thresh$TreatmentConsideration[match(paste0(taxa), df_thresh$Taxa)]
+    trigmon <- df_thresh$Threshold_early[match(paste0(taxa), df_thresh$Taxa)]
+    trigtreat <- df_thresh$Threshold_Tx[match(paste0(taxa), df_thresh$Taxa)]
     p <- p + geom_hline(yintercept = trigmon, linetype=2 ) +
       annotate("text", min(df_yr$date),trigmon - (0.02 * max(var, var1, var2, var3)), label = "Early Monitoring Threshold", hjust = "left") +
       geom_hline(yintercept = trigtreat, linetype=5) +

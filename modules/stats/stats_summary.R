@@ -5,7 +5,7 @@
 #     Written by: Nick Zinck, Spring 2017
 ##############################################################################################################################
 
-# Notes: 
+# Notes:
 #   1. req() will delay the rendering of a widget or other reactive object until a certain logical expression is TRUE or not NULL
 #
 # To-Do List:
@@ -17,9 +17,9 @@
 ##############################################################################################################################
 
 STAT_TIME_WQ_UI <- function(id) {
-  
+
   ns <- NS(id) # see General Note 1
-  
+
   tagList(
     fluidRow(
       column(3,
@@ -46,18 +46,19 @@ STAT_TIME_WQ_UI <- function(id) {
 ##############################################################################################################################
 
 STAT_TIME_WQ <- function(input, output, session, Df) {
-  
+
 # Summary Statistics
-  
+
   output$summary <- renderTable({
-    
+
     # # Add Year, season, and Month Columns
     # sum_1 <- Df() %>%
-    #   mutate(Year = as.integer(lubridate::year(Date)), 
+    #   mutate(Year = as.integer(lubridate::year(Date)),
     #          Season = getSeason(Date),
     #          Month = month.abb[lubridate::month(Date)]
     #   )
-    
+
+
     # Group by time (year, season, month)
     if (input$summary_group_time == 1){
       sum_dots = c()
@@ -72,31 +73,32 @@ STAT_TIME_WQ <- function(input, output, session, Df) {
     } else if (input$summary_group_time == 6) {
       sum_dots = c("Year", "Month")
     }
-    
+
     # Group by site
     if(input$summary_group_site == TRUE){
-      sum_dots <- c(sum_dots, "Site")
-    }  
-    
+      sum_dots <- c(sum_dots, "LocationLabel")
+    }
+
     # Group by Param
     sum_dots <- c("Parameter", sum_dots)
-    
+
     # Applying Grouping (stats is always grouped by parameter)
+
     sum_2 <- Df() %>% group_by_(.dots = sum_dots)
-    
+
     # Making the Sumamry Statistic Columns
     sum_2 %>% summarise(`number of samples` = n(),
                         average = mean(Result),
                         `stand. dev.` = sd(Result, na.rm=TRUE),
-                        min = min(Result, na.rm=TRUE), 
+                        min = min(Result, na.rm=TRUE),
                         `1st quartile` = quantile(Result, 0.25),
                         median = median(Result),
                         `3rd quartile` = quantile(Result, 0.75),
                         max = max(Result, na.rm=TRUE),
                         `geometric mean` = gm_mean(Result))
   })
-  
-  
+
+
 
 } # end Server Function
 

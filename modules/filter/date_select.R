@@ -39,7 +39,7 @@ DATE_SELECT_UI <- function(id) {
 # For non reactives wrap with "reactive" to make into a reactive expression.
 
 DATE_SELECT <- function(input, output, session, Df, hidden = FALSE) {
-  
+
   ns <- session$ns # see General Note 1
 
   # Min and Max Dates for Sites Selected
@@ -64,8 +64,8 @@ DATE_SELECT <- function(input, output, session, Df, hidden = FALSE) {
   observe({
     # save the Parameter Type input for when the Site selection changes. Isolate so does not cause reactivity
     isolate({
-        save_selected_lower <- input$date[1]
-        save_selected_upper <- input$date[2]
+      save_selected_lower <- input$date[1]
+      save_selected_upper <- input$date[2]
     })
 
     # If Site list is changed but not empty then generate a Select Input with the...
@@ -73,56 +73,56 @@ DATE_SELECT <- function(input, output, session, Df, hidden = FALSE) {
     if(Df() %>% summarise(n()) %>% unlist() != 0){
 
       updateDateRangeInput(session, inputId = "date", label = "Date Range:",
-                      start = save_selected_lower,
-                      end = save_selected_upper,
-                      min = Date_Min(),
-                      max = Sys.Date())
+                           start = save_selected_lower,
+                           end = save_selected_upper,
+                           min = Date_Min(),
+                           max = Sys.Date())
 
       # If Site list is empty than make a date range of the previously selected date range to save it.
     } else {
       updateDateRangeInput(session, inputId = "date", label = "Date Range:",
-                      start = save_selected_lower,
-                      end = save_selected_upper,
-                      min = save_selected_lower,
-                      max = save_selected_upper)
+                           start = save_selected_lower,
+                           end = save_selected_upper,
+                           min = save_selected_lower,
+                           max = save_selected_upper)
     }
   })
-  
-  
+
+
   # Render "Or (Includes Both)" Text
   output$text_ui <- renderUI({
     req(Df() %>% summarise(n()) %>% unlist() != 0)
     h5("OR (includes both)", align = "center")
   })
-  
-  
+
+
   ### Year Selection
-  
+
   # Choices
   Year_Choices <- reactive({c(rev(year(seq(Date_Min(), Date_Max(), "years"))))}) # Change to first year of data
-  
+
   # Parameter Selection UI
   output$year_ui <- renderUI({
     selectInput(ns("year"), "Year(s):", choices=Year_Choices(), multiple = TRUE)
   })
-  
+
   # To fill back in previously selected - Memory
   observe({
-    
+
     # save the Parameter Type input for when the Site selection changes. Isolate so does not cause reactivity
     isolate({
       save_selected <- input$year
     })
-    
+
     # If Site list is changed but not empty then generate a Select Input with the...
     # parameters for that Site and autoselect previous selected parameter
     if(Df() %>% summarise(n()) %>% unlist() != 0){
-      
+
       updateSelectInput(session, inputId = "year", label = "Year(s):",
                         choices = Year_Choices(),
                         selected = save_selected)
-      
-    # If Site list is empty than make a parameter list of just the previously listed item to save it.
+
+      # If Site list is empty than make a parameter list of just the previously listed item to save it.
     } else {
       updateSelectInput(session, inputId = "year", label = "Year(s):",
                         choices= save_selected,

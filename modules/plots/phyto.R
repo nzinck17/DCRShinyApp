@@ -26,6 +26,8 @@
 PHYTO_UI <- function(id,df) {
 
   ns <- NS(id) # see General Note 1
+  df <- df %>%
+    mutate(Year = year(Date))
 
   tagList(
     tabsetPanel(
@@ -267,7 +269,7 @@ PHYTO <- function(input, output, session, df) {
   ### Taxa Plots
   # Total_Diatoms 128 dodgerblue
   p1 <- reactive({
-    p1 <- taxaplot(df = df, locs = input$taxasite, vyear = input$taxayear, taxa = "Total_Diatoms", color = "dodgerblue")
+    p1 <- taxaplot(df = df, locs = input$taxasite, vyear = input$taxayear, taxa = "Total Diatoms", color = "dodgerblue")
     p1
   })
   output$taxaplot1 <- renderPlot({p1()})
@@ -285,13 +287,13 @@ PHYTO <- function(input, output, session, df) {
   output$taxaplot3 <- renderPlot({p3()})
   # Total_Chlorophytes 472 mediumseagreen
   p4 <- reactive({
-    p4 <- taxaplot(df = df, locs = input$taxasite, vyear = input$taxayear, taxa = "Total_Chlorophytes", color = "mediumseagreen")
+    p4 <- taxaplot(df = df, locs = input$taxasite, vyear = input$taxayear, taxa = "Total Chlorophytes", color = "mediumseagreen")
     p4
   })
   output$taxaplot4 <- renderPlot({p4()})
   # Total_Chrysophytes 144 gold2
   p5 <- reactive({
-    p5 <- taxaplot(df = df, locs = input$taxasite, vyear = input$taxayear, taxa = "Total_Chrysophytes", color = "gold2")
+    p5 <- taxaplot(df = df, locs = input$taxasite, vyear = input$taxayear, taxa = "Total Chrysophytes", color = "gold2")
     p5
   })
   output$taxaplot5 <- renderPlot({p5()})
@@ -322,7 +324,7 @@ PHYTO <- function(input, output, session, df) {
   output$taxaplot9 <- renderPlot({p9()})
   # Total_Cyanophytes 475 mediumturquoise
   p10 <- reactive({
-    p10 <- taxaplot(df = df, locs = input$taxasite, vyear = input$taxayear, taxa = "Total_Cyanophytes", color = "mediumturquoise")
+    p10 <- taxaplot(df = df, locs = input$taxasite, vyear = input$taxayear, taxa = "Total Cyanophytes", color = "mediumturquoise")
     p10
   })
   output$taxaplot10 <- renderPlot({p10()})
@@ -340,7 +342,7 @@ PHYTO <- function(input, output, session, df) {
   output$taxaplot12 <-  renderPlot({p12()})
   # Grand_Total_Algae 24 black
   p13 <- reactive({
-    p13 <- taxaplot(df = df, locs = input$taxasite, vyear = input$taxayear, taxa = "Grand_Total_Algae", color = "black")
+    p13 <- taxaplot(df = df, locs = input$taxasite, vyear = input$taxayear, taxa = "Grand Total", color = "black")
     p13
   })
   output$taxaplot13 <- renderPlot({p13()})
@@ -461,7 +463,7 @@ PHYTO <- function(input, output, session, df) {
   )
   output$save_plot13 <- downloadHandler(
     filename <- function() {
-      paste0("Grand_Total_Algae-", input$taxayear,"_", format(Sys.time(), "%Y-%m-%d"), ".", input$taxaplot_save_type)},
+      paste0("Grand_Total-", input$taxayear,"_", format(Sys.time(), "%Y-%m-%d"), ".", input$taxaplot_save_type)},
     content = function(file) {
       ggplot2::ggsave(file, plot = p13(), device = input$taxaplot_save_type,
                       width = input$taxaplot_save_width, height = input$taxaplot_save_height, dpi = 300)

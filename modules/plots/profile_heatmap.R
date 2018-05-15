@@ -143,15 +143,15 @@ PROF_HEATMAP <- function(input, output, session, Df) {
 
     # if interploation is selected
     if(input$interp != "none"){
-      df_plot <- akima::interp(x = decimal_date(Df1()$Date), y = Df1()$Depthm, z = Df1()$Result, duplicate="strip", nx = 100, ny = 100)
+      df_plot <- akima::interp(x = decimal_date(Df1()$Date), y = Df1()$Depth_m, z = Df1()$Result, duplicate="strip", nx = 100, ny = 100)
       df_plot <- interp2xyz(df_plot, data.frame=TRUE)
-      df_plot <- rename(df_plot, Date = x, Depthm = y, Result = z)
+      df_plot <- rename(df_plot, Date = x, Depth_m = y, Result = z)
       df_plot$Date <- as.Date(format(date_decimal(df_plot$Date), "%Y-%m-%d"))
     } else {
       df_plot <- Df1()
     }
 
-    p <-  ggplot(df_plot, aes(x=Date, y=Depthm, z=Result, fill=Result)) +
+    p <-  ggplot(df_plot, aes(x=Date, y=Depth_m, z=Result, fill=Result)) +
       geom_tile(height = 1) +
       scale_y_reverse() +
       scale_x_date(date_breaks = "months", date_labels = ("%b-%Y"))
@@ -183,7 +183,7 @@ PROF_HEATMAP <- function(input, output, session, Df) {
   output$plot3D <- renderPlotly({
 
     # if interploation is selected
-    df_interp <- akima::interp(x = decimal_date(Df1()$Date), y = Df1()$Depthm, z = Df1()$Result, duplicate="strip", nx = 100, ny = 100)
+    df_interp <- akima::interp(x = decimal_date(Df1()$Date), y = Df1()$Depth_m, z = Df1()$Result, duplicate="strip", nx = 100, ny = 100)
 
     if(input$interp != "none"){
       p3D <- plot_ly(x = df_interp[[2]], y = df_interp[[1]], z = df_interp[[3]]) %>%
@@ -194,7 +194,7 @@ PROF_HEATMAP <- function(input, output, session, Df) {
           zaxis = list(title = input$param),
           camera = list(eye = list(x = 0.5, y = 0.2, z = 2.0))))
     } else {
-      p3D <- plot_ly(Df1(), x = ~Result, y = ~Date, z = ~Depthm*-1, color = ~Result) %>%
+      p3D <- plot_ly(Df1(), x = ~Result, y = ~Date, z = ~Depth_m*-1, color = ~Result) %>%
         add_markers() %>%
         layout(scene = list(
           xaxis = list(title = input$param),

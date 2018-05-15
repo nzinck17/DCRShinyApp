@@ -38,14 +38,14 @@ PARAM_SELECT_UI <- function(id) {
 # For non reactives wrap with "reactive" to make into a reactive expression.
 
 PARAM_SELECT <- function(input, output, session, Df, multiple = TRUE) {
-  
+
   ns <- session$ns # see General Note 1
 
   # Non Historical Parameters (when a Parameter has not been used in over 5 years). See General Note 6
 
   Parameters_Non_Historical <- reactive({
     Df() %>%
-      filter(Date > Sys.Date()-years(5), Date < Sys.Date()) %>%
+      filter(Date > Sys.Date()- years(5), Date < Sys.Date()) %>%
       .$Parameter %>%
       factor() %>%
       levels()
@@ -55,7 +55,7 @@ PARAM_SELECT <- function(input, output, session, Df, multiple = TRUE) {
   # Parameter Choice List
 
   Param_Choices <- reactive({
-    
+
     # Parameters which have data at any Site (in the mofule's Df) within 5 years.
     param_new_choices <- Df() %>%
       filter(Parameter %in% Parameters_Non_Historical()) %>%
@@ -79,7 +79,7 @@ PARAM_SELECT <- function(input, output, session, Df, multiple = TRUE) {
 
   # Parameter Selection UI
   output$type_ui <- renderUI({
-    selectInput(ns("type"), "Parameter:", choices=c(Param_Choices()), multiple = multiple)
+    selectInput(ns("type"), "Choose Parameter(s):", choices=c(Param_Choices()), multiple = multiple)
   })
 
 
@@ -95,13 +95,13 @@ PARAM_SELECT <- function(input, output, session, Df, multiple = TRUE) {
     # parameters for that Site and autoselect previous selected parameter
     if(Df() %>% summarise(n()) %>% unlist() != 0){
 
-      updateSelectInput(session, inputId = "type", label = "Parameter:",
+      updateSelectInput(session, inputId = "type", label = "Choose Parameter(s):",
                         choices=c(Param_Choices()),
                         selected = save_selected)
 
       # If Site list is empty than make a parameter list of just the previously listed item to save it.
     } else {
-      updateSelectInput(session, inputId = "type", label = "Parameter:",
+      updateSelectInput(session, inputId = "type", label = "Choose Parameter(s):",
                         choices= save_selected,
                         selected = save_selected)
     }
@@ -135,8 +135,8 @@ PARAM_SELECT <- function(input, output, session, Df, multiple = TRUE) {
                   value = c(param_min, param_max))
   })
 
-  
-  
+
+
   ### return List of reactive expressions
   return(list(Type = reactive({input$type}),
               Units = reactive({Units()}), # Units = Units

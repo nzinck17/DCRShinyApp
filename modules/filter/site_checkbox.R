@@ -20,7 +20,7 @@ SITE_CHECKBOX_UI <- function(id) {
   tagList(
     fluidRow(
       # Site Selection
-      wellPanel(
+      wellPanel(h4("LOCATION FILTER:", align = "left"),
         uiOutput(ns("site_primary_ui")),
         br(),
         uiOutput(ns("site_nonprimary_category_ui")),
@@ -41,13 +41,13 @@ SITE_CHECKBOX_UI <- function(id) {
 # For non reactives wrap with "reactive" to make into a reactive expression.
 
 SITE_CHECKBOX <- function(input, output, session, df) {
-  
+
   ns <- session$ns # see General Note 1
-  
+
   ### Site - Primary
 
   # List
-  site_primary_choices <- df %>% 
+  site_primary_choices <- df %>%
     filter(grepl("Primary", LocationCategory)) %>%
     .$LocationLabel %>% unique()
 
@@ -58,28 +58,28 @@ SITE_CHECKBOX <- function(input, output, session, df) {
                        choices = site_primary_choices)
   })
 
-  
+
 
   ### Site - Non Primary Categories
 
   # List
   site_nonprimary_category_choices <- reactive({
-    df %>% 
+    df %>%
       filter(LocationCategory != "Primary Active") %>%
       .$LocationCategory %>% factor(exclude = FALSE) %>% levels()
     })
 
   # UI
   output$site_nonprimary_category_ui <- renderUI({
-    
+
     checkboxGroupInput(ns("site_nonprimary_category"),
                        label = "Show Other Categories:",
                        choices = site_nonprimary_category_choices())
   })
-  
 
 
-  
+
+
   ### Site - NonPrimary Sites
 
   # List
@@ -91,7 +91,7 @@ SITE_CHECKBOX <- function(input, output, session, df) {
       factor() %>%
       levels()
   })
-  
+
   # NonPrimary Site INput Widget
   output$site_nonprimary_ui <- renderUI({
     if(isTruthy(input$site_nonprimary_category)){

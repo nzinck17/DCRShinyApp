@@ -98,6 +98,10 @@ METADATA <- function(input, output, session, df_site = NULL, df_param = NULL, df
 
   ns <- session$ns # see General Note 1
 
+  df_site <- df_site %>%
+    select(LocationLabel,LocationCategory, LocationDescription, LocationLat, LocationLong, LocationElevFt) %>%
+    dplyr::rename(Location = LocationLabel, Status = LocationCategory, Description = LocationDescription, Latitude = LocationLat, Longitude = LocationLong,
+                  `Elevation (ft)` = LocationElevFt)
   ### Primary Tables
 
   output$table_site <- renderDataTable(df_site, selection = 'single',
@@ -131,7 +135,7 @@ METADATA <- function(input, output, session, df_site = NULL, df_param = NULL, df
   # Site Overview Table
   Df_Site_Info_a <- reactive({
     df %>%
-      filter(LocationLabel %in% Site_Selected()$LocationLabel) %>%
+      filter(LocationLabel %in% Site_Selected()$Location) %>%
       summarise(`Parameter` = "ALL",
                 `Number of Samples` = n(),
                 `Start Date` = as.character(min(Date)),
@@ -142,7 +146,7 @@ METADATA <- function(input, output, session, df_site = NULL, df_param = NULL, df
 
   Df_Site_Info_b <- reactive({
     df %>%
-      filter(LocationLabel %in% Site_Selected()$LocationLabel) %>%
+      filter(LocationLabel %in% Site_Selected()$Location) %>%
       group_by(Parameter) %>%
       summarise(`Number of Samples` = n(),
                 `Start Date` = as.character(min(Date)),
@@ -162,7 +166,7 @@ METADATA <- function(input, output, session, df_site = NULL, df_param = NULL, df
   output$river_image <- renderImage({
     req(Site_Selected()) # can delete once Site_Selected is used in renderImage due to earlier req()
 
-    list(src = "images/river.jpg",
+    list(src = "images/QuinapoxetMarch2018.jpg",
          width="100%",
          height= "350")
   }, deleteFile = FALSE)
@@ -201,7 +205,7 @@ METADATA <- function(input, output, session, df_site = NULL, df_param = NULL, df
   Df_Param_Info_a <- reactive({
     df %>%
       filter(Parameter %in%  Param_Selected()$ParameterName) %>%
-      summarise(`LocationLabel` = "ALL",
+      summarise(`Location` = "ALL",
                 `Number of Samples` = n(),
                 `Start Date` = as.character(min(Date)),
                 `End Date` = as.character(max(Date)),
@@ -212,7 +216,7 @@ METADATA <- function(input, output, session, df_site = NULL, df_param = NULL, df
   Df_Param_Info_b <- reactive({
     df %>%
       filter(Parameter %in%  Param_Selected()$ParameterName) %>%
-      group_by(LocationLabel) %>%
+      group_by(Location) %>%
       summarise(`Number of Samples` = n(),
                 `Start Date` = as.character(min(Date)), # need as.character becuase of renderTable has a bug for Date Class (xtable bug)
                 `End Date` = as.character(max(Date)),
