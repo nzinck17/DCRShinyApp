@@ -1,2 +1,1 @@
-# DCRShinyApp
-The Shiny App to view and analyze water quality data collected by the Massachusetts Department of Conservation and Recreation
+Development has been moved to https://github.com/dancrocker/DCR-WAVE
